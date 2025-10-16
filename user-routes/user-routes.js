@@ -1,9 +1,5 @@
-
-
-
-
-
-
+import express from 'express';
+import { getUsuarios, getUsuario, postUsuario, putUsuario, deleteUsuario } from '../controllers/user-controller.js';
 
 
 
@@ -27,17 +23,3 @@
     //atualizar um usuario
 
 
-
-
-
-//rotas de produtos
-//get
-    //pegar um produto
-    //pegar todos os produtos
-//post
-    //criar um produto
-    //reservar um produto
-    //entregar um produto
-//delete
-//put
-    //atualizar um produto
