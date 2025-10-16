@@ -32,7 +32,7 @@ roteador.delete("/:id", (req, res) => {
     controller.deletarProduto(res, res);
 });
 
-export default roteador;
+export default rota_produto;
 
 
 //rotas de produtos

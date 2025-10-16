@@ -8,5 +8,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(rota_usuario);
+app.use(rota_produto);
 
 app.listen(3000);
