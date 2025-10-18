@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import roteador_usuario from './routes/user-routes/user-routes.js';
-import roteador_produto from './routes/poduto-routes/produto-routes.js';
+import roteador_usuario from './src/routes/user-routes/user-routes.js';
+import roteador_produto from './src/routes/poduto-routes/produto-routes.js';
 
 const app = express();
 
