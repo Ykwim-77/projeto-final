@@ -15,24 +15,24 @@
 
 
 
-async function pegar1Usuario(res, res){
+async function pegar1Usuario(req, res){
 
 }
 
-async function pegarTodosUsuarios(res, res){
+async function pegarTodosUsuarios(req, res){
 
 }
 
-async function criarUsuario(res, res){
+async function criarUsuario(req, res){
 
 }
-async function atualizarUsuario(res, res){
+async function atualizarUsuario(req, res){
 
 }
-async function deletarUsuario(res, res){
+async function deletarUsuario(req, res){
 
 }
-async function desativarUsuario(res, res){
+async function desativarUsuario(req, res){
     
 }
 

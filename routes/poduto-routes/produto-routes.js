@@ -1,38 +1,39 @@
-import controller from "../produto-controller/produto-controller.js";
+import controller from "../../controllers/produto-controller/produto-controller.js";
 import express, { Router } from "express";
 
-roteador = Router();
+const roteador_produto = express.Router();
 
 
-roteador.get("/", (req, res) => {
+roteador_produto.get("/", (req, res) => {
     controller.pegarTodosProdutos(res, res);
 });
 
-roteador.get("/:id", (req, res) => {
+roteador_produto.get("/:id", (req, res) => {
     controller.pegar1Produto(res, res);
 });
 
-roteador.post("/", (req, res) => {
+roteador_produto.post("/", (req, res) => {
     controller.criarProduto(res, res);
 });
 
-roteador.post("/reservar/:id", (req, res) => {
+roteador_produto.post("/reservar/:id", (req, res) => {
     controller.reservarProduto(res, res);
 });
 
-roteador.post("/entregar/:id", (req, res) => {
+roteador_produto.post("/entregar/:id", (req, res) => {
     controller.entregarProduto(res, res);
 });
 
-roteador.put("/:id", (req, res) => {
+roteador_produto.put("/:id", (req, res) => {
     controller.atualizarProduto(res, res);
 });
 
-roteador.delete("/:id", (req, res) => {
+roteador_produto.delete("/:id", (req, res) => {
     controller.deletarProduto(res, res);
 });
 
-export default rota_produto;
+
+export default roteador_produto;
 
 
 //rotas de produtos
