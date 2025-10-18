@@ -5,31 +5,31 @@ const roteador_produto = express.Router();
 
 
 roteador_produto.get("/", (req, res) => {
-    controller.pegarTodosProdutos(res, res);
+    controller.pegarTodosProdutos(req, res);
 });
 
 roteador_produto.get("/:id", (req, res) => {
-    controller.pegar1Produto(res, res);
+    controller.pegar1Produto(req, res);
 });
 
 roteador_produto.post("/", (req, res) => {
-    controller.criarProduto(res, res);
+    controller.criarProduto(req, res);
 });
 
 roteador_produto.post("/reservar/:id", (req, res) => {
-    controller.reservarProduto(res, res);
+    controller.reservarProduto(req, res);
 });
 
 roteador_produto.post("/entregar/:id", (req, res) => {
-    controller.entregarProduto(res, res);
+    controller.entregarProduto(req, res);
 });
 
 roteador_produto.put("/:id", (req, res) => {
-    controller.atualizarProduto(res, res);
+    controller.atualizarProduto(req, res);
 });
 
 roteador_produto.delete("/:id", (req, res) => {
-    controller.deletarProduto(res, res);
+    controller.deletarProduto(req, res);
 });
 
 

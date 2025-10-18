@@ -7,7 +7,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(roteador_usuario);
-app.use(roteador_produto);
+app.use('/usuario', roteador_usuario);
+app.use('/produto',roteador_produto);
 
 app.listen(3000);
