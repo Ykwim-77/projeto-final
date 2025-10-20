@@ -20,11 +20,9 @@
   "homepage": "https://github.com/Ykwim-77/projeto-final#readme",
   "dependencies": {
     "@prisma/client": "^6.17.1",
+    "angular": "^1.8.3",
     "express": "^5.1.0",
     "node": "^25.0.0",
     "prisma": "^6.17.1"
-
   }
-  
-
 }

@@ -91,8 +91,8 @@ async function reservarProduto(req, res){
 }
 
 async function entregarProduto(req, res){
-    const id = req.params.id;
-    const idnumber = parseInt(id);
+    const id = req.params.id; //vai ser padronizado, o id vai ser transformado em número em apenas uma linha; 
+    const idnumber = parseInt(req.params.id);
 
     if(isNaN(idnumber)){
         return res.status(400).json({nao_numero:"faz favor de passar o id certo ai"});

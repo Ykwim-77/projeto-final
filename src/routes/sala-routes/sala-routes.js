@@ -1,0 +1,1 @@
+import controller from "../../controllers/sala-controller/sala-controller.js";
