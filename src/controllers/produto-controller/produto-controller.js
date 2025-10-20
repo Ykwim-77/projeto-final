@@ -167,6 +167,7 @@ async function atualizarProduto(req, res){
     return res.status(200).json({mensagem:`O produto ${produto.nome} foi atualizado`})
 }
 async function deletarProduto(req, res){
+    const idNumber = parseInt(req.params.id)
 
 }
 
