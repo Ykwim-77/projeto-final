@@ -167,7 +167,12 @@ async function atualizarProduto(req, res){
     return res.status(200).json({mensagem:`O produto ${produto.nome} foi atualizado`})
 }
 async function deletarProduto(req, res){
-    const idNumber = parseInt(req.params.id)
+    const idNumber = parseInt(req.params.id);
+    if(isNaN(idNumber)){ // verifica se o id é do tipo number
+        return res.status(400).json({mensagem:"passa um ID Number por favor"})
+    }
+    
+
 
 }
 
