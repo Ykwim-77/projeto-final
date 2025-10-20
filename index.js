@@ -12,4 +12,3 @@ app.use('/produto',roteador_produto);
 
 app.listen(3000);
 
-//teste
