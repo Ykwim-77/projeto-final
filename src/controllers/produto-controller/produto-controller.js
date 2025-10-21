@@ -81,7 +81,7 @@ async function reservarProduto(req, res){
         res.status(500).json({erro:"deu pau na reserva, da um jeito ai patrão: ", error})
     }
 
-    const produto = prisma.produto.findUnique({
+    const produto = await prisma.produto.findUnique({
         where:{
             id_produto: idnumber
         }
@@ -140,6 +140,13 @@ async function atualizarProduto(req, res){
         //     return res.status(400).json({Falta_infos:"passa todas as informações, incopetente"});
         // }
 
+        const produto = await prisma.produto.findUnique({
+            where:{
+                id_produto: idNumber
+            }
+        })
+
+        res.status(200).json({mensagem:`O produto ${produto.nome} foi atualizado`})
         await prisma.produto.update({
             where:{
                 id_produto:idNumber
@@ -154,21 +161,42 @@ async function atualizarProduto(req, res){
                 id_fornecedor:id_fornecedor
             }
         })
+        
 
     } catch(error){
         return res.status(500).json({vixx:"deu pau na rota atualizar produto, da uma olhada ai!"})
     }
-    const produto = prisma.produto.findUnique({
-        where:{
-            id_produto: idNumber
-        }
-    })
 
-    return res.status(200).json({mensagem:`O produto ${produto.nome} foi atualizado`})
+
+    
 }
 async function deletarProduto(req, res){
-    const idNumber = parseInt(req.params.id)
+    const idNumber = parseInt(req.params.id);
+    if(isNaN(idNumber)){ // verifica se o id é do tipo number
+        return res.status(400).json({mensagem:"passa um ID Number por favor"})
+    }
+    try{
+
+        const produto = await prisma.produto.findUnique({
+            where:{
+                id_produto: idNumber
+            }
+        })
+        res.status(200).json({delete: `delete ta funcionando e o produto ${produto.nome} foi deletado`})
+
+        await prisma.produto.delete({
+            where:{
+                id_produto: idNumber
+            }
+        })
+
+    }catch(error){
+        return res.status(500).json({vixx:"deu ruim aqui no delete, da um jeito ai meu patrão"})
+    }
+
+
 
 }
+
 
 export default {pegar1Produto, pegarTodosProdutos, criarProduto, reservarProduto, entregarProduto, atualizarProduto, deletarProduto}
