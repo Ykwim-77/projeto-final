@@ -13,9 +13,11 @@ async function pegarTodasSalas(req,res) {
     }
 
     try {
-        await prisma.$connect();
+        
         const salas = await prisma.sala.findMany();
+
         return res.status(200).json(salas);
+
     } catch (error) {
         return res.status(500).json({ mensagem: "Erro ao buscar salas." });
     }
@@ -23,32 +25,24 @@ async function pegarTodasSalas(req,res) {
 }
 
 async function pegar1Sala(req,res) {
-    const { id } = req.params;
-    const sala = await prisma.sala.findUnique({
-        where: { id: Number(id) }
-    });
-    res.json(sala);
-
-    if (sala === null) {
-        return res.status(404).json({ mensagem: "Sala não encontrada." });
+    const id_number = parseInt(req.params.id);
+    if (isNaN(id_number)) {
+        return res.status(400).json({ mensagem: "o id precisa ser um número inteiro" });
     }
-    return res.status(200).json(sala);
+    try {
+        const sala = await prisma.sala.findUnique({
+            where: { id: id_number }
+        });
+        if (!sala) {
+            return res.status(404).json({ mensagem: "Sala não encontrada." });
+        }
+        return res.status(200).json(sala);
+    } catch (error) {
+        return res.status(500).json({ mensagem: "Erro ao buscar sala." });
+    }
 }
 
-
-        try {
-            await prisma.$connect();
-            const sala = await prisma.sala.findUnique({
-                where: { id: Number(id) }
-            });
-            if (sala === null) {
-                return res.status(404).json({ mensagem: "Sala não encontrada." });
-            }
-            return res.status(200).json(sala);
-        } catch (error) {
-            return res.status(500).json({ mensagem: "Erro ao buscar sala." });
-        }       
-    }
+/////////////////////////
 
 async function criarSala(req,res) {
     const { nome, capacidade } = req.body;
@@ -95,12 +89,4 @@ async function liberarSala(req,res) {
     res.sendStatus(204);
 }
 
-export default {
-    pegarTodasSalas,
-    pegar1Sala,
-    criarSala,
-    atualizarSala,
-    deletarSala,
-    reservarSala,
-    liberarSala
-};
+export default { pegarTodasSalas, pegarTodasSalas, pegar1Sala, criarSala, atualizarSala, deletarSala, reservarSala, liberarSala};
