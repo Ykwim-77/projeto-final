@@ -47,7 +47,7 @@ async function criarProduto(req, res){
                 unidade_medida:unidade_medida
             }
         })
-         return res.status(201).json({mensagem:`o produto ${nome} foi criado com sucesso`});
+         return res.status(201).json({mensagem:`o produto ${produto.nome} foi criado com sucesso`});
     } catch(error){
         return res.status(500).json("fodeu com tudo pia, cancela o gole", error)
     }
