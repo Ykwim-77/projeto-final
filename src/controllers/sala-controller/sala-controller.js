@@ -6,7 +6,6 @@ const prisma = new PrismaClient();
 
 
 async function pegarTodasSalas(req,res) {
-    const salas = await prisma.sala.findMany();
     res.json(salas);
 
     if (!salas) {
@@ -14,6 +13,8 @@ async function pegarTodasSalas(req,res) {
     }
 
     try {
+        await prisma.$connect();
+        const salas = await prisma.sala.findMany();
         return res.status(200).json(salas);
     } catch (error) {
         return res.status(500).json({ mensagem: "Erro ao buscar salas." });
@@ -27,7 +28,27 @@ async function pegar1Sala(req,res) {
         where: { id: Number(id) }
     });
     res.json(sala);
+
+    if (sala === null) {
+        return res.status(404).json({ mensagem: "Sala não encontrada." });
+    }
+    return res.status(200).json(sala);
 }
+
+
+        try {
+            await prisma.$connect();
+            const sala = await prisma.sala.findUnique({
+                where: { id: Number(id) }
+            });
+            if (sala === null) {
+                return res.status(404).json({ mensagem: "Sala não encontrada." });
+            }
+            return res.status(200).json(sala);
+        } catch (error) {
+            return res.status(500).json({ mensagem: "Erro ao buscar sala." });
+        }       
+    }
 
 async function criarSala(req,res) {
     const { nome, capacidade } = req.body;
