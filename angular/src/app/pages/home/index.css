@@ -1,0 +1,136 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", Arial, sans-serif;
+}
+
+body {
+  background-color: #f5f6fa;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* MENU LATERAL */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 240px;
+  height: 100vh;
+  background-color: #fff;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 16px;
+}
+
+/* LOGO */
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 40px;
+}
+
+.logo-img {
+  width: 32px;
+  height: 32px;
+}
+
+.logo-area h2 {
+  font-size: 20px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+/* LINKS */
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.links a {
+  text-decoration: none;
+  color: #475569;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.links a:hover {
+  background-color: #f1f5f9;
+  color: #1e293b;
+}
+
+.links a.active {
+  background-color: #2563eb;
+  color: white;
+  font-weight: 500;
+}
+
+/* PARTE INFERIOR */
+.bottom {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 20px;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.avatar {
+  background-color: #2563eb;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.user-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.user-email {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.logout {
+  text-decoration: none;
+  color: #ef4444;
+  font-weight: 500;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* CONTEÚDO PRINCIPAL */
+.main-content {
+  margin-left: 260px;
+  padding: 40px;
+  flex: 1;
+}
