@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/usuario', roteador_usuario);
 app.use('/produto',roteador_produto);
-// app.use('/sala', roteador_sala);
+app.use('/sala', roteador_sala);
 
 app.listen(3000);
 

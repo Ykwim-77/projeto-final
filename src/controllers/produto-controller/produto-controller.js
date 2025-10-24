@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-
+import { PegarApenasUm } from "../../function.js"
 
 const prisma = new PrismaClient();
 
@@ -10,12 +10,14 @@ async function pegar1Produto(req, res){
     } 
 
     try {
-        const produto = await prisma.produto.findUnique({
-            where: {
-                id_produto: idNumber
-            }
-        });
-        return res.status(200).json(produto);
+        const ApenasUm = await PegarApenasUm('produto', 'id_produto', idNumber)
+
+        // const produto = await prisma.produto.findUnique({
+        //     where: {
+        //         id_produto: idNumber
+        //     }
+        // });
+        return res.status(200).json(ApenasUm);
     } catch (error) {
         res.status(500).json({
             error: error.message
@@ -193,8 +195,6 @@ async function deletarProduto(req, res){
     }catch(error){
         return res.status(500).json({vixx:"deu ruim aqui no delete, da um jeito ai meu patrão"})
     }
-
-
 
 }
 

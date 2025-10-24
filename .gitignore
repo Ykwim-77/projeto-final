@@ -2,10 +2,11 @@
 # Keep environment variables out of version control
 
 
-package.json
-package-block.json
+./src/package.json
+./src/package-block.json
 
-**/node_modules/
+node_modules
+
 
 
 
