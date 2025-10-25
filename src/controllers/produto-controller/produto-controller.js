@@ -1,22 +1,11 @@
 import { PrismaClient } from "@prisma/client";
-import { PegarApenasUm } from "../../function.js"
+import { PegarApenasUm, Reservar } from "../../function.js"
 
 const prisma = new PrismaClient();
 
 async function pegar1Produto(req, res){
-    const idNumber = parseInt(req.params.id);
-    if (isNaN(idNumber)) {
-        return res.status(400).json({ mensagem: "o id precisa ser um número inteiro" });
-    } 
-
     try {
-        const ApenasUm = await PegarApenasUm('produto', 'id_produto', idNumber)
-
-        // const produto = await prisma.produto.findUnique({
-        //     where: {
-        //         id_produto: idNumber
-        //     }
-        // });
+        const ApenasUm = await PegarApenasUm('produto', 'id_produto', req.params.id)
         return res.status(200).json(ApenasUm);
     } catch (error) {
         res.status(500).json({
