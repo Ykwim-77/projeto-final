@@ -1,13 +1,17 @@
-
 # Keep environment variables out of version control
+.env
 
+# Dependencies
+node_modules/
+npm-debug.log*
 
-# ./src/package.json
-# ./src/package-block.json
+# Build outputs
+dist/
+build/
 
-./frontend/node_modules
-./node_modules
+# IDE
+.vscode/
 
-**/.vscode
-
-**/*.json
+# Logs
+*.log
+logs/
