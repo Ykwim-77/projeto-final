@@ -5,8 +5,9 @@
 # ./src/package.json
 # ./src/package-block.json
 
-# node_modules
+**/node_modules
 
 
+**/.vscode
 
-
+**/*.json
