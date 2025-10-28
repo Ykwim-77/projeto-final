@@ -1,23 +1,19 @@
 import { PrismaClient } from "@prisma/client";
-
-
+import { PegarApenasUm, Deletar } from "../../function.js";
+import { create } from "domain";
 
 
 const prisma = new PrismaClient();
 
 
 async function pegarTodasSalas(req,res) {
-
-    if (!salas) {
-
-        return res.status(404).json({ mensagem: "Nenhuma sala encontrada." });
-    }
-
-
     try {
 
         const salas = await prisma.sala.findMany();
 
+        if (!salas) {
+            return res.status(404).json({ mensagem: "Nenhuma sala encontrada." });
+        }
         return res.status(200).json(salas);
 
     } catch (error) {
@@ -33,22 +29,11 @@ async function pegarTodasSalas(req,res) {
 
 
 async function pegar1Sala(req,res) {
-    const id_number = parseInt(req.params.id);
-    if (isNaN(id_number)) {
-
-        return res.status(400).json({ mensagem: "o id precisa ser um número inteiro" });
-
-    }
     try {
-        const sala = await prisma.sala.findUnique({
-            where: { id: id_number }
-        });
-        if (sala === null) {
-            return res.status(404).json({ mensagem: "Sala não encontrada." });
-        }
+        const sala = await PegarApenasUm('sala', 'id_sala', req.params.id);
         return res.status(200).json(sala);
     } catch (error) {
-        return res.status(500).json({ mensagem: "Erro ao buscar sala." });
+        return res.status(500).json({ mensagem: "Erro ao buscar sala.", dados:error.message });
     }       
 
 }
@@ -70,9 +55,7 @@ async function criarSala(req,res) {
                     nome_sala:nome_sala,
                     descricao:descricao,
                     capacidade:capacidade,
-                    localizacao:localizacao,
-                    reservas: { create: [] }
-
+                    localizacao:localizacao
                 }
 
         });
@@ -113,23 +96,27 @@ async function atualizarSala(req,res) {
 
 
 async function deletarSala(req,res) {
-    const idNumber = parseInt(req.params.id);
-    if (isNaN(idNumber)) {
-        return res.status(400).json({ mensagem: "o id precisa ser um número inteiro" });
-    }
+
     try {
-        await prisma.sala.delete({
-            where: { id: idNumber }
-        });
+        const sala = await Deletar('sala', 'id_sala', req.params.id);
 
-        return res.status(204);
+        return res.status(200).json({sala});
 
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ mensagem: "Erro ao deletar sala." });
+    }catch (error) {
+        // Verifica o tipo de erro para retornar o status code apropriado
+        if (error.message === "ID deve ser um número válido") {
+            return res.status(400).json({ mensagem: error.message });
 
+        } else if (error.message === "Registro não encontrado") {
+            return res.status(404).json({ mensagem: error.message });
+
+        } else {
+            return res.status(500).json({ 
+                mensagem: "Erro interno no servidor", 
+                error: error.message 
+            });
+        }
     }
-
 }
 
 async function reservarSala(req,res) {

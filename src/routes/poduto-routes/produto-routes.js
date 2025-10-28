@@ -4,7 +4,7 @@ import express, { Router } from "express";
 const roteador_produto = express.Router();
 
 
-roteador_produto.get("/", (req, res) => {
+roteador_produto.get("/",  (req, res) => {
     controller.pegarTodosProdutos(req, res);
 });
 
