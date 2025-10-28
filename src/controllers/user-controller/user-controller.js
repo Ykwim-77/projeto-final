@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client"
+import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient()
 
@@ -13,6 +14,23 @@ const prisma = new PrismaClient()
 //delete
 //put
     //atualizar um usuario
+
+
+async function Login(req, res){
+    const {email, senha_hash} = req.body
+
+    try{
+        const usuario = await prisma.usuario.findUnique({
+            where: {
+                email: email,
+                senha_hash: senha_hash
+            }
+        });
+    }catch(error){
+        
+    }
+
+}
 
 
 
