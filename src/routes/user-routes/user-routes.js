@@ -35,7 +35,7 @@ export default roteador_usuario
 
 
 //tipos de usuarios
-//admin
+//admin 
 //user
 
 
