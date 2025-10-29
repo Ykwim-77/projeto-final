@@ -26,6 +26,17 @@ async function Login(req, res){
                 senha_hash: senha_hash
             }
         });
+
+        if (usuario) {
+            const token = jwt.sign({ id: usuario.id_usuario }, 'segredo');
+            return res.status(200).json({ token });
+        }
+        res.cookie("token", token, {
+        httpOnly: true, // impede acesso via JS (protege contra XSS)
+        secure: true,   // só envia em HTTPS
+        sameSite: "strict", // previne CSRF
+        maxAge: 3600000    // 1 hora
+    });
     }catch(error){
         
     }
@@ -97,4 +108,4 @@ async function desativarUsuario(req, res){
 }
 
 
-export default {pegar1Usuario, pegarTodosUsuarios, criarUsuario, atualizarUsuario, deletarUsuario} 
+export default {pegar1Usuario, pegarTodosUsuarios, criarUsuario, atualizarUsuario, deletarUsuario, Login} 

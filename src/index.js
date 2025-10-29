@@ -13,5 +13,8 @@ app.use('/produto',roteador_produto);
 app.use('/sala', roteador_sala);
 
 app.listen(3000);
-
+app.use(cors({
+  origin: "http://localhost:4200", // o domínio do seu front Angular
+  credentials: true // permite envio de cookies
+}));
 

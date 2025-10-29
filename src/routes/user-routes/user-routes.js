@@ -28,8 +28,8 @@ roteador_usuario.put("/:id", (req, res) => {
 roteador_usuario.delete("/:id", (req, res) => {
     controller.deletarUsuario(req, res);
 });
-roteador_usuario.delete("/login", (req, res) => {
-    
+roteador_usuario.post("/login", (req, res) => {
+    controller.Login(req, res);
 })
 
 //midlleware

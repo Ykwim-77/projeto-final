@@ -1,12 +1,39 @@
-
 # Keep environment variables out of version control
+.env
+
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Build outputs
+dist/
+build/
+
+# IDE
+.vscode/
+
+# Logs
+*.log
+logs/
+node_modules
+
+# Angular cache
+.angular/cache/
+.angular/temp/
 
 
-./src/package.json
-./src/package-block.json
+# Angular
+.angular/cache/
+.angular/temp/
+dist/
+node_modules/
 
-**/node_modules
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
 
-**/node_modules
-
-
+# OS
+.DS_Store
+Thumbs.db
