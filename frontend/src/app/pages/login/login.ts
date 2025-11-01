@@ -1,14 +1,14 @@
-// src/app/pages/login/login.component.ts
+// src/app/pages/login/login.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { AuthService } from '../service/AuthService';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../service/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })
@@ -23,52 +23,40 @@ export class LoginComponent {
     private authService: AuthService
   ) {}
 
-  onSubmit(event?: Event): void {
+  fazerLogin(event?: Event): void { // ✅ Removeu o parâmetro 'credenciais'
     if (event) {
       event.preventDefault();
-      const form = event.target as HTMLFormElement;
-      if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-      }
+    }
+
+    // Validação básica
+    if (!this.email || !this.senha) {
+      this.errorMessage = 'Por favor, preencha todos os campos';
+      return;
     }
 
     this.isLoading = true;
     this.errorMessage = '';
 
-    console.log('🚀 Enviando dados de login para o servidor...');
-
-    this.authService.login({ email: this.email, senha: this.senha }).subscribe({
+    this.authService.login({
+      email: this.email,
+      senha: this.senha // ✅ Agora usa a propriedade da classe
+    }).subscribe({
       next: (res) => {
         console.log('✅ Login bem-sucedido:', res);
         this.isLoading = false;
-
-        // Redireciona para home (ou outra rota autenticada)
-        this.router.navigate(['/home'])
-          .then(success => {
-            if (success) {
-              console.log('🎉 Navegação para HOME bem-sucedida!');
-            } else {
-              console.error('❌ Falha ao navegar para HOME.');
-              this.listarRotasConfiguradas();
-            }
-          })
-          .catch(error => {
-            console.error('💥 Erro na navegação:', error);
-            this.listarRotasConfiguradas();
-          });
+        
+        // Redireciona para home
+        this.router.navigate(['/home']).then(success => {
+          if (!success) {
+            console.error('❌ Rota home não encontrada');
+          }
+        });
       },
       error: (err) => {
         console.error('❌ Erro no login:', err);
         this.isLoading = false;
-        this.errorMessage = err.error?.message || 'Falha no login. Tente novamente.';
+        this.errorMessage = err.error?.message || 'Erro ao fazer login. Tente novamente.';
       }
     });
-  }
-fazerLogin(event?: Event): void {
-  this.onSubmit(event);
-}
-  private listarRotasConfiguradas(): void {
-    console.log('🔍 Rotas configuradas no Router:', this.router.config);
   }
 }

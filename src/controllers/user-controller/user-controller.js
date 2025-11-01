@@ -1,5 +1,17 @@
 import { PrismaClient } from "@prisma/client"
 import jwt from "jsonwebtoken";
+import cors from "cors";
+import express from "express";
+import bcrypt from "bcrypt";
+
+const app = express();
+
+app.use(cors({
+  origin: 'http://localhost:4200', // URL exata do seu Angular
+  credentials: true, // PERMITE credenciais (cookies, headers de autenticação)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
+}));
 
 const prisma = new PrismaClient()
 
@@ -16,34 +28,69 @@ const prisma = new PrismaClient()
     //atualizar um usuario
 
 
-async function Login(req, res){
-    const {email, senha_hash} = req.body
+async function Login(req, res) {
+    console.log(req.body);
+    const { email, senha } = req.body; // ✅ Frontend envia "senha"
+    console.log(email, senha);
+    // Validação básica
+    if (!email || !senha) {
+        return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+    }
 
-    try{
+    try {
         const usuario = await prisma.usuario.findUnique({
             where: {
                 email: email,
-                senha_hash: senha_hash
+                // Se você quer comparar senha em texto com hash, use bcrypt
+                // O código atual compara texto com hash, o que não funciona
+            }
+        });
+        console.log('usuario', usuario);
+        if (!usuario) {
+            return res.status(401).json({ error: 'Credenciais inválidas' });
+        }
+
+        // ✅ ADICIONE: Verificação de senha com bcrypt
+        // const senhaValida = await bcrypt.compare(senha, usuario.senha_hash);
+        // if (!senhaValida) {
+        //     return res.status(401).json({ error: 'Credenciais inválidas' });
+        // }
+
+        // console.log(senhaValida);
+
+        // Gera o token
+        const token = jwt.sign(
+            { 
+                senha: usuario.senha_hash,
+                email: usuario.email
+            }, 
+            process.env.JWT_SECRET || 'segredo',
+            { expiresIn: '1h' }
+        );
+
+        console.log(token);
+
+        // Define o cookie
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: "strict",
+            maxAge: 3600000
+        });
+
+        return res.status(200).json({ 
+            message: 'Login realizado com sucesso',
+            usuario: {
+                id: usuario.id_usuario,
+                email: usuario.email
             }
         });
 
-        if (usuario) {
-            const token = jwt.sign({ id: usuario.id_usuario }, 'segredo');
-            return res.status(200).json({ token });
-        }
-        res.cookie("token", token, {
-        httpOnly: true, // impede acesso via JS (protege contra XSS)
-        secure: true,   // só envia em HTTPS
-        sameSite: "strict", // previne CSRF
-        maxAge: 3600000    // 1 hora
-    });
-    }catch(error){
-        
+    } catch (error) {
+        console.error('Erro no login:', error);
+        return res.status(500).json({ error: 'Erro interno do servidor' });
     }
-
 }
-
-
 
 async function pegar1Usuario(req, res){
     const idNumber = parseInt(req.params.id)

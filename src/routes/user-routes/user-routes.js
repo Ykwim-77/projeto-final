@@ -1,6 +1,6 @@
 import express from 'express';
 import  controller  from '../../controllers/user-controller/user-controller.js';
-
+import authMiddleware from '../../midllewares/authController.js';
 
 const roteador_usuario = express.Router();
  
@@ -28,7 +28,7 @@ roteador_usuario.put("/:id", (req, res) => {
 roteador_usuario.delete("/:id", (req, res) => {
     controller.deletarUsuario(req, res);
 });
-roteador_usuario.post("/login", (req, res) => {
+roteador_usuario.post("/login", authMiddleware, (req, res) => {
     controller.Login(req, res);
 })
 
