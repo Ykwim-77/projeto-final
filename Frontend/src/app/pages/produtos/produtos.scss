@@ -221,20 +221,13 @@ main {
 .search-bar {
     position: relative;
     width: 85%; /* ou a largura que desejar */
+    margin-top: 4%;
 }
 
 .search-bar input {
-    width: 85%;
+    width: 100%;
     padding: 10px 40px 10px 10px; /* top, right, bottom, left - mais espaço à direita para o ícone */
     border: 1px solid #ccc;
     font-size: 16px;
 }
 
-.search-bar .fa-plus {
-
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #0B1D5A; /* cor do ícone */
-    cursor: pointer;
-}
