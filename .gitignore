@@ -16,3 +16,24 @@ build/
 *.log
 logs/
 node_modules
+
+# Angular cache
+.angular/cache/
+.angular/temp/
+
+
+# Angular
+.angular/cache/
+.angular/temp/
+dist/
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
