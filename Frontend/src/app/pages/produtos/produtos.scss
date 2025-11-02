@@ -93,7 +93,7 @@ main {
 
 .menu-item.active {
     background-color: rgba(52, 152, 219, 0.1);
-    color: rgb(0, 0, 0);
+    color: #9d5f08;
     border-left-color: #3498db;
 }
 
@@ -171,4 +171,70 @@ main {
 
 .logout-btn i {
     margin-right: 8px;
+}
+
+
+.titulo-Topo {
+    margin-top: 0%;
+    color: #0B1D5A;
+}
+
+.titulo-Topo h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.subtitulo {
+    margin-top: 0.5%;
+    color: rgba(44, 40, 40, 0.801);
+}
+
+.adicionar-produto {
+    background-color: #0B1D5A;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    color: white;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+    width: 15%;
+    height: 6%;
+    margin-top: -5%;
+    margin-left: 85%;
+}
+
+.adicionar-produto:hover {
+    background-color: #0A2D8A;
+    transform: translateY(-1px);
+}
+
+.adicionar-produto-text {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+
+.search-bar {
+    position: relative;
+    width: 85%; /* ou a largura que desejar */
+}
+
+.search-bar input {
+    width: 85%;
+    padding: 10px 40px 10px 10px; /* top, right, bottom, left - mais espaço à direita para o ícone */
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+.search-bar .fa-plus {
+
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #0B1D5A; /* cor do ícone */
+    cursor: pointer;
 }

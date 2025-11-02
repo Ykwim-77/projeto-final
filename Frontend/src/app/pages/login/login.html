@@ -43,10 +43,18 @@
                     minlength="6"
                     />
                 </div>
+                <div class="forgot-password">
+                    <a href="#">Esqueceu a senha?</a>
+                </div>
+
+                <div *ngIf="errorMessage" class="error-message">
+                    {{ errorMessage }}
+                </div>
 
                 <button type="submit" class="login" [disabled]="isLoading">
                     {{ isLoading ? 'Entrando...' : 'Entrar' }}
                 </button>
+
         </form>
     </div>
 </div>
