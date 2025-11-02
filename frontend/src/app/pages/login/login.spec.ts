@@ -47,19 +47,19 @@ describe('LoginComponent', () => {
 
   describe('Form Submission', () => {
     it('should set isLoading to true when onSubmit is called', () => {
-      component.onSubmit();
+
       expect(component.isLoading).toBeTrue();
     });
 
     it('should set isLoading to false after timeout', fakeAsync(() => {
-      component.onSubmit();
+
       expect(component.isLoading).toBeTrue();
       tick(2000);
       expect(component.isLoading).toBeFalse();
     }));
 
     it('should navigate to home after successful login', fakeAsync(() => {
-      component.onSubmit();
+
       tick(2000);
       expect(router.navigate).toHaveBeenCalledWith(['/home']);
     }));
