@@ -74,12 +74,12 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  margin-bottom: 40px !important;
 }
 
 .login-logo {
   width: 150px !important;
   height: auto !important;
+  margin-left: -20px !important;
 }
 
 .login-title h2 {
@@ -261,6 +261,56 @@ i {
     border-radius: 2px;
     animation: fillRestart 2s infinite ease-in-out;
   }
+}
+
+.forgot-password {
+  width: 300px !important;
+  text-align: left !important;
+  margin-top: 10px !important;
+}
+
+.forgot-password a {
+  font-size: 14px !important;
+  color: #002793 !important;
+  text-decoration: none !important;
+}
+.forgot-password a:hover {
+  text-decoration: underline !important;
+}
+
+.links-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  width: 300px !important;
+  margin: 20px auto !important;
+  align-items: center !important;
+}
+
+.links-row span, .links-row a {
+  font-size: 15px !important;
+  cursor: pointer !important;
+}
+
+.links-row a {
+  color: #002793 !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+}
+
+.links-row a:hover {
+  text-decoration: underline !important;
+}
+
+.error-message {
+  width: 300px !important;
+  margin-top: 10px !important;
+  padding: 10px !important;
+  background-color: #ffebee !important;
+  color: #c62828 !important;
+  border: 1px solid #ef5350 !important;
+  border-radius: 5px !important;
+  font-size: 14px !important;
+  text-align: center !important;
 }
 
 @keyframes fillRestart {
