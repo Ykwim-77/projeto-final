@@ -1,21 +1,13 @@
 import { PrismaClient } from "@prisma/client";
+import { PegarApenasUm, Deletar } from "../../function.js"
 
 
 const prisma = new PrismaClient();
 
 async function pegar1Produto(req, res){
-    const idNumber = parseInt(req.params.id);
-    if (isNaN(idNumber)) {
-        return res.status(400).json({ mensagem: "o id precisa ser um número inteiro" });
-    } 
-
     try {
-        const produto = await prisma.produto.findUnique({
-            where: {
-                id_produto: idNumber
-            }
-        });
-        return res.status(200).json(produto);
+        const ApenasUm = await PegarApenasUm('produto', 'id_produto', req.params.id)
+        return res.status(200).json(ApenasUm);
     } catch (error) {
         res.status(500).json({
             error: error.message
@@ -171,30 +163,25 @@ async function atualizarProduto(req, res){
     
 }
 async function deletarProduto(req, res){
-    const idNumber = parseInt(req.params.id);
-    if(isNaN(idNumber)){ // verifica se o id é do tipo number
-        return res.status(400).json({mensagem:"passa um ID Number por favor"})
-    }
     try{
+        const produto = await Deletar('produto', 'id_produto', req.params.id);
+        console.log(produto);
+        return res.status(200).json(produto);
+    }catch (error) {
+        // Verifica o tipo de erro para retornar o status code apropriado
+        if (error.message === "ID deve ser um número válido") {
+            return res.status(400).json({ mensagem: error.message });
 
-        const produto = await prisma.produto.findUnique({
-            where:{
-                id_produto: idNumber
-            }
-        })
-        res.status(200).json({delete: `delete ta funcionando e o produto ${produto.nome} foi deletado`})
+        } else if (error.message === "Registro não encontrado") {
+            return res.status(404).json({ mensagem: error.message });
 
-        await prisma.produto.delete({
-            where:{
-                id_produto: idNumber
-            }
-        })
-
-    }catch(error){
-        return res.status(500).json({vixx:"deu ruim aqui no delete, da um jeito ai meu patrão"})
+        } else {
+            return res.status(500).json({ 
+                mensagem: "Erro interno no servidor", 
+                error: error.message 
+            });
+        }
     }
-
-
 
 }
 

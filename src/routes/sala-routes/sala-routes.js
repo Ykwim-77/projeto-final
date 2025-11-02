@@ -5,31 +5,31 @@ const roteador_sala = express.Router();
 
 
 roteador_sala.get("/", (req, res) => {
-    controller.pegarTodasSalas(res, res);
+    controller.pegarTodasSalas(req, res);
 });
 
 roteador_sala.get("/:id", (req, res) => {
-    controller.pegar1Sala(res, res);
+    controller.pegar1Sala(req, res);
 });
 
 roteador_sala.post("/", (req, res) => {
-    controller.criarSala(res, res);
+    controller.criarSala(req, res);
 });
 
 roteador_sala.post("/reservar/:id", (req, res) => {
-    controller.reservarSala(res, res);
+    controller.reservarSala(req, res);
 });
 
 roteador_sala.post("/liberar/:id", (req, res) => {
-    controller.liberarSala(res, res);
+    controller.liberarSala(req, res);
 });
 
 roteador_sala.put("/:id", (req, res) => {
-    controller.atualizarSala(res, res);
+    controller.atualizarSala(req, res);
 });
 
 roteador_sala.delete("/:id", (req, res) => {
-    controller.deletarSala(res, res);
+    controller.deletarSala(req, res);
 });
 
 export default roteador_sala;
