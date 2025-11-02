@@ -13,6 +13,12 @@ import { AuthService } from '../service/auth.service';
   styleUrls: ['./login.scss']
 })
 export class LoginComponent {
+  onSubmit(p0: any) {
+    throw new Error('Method not implemented.');
+  }
+  password(password: any) {
+    throw new Error('Method not implemented.');
+  }
   email: string = '';
   senha: string = '';
   isLoading: boolean = false;
