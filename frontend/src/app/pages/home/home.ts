@@ -1,10 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common'; 
-import { RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { ProdutoService, Produto } from '../../services/produto.service';
 import { AuthService } from '../../services/auth.service';
 
-// 1. Primeiro, vamos criar as INTERFACES para tipagem
 interface MenuItem {
   name: string;
   active?: boolean;
@@ -30,12 +28,13 @@ interface LowStockProduct {
 @Component({
   selector: 'app-home',
   templateUrl: './home.html',
-  styleUrls: ['./home.scss'],
-   imports: [CommonModule, RouterLink, RouterLinkActive]
+  styleUrls: ['./home.scss']
+  // REMOVIDO: imports: [CommonModule, RouterLink, RouterLinkActive]
 })
 export class HomeComponent implements OnInit {
-  
-  // 2. Agora vamos declarar as PROPRIEDADES que usamos no HTML
+logout() {
+throw new Error('Method not implemented.');
+}
   
   // Dados do Menu
   menuItems: MenuItem[] = [];
@@ -47,7 +46,7 @@ export class HomeComponent implements OnInit {
   // Cards de Métricas
   metricCards: MetricCard[] = [];
   
-  // Dados individuais (usados diretamente no HTML)
+  // Dados individuais
   totalProducts: number = 0;
   stockValue: string = '';
   
@@ -63,25 +62,21 @@ export class HomeComponent implements OnInit {
   usuarioEmail: string = '';
   usuarioIniciais: string = '';
 
-  // CONSTRUCTOR: Aqui injetamos os serviços que vamos usar
   constructor(
     private produtoService: ProdutoService,
     private authService: AuthService,
     private router: Router
   ) {}
 
-  // 3. No ngOnInit vamos INICIALIZAR todos os dados
   ngOnInit() {
-    this.carregarDadosUsuario(); // ⬅️ Carrega dados do usuário logado
+    this.carregarDadosUsuario();
     this.initializeMenu();
-    this.carregarProdutos(); // ⬅️ Busca produtos da API quando o componente inicia
+    this.carregarProdutos();
     this.initializeAlerts();
     this.initializeMetrics();
     this.initializeCategories();
     this.initializeLowStockProducts();
   }
-
-  // 4. Vamos criar MÉTODOS para organizar a inicialização
 
   private initializeMenu(): void {
     this.menuItems = [
@@ -96,41 +91,24 @@ export class HomeComponent implements OnInit {
   }
 
   private initializeAlerts(): void {
-    // Inicializa com valores padrão
-    // Os valores reais serão calculados em atualizarProdutosEmBaixa()
     this.lowStockCount = 0;
     this.lowStockAlert = '';
   }
 
-  /**
-   * Calcula produtos em baixa baseado nos dados reais
-   * Nota: Por enquanto, como não temos estoque da API, vamos considerar
-   * produtos sem preço ou sem categoria como "em atenção"
-   * Quando tiver API de estoque, ajustar esta lógica
-   */
   private atualizarProdutosEmBaixa(): void {
-    // Por enquanto, vamos considerar produtos sem preço ou quantidade zero
-    // TODO: Quando tiver API de estoque, comparar quantidade_atual com quantidade_minima
-    
     this.lowStockProducts = [];
     
-    // Filtra produtos que podem estar em baixa
-    // (exemplo: produtos sem preço, sem descrição, ou você pode adicionar outra lógica)
     const produtosEmAtencao = this.produtos.filter(produto => {
-      // Lógica temporária: produtos sem preço podem estar em falta
       return !produto.preco_unitario || produto.preco_unitario === 0;
     });
 
-    // Converte para o formato LowStockProduct
     this.lowStockProducts = produtosEmAtencao.map(produto => ({
       name: produto.nome,
       category: produto.categoria || 'Sem categoria'
     }));
 
-    // Atualiza contagem
     this.lowStockCount = this.lowStockProducts.length;
     
-    // Atualiza mensagem de alerta
     if (this.lowStockCount > 0) {
       this.lowStockAlert = `Atenção! Você tem ${this.lowStockCount} produto(s) com estoque baixo.`;
     } else {
@@ -139,12 +117,9 @@ export class HomeComponent implements OnInit {
   }
 
   private initializeMetrics(): void {
-    // Este método agora só será usado para inicializar valores padrão
-    // Os valores reais serão calculados em atualizarMetricas()
     this.totalProducts = 0;
     this.stockValue = 'R$ 0,00';
     
-    // Array de cards com valores iniciais
     this.metricCards = [
       {
         title: 'Total de Produtos',
@@ -173,42 +148,32 @@ export class HomeComponent implements OnInit {
     ];
   }
 
-  /**
-   * Calcula as métricas com base nos produtos reais da API
-   * Este método é chamado depois que os produtos são carregados
-   */
   private atualizarMetricas(): void {
-    // 1. Total de produtos = quantidade de itens no array
     this.totalProducts = this.produtos.length;
     
-    // 2. Calcular valor total do estoque
-    // Percorre todos os produtos e soma os preços
     let valorTotal = 0;
     this.produtos.forEach(produto => {
-      // Se o produto tem preço, adiciona ao total
       if (produto.preco_unitario) {
         valorTotal += produto.preco_unitario;
       }
     });
     
-    // Formata como moeda brasileira (R$ 1.234,56)
     this.stockValue = new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(valorTotal);
     
-    // 3. Atualiza os cards de métricas com os valores calculados
     this.metricCards = [
       {
         title: 'Total de Produtos',
         value: this.totalProducts,
-        variation: '+12% este mês', // Por enquanto fixo, depois calculamos
+        variation: '+12% este mês',
         trend: this.totalProducts > 0 ? 'positive' : 'neutral'
       },
       {
         title: 'Valor do Estoque',
         value: this.stockValue,
-        variation: '+8.2%', // Por enquanto fixo
+        variation: '+8.2%',
         trend: valorTotal > 0 ? 'positive' : 'neutral'
       },
       {
@@ -219,7 +184,7 @@ export class HomeComponent implements OnInit {
       },
       {
         title: 'Saídas do Mês',
-        value: 20, // Por enquanto fixo
+        value: 20,
         variation: '+5%',
         trend: 'positive'
       }
@@ -236,35 +201,26 @@ export class HomeComponent implements OnInit {
   }
 
   private initializeLowStockProducts(): void {
-    // Inicializa vazio - será preenchido em atualizarProdutosEmBaixa()
     this.lowStockProducts = [];
   }
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // MÉTODOS PARA GERENCIAR USUÁRIO
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  /**
-   * Carrega os dados do usuário logado
-   */
   private carregarDadosUsuario(): void {
     const usuario = this.authService.getUsuarioLogado();
     
     if (usuario) {
       this.usuarioNome = usuario.nome || 'Usuário';
       this.usuarioEmail = usuario.email || '';
-      
-      // Gera iniciais do nome (ex: "Rafael Luiz" → "RL")
       this.usuarioIniciais = this.gerarIniciais(this.usuarioNome);
     } else {
+<<<<<<< HEAD:frontend/src/app/pages/home/home.ts
       // Se não tem usuário logado, volta para login
       // this.router.navigate(['/login']);
+=======
+      this.router.navigate(['/login']);
+>>>>>>> origin/Rafa:Frontend/src/app/pages/home/home.ts
     }
   }
 
-  /**
-   * Gera as iniciais do nome para o avatar
-   */
   private gerarIniciais(nome: string): string {
     const palavras = nome.trim().split(' ');
     if (palavras.length >= 2) {
@@ -273,42 +229,21 @@ export class HomeComponent implements OnInit {
     return nome.substring(0, 2).toUpperCase();
   }
 
-  /**
-   * Realiza logout do usuário
-   */
-  logout(): void {
+  fazerLogout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // MÉTODO PARA BUSCAR PRODUTOS DA API
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  
-  /**
-   * Este método busca os produtos do backend e salva na propriedade 'produtos'
-   */
   private carregarProdutos(): void {
-    // Chama o serviço para buscar produtos da API
     this.produtoService.listarProdutos().subscribe({
-      // Quando a requisição for bem-sucedida (sucesso)
       next: (produtos) => {
-        // Salva os produtos na propriedade da classe
         this.produtos = produtos;
-        
-        // Log no console para você ver se funcionou
         console.log('✅ Produtos carregados:', produtos);
-        console.log('📊 Total de produtos:', produtos.length);
-        
-        // Depois de carregar os produtos, vamos atualizar as métricas
         this.atualizarMetricas();
-        // E também atualizar os produtos em baixa
         this.atualizarProdutosEmBaixa();
       },
-      // Quando a requisição der erro
       error: (error) => {
         console.error('❌ Erro ao carregar produtos:', error);
-        // Aqui você pode mostrar uma mensagem de erro para o usuário
       }
     });
   }
