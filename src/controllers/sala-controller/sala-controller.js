@@ -1,6 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import { PegarApenasUm, Deletar } from "../../function.js";
-import { create } from "domain";
 
 
 const prisma = new PrismaClient();
@@ -98,7 +97,7 @@ async function atualizarSala(req,res) {
 async function deletarSala(req,res) {
 
     try {
-        const sala = await Deletar('sala', 'id_sala', req.params.id);
+        const sala = await Deletar('sala', 'id_sala', req.params.id_sala);
 
         return res.status(200).json({sala});
 
@@ -107,10 +106,14 @@ async function deletarSala(req,res) {
         if (error.message === "ID deve ser um número válido") {
             return res.status(400).json({ mensagem: error.message });
 
-        } else if (error.message === "Registro não encontrado") {
+        }
+         else if (error.message === "Registro não encontrado") {
             return res.status(404).json({ mensagem: error.message });
 
-        } else {
+            
+
+        }
+         else {
             return res.status(500).json({ 
                 mensagem: "Erro interno no servidor", 
                 error: error.message 
@@ -127,7 +130,7 @@ async function reservarSala(req,res) {
     }
    const { data_reserva, hora_inicio, hora_fim, nome_reservante } = req.body;
 
-   if (isNaN(id)) {
+   if (isNaN(id = idNumber)) {
 
        return res.status(400).json({ mensagem: "o id precisa ser um número inteiro" });
    }
@@ -163,22 +166,23 @@ async function reservarSala(req,res) {
 
 async function liberarSala(req,res) {
 
-    const id = parseInt(req.params.id);
+    const id_sala = parseInt(req.params.id);
 
-    if (isNaN(id)) {
+    if (isNaN(id_sala)) {
 
-        return res.status(400).json({ mensagem: "o id precisa ser um número inteiro" });
+        return res.status(400).json({ mensagem: "id precisa ser um numero inteiro" });
+
     }
 
     try {
 
-        await prisma.reserva.deleteMany({
+        await prisma.reserva.delete({
 
-            where: { salaId: id }
+            where: { salaId: id_sala }       
 
         });
 
-        res.sendStatus(204);
+        res.status(200).json({ mensagem: "Sala liberada com sucesso." });
 
     } catch (error) {
 
@@ -186,6 +190,8 @@ async function liberarSala(req,res) {
         
         res.status(500).json({ mensagem: "Erro ao liberar sala." });
     }
+
+
 }
 
 export default { pegarTodasSalas, pegarTodasSalas, pegar1Sala, criarSala, atualizarSala, deletarSala, reservarSala, liberarSala};
