@@ -55,7 +55,7 @@ describe('LoginComponent', () => {
       component.onSubmit();
       expect(component.isLoading).toBeTrue();
       tick(2000);
-      expect(component.isLoading).toBeFalse();
+      expect(component.isLoading).toBeFalse();  
     }));
 
     it('should navigate to home after successful login', fakeAsync(() => {

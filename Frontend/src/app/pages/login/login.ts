@@ -1,14 +1,13 @@
-// src/app/pages/login/login.ts
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { AuthService } from '../../guards/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  standalone: true, // ✅ ADICIONE ESTA LINHA
+  imports: [CommonModule, FormsModule], // ✅ ADICIONE ESTA LINHA
   templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })
@@ -23,14 +22,13 @@ export class LoginComponent {
     private authService: AuthService
   ) {}
 
-  onSubmit(event?: Event): void {
-    if (event) {
-      event.preventDefault();
-      const form = event.target as HTMLFormElement;
-      if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-      }
+  onSubmit(event: Event): void {
+    event.preventDefault();
+    
+    const form = event.target as HTMLFormElement;
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
     }
 
     if (!this.email || !this.password) {
@@ -45,7 +43,6 @@ export class LoginComponent {
       next: (response) => {
         console.log('✅ Login realizado com sucesso!', response);
         this.isLoading = false;
-        // Navega para home após login bem-sucedido
         this.router.navigate(['/home']);
       },
       error: (error) => {

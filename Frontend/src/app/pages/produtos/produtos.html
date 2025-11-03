@@ -1,8 +1,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">s
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
+<body>
     <nav class="sidebar">
         <div class="logo-container">
             <div class="logo">
@@ -14,11 +15,11 @@
         </div>
         <hr>
         <div class="menu-container">
-            <a href="#" class="menu-item">
+            <a routerLink="/home" class="menu-item">
                 <i class="fas fa-chart-line"></i>
                 <span class="menu-text">Dashboard</span>
             </a>
-            <a href="#" class="menu-item active">
+            <a routerLink="/produtos" class="menu-item active">
                 <i class="fas fa-box-open"></i>
                 <span class="menu-text">Produtos</span>
             </a>
@@ -50,10 +51,11 @@
         <hr>    
         <div class="user-section">
             <div class="user-info">
-                <div class="user-avatar">RL</div>
+
+                <div class="user-avatar">{{ usuarioIniciais || 'U' }}</div>
                 <div class="user-details">
-                    <div class="user-name">Rafael Luiz</div>
-                    <div class="user-email">rafaelpilonetto59@gmail.com</div>
+                    <div class="user-name">{{ usuarioNome || 'Usuário' }}</div>
+                    <div class="user-email">{{ usuarioEmail || 'email@exemplo.com' }}</div>
                 </div>
             </div>
             <button class="logout-btn">
@@ -70,21 +72,231 @@
                 <div class="subtitulo">Gerencie o catálogo do seu estoque</div>
             </div>
             <div class="adicionar-produto-container">
-                <div class="adicionar-produto">
+                <div class="adicionar-produto" (click)="abrirCardCadastro()">
                     <i class="fas fa-plus"></i>
                     <div class="adicionar-produto-text">Adicionar Produto</div>
                 </div>
             </div>
         </header>
 
-        <section class="conteudo-principal">
+        <section>
             <div class="search-bar">
-                <input  type text placeholder="Pesquisar produto">
-                <i class="fas fa plus"></i>
-            </div>   
-            <div class="opcoes-filtro">
-                <button class="opcao-filtro">Grade</button>
-                <button class="opcao-filtro">Tabela</button>
+                <input type="text" placeholder="Pesquisar por nome, sku ou categoria...">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="botao-opcoes-container">
+                <div class="botao-opcoes" 
+                     [class.active]="visualizacao === 'grade'" 
+                     (click)="mudarVisualizacao('grade')">
+                    <div class="adicionar-produto-text">Grade</div>
+                </div>
+            </div>
+            <div class="botao-opcoes-container">
+                <div class="botao-opcoes-tabela" 
+                     [class.active]="visualizacao === 'tabela'" 
+                     (click)="mudarVisualizacao('tabela')">
+                    <div class="adicionar-produto-text">Tabela</div>
+                </div>
+            </div>
+        </section> 
+
+        <!-- Lista de Produtos em Grade -->
+        <section *ngIf="visualizacao === 'grade'" class="produtos-grade">
+            <div *ngFor="let produto of produtos" class="produto-card">
+                <div class="produto-header">
+                    <h3>{{ produto.nome }}</h3>
+                    <span class="produto-categoria">{{ produto.categoria }}</span>
+                </div>
+                
+                <div class="produto-info">
+                    <div class="info-item">
+                        <span class="label">SKU:</span>
+                        <span class="value">{{ produto.sku }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Preço:</span>
+                        <span class="value preco">R$ {{ produto.preco.toFixed(2) }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Estoque:</span>
+                        <span class="value quantidade" [class.estoque-baixo]="produto.quantidade < 5">
+                            {{ produto.quantidade }} unidades
+                        </span>
+                    </div>
+                </div>
+
+                <div class="produto-actions">
+                    <button class="btn-editar" (click)="editarProduto(produto)">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                    <button class="btn-excluir" (click)="excluirProduto(produto.id)">
+                        <i class="fas fa-trash"></i> Excluir
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lista de Produtos em Tabela -->
+        <section *ngIf="visualizacao === 'tabela'" class="tabela-produtos">
+            <div class="tabela-container">
+                <table class="tabela">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>SKU</th>
+                            <th>Categoria</th>
+                            <th>Preço</th>
+                            <th>Estoque</th>
+                            <th>Valor Total</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let produto of produtos" 
+                            [class.estoque-baixo]="produto.quantidade < 5">
+                            <td class="nome-produto">
+                                <strong>{{ produto.nome }}</strong>
+                                <small *ngIf="produto.descricao">{{ produto.descricao }}</small>
+                            </td>
+                            <td class="sku">{{ produto.sku }}</td>
+                            <td class="categoria">
+                                <span class="categoria-badge">{{ produto.categoria }}</span>
+                            </td>
+                            <td class="preco">R$ {{ produto.preco.toFixed(2) }}</td>
+                            <td class="estoque">
+                                <span [class.estoque-critico]="produto.quantidade < 5">
+                                    {{ produto.quantidade }} unidades
+                                </span>
+                                <div *ngIf="produto.quantidade < 5" class="estoque-alerta">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Estoque baixo
+                                </div>
+                            </td>
+                            <td class="valor-total">
+                                R$ {{ (produto.preco * produto.quantidade).toFixed(2) }}
+                            </td>
+                            <td class="acoes">
+                                <button class="btn-acao btn-editar-tabela" 
+                                        (click)="editarProduto(produto)"
+                                        title="Editar produto">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-acao btn-excluir-tabela" 
+                                        (click)="excluirProduto(produto.id)"
+                                        title="Excluir produto">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <!-- Mensagem quando não há produtos -->
+                <div *ngIf="produtos.length === 0" class="sem-produtos">
+                    <i class="fas fa-box-open"></i>
+                    <p>Nenhum produto cadastrado</p>
+                    <button class="btn-adicionar-tabela" (click)="abrirCardCadastro()">
+                        <i class="fas fa-plus"></i> Adicionar Primeiro Produto
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card de Cadastro -->
+        <section>
+            <div *ngIf="showCardCadastro" class="card-cadastro-overlay">
+                <div class="card-cadastro">
+                    <div class="card-header">
+                        <h3>{{ produtoEditando ? 'Editar Produto' : 'Cadastrar Novo Produto' }}</h3>
+                        <button class="btn-fechar" (click)="fecharCardCadastro()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <form class="form-cadastro" (ngSubmit)="salvarProduto()">
+                        <div class="campo">
+                            <label for="nomeProduto">Nome do Produto :</label>
+                            <input 
+                                id="nomeProduto" 
+                                type="text" 
+                                placeholder="Digite o nome" 
+                                [(ngModel)]="novoProduto.nome" 
+                                name="nome" 
+                                required>
+                        </div>
+                        
+                        <div class="campo">
+                            <label for="skuProduto">SKU :</label>
+                            <input 
+                                id="skuProduto" 
+                                type="text" 
+                                placeholder="Código do produto" 
+                                [(ngModel)]="novoProduto.sku" 
+                                name="sku" 
+                                required>
+                        </div>
+
+                        <div class="campo">
+                            <label for="categoriaProduto">Categoria :</label>
+                            <select 
+                                id="categoriaProduto" 
+                                [(ngModel)]="novoProduto.categoria" 
+                                name="categoria" 
+                                required>
+                                <option value="">Selecione uma categoria</option>
+                                <option value="Eletrônicos">Eletrônicos</option>
+                                <option value="Informática">Informática</option>
+                                <option value="Periféricos">Periféricos</option>
+                                <option value="Acessórios">Acessórios</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                        
+                        <div class="campo-duplo">
+                            <div class="campo">
+                                <label>Preço :</label>
+                                <input 
+                                    type="number" 
+                                    placeholder="R$ 0,00" 
+                                    [(ngModel)]="novoProduto.preco" 
+                                    name="preco"
+                                    step="0.01"
+                                    min="0"
+                                    required>
+                            </div>
+                            <div class="campo">
+                                <label>Quantidade :</label>
+                                <input 
+                                    type="number" 
+                                    placeholder="0" 
+                                    name="quantidade" 
+                                    [(ngModel)]="novoProduto.quantidade" 
+                                    min="0"
+                                    required>
+                            </div>
+                        </div>
+
+                        <div class="campo">
+                            <label for="descricaoProduto">Descrição :</label>
+                            <textarea 
+                                id="descricaoProduto" 
+                                placeholder="Descrição do produto..."
+                                [(ngModel)]="novoProduto.descricao" 
+                                name="descricao"
+                                rows="3"></textarea>
+                        </div>
+                        
+                        <div class="acoes">
+                            <button type="button" class="btn-cancelar" (click)="fecharCardCadastro()">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="btn-salvar">
+                                {{ produtoEditando ? 'Atualizar' : 'Salvar' }} Produto
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </section>
     </main>
+</body>

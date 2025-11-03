@@ -10,23 +10,23 @@ roteador_usuario.get("/", (req, res) =>{
 })
 
 roteador_usuario.get("/:id", (req, res) => {
-    controller.pegar1Usuario(res, res);
+    controller.pegar1Usuario(req, res);
 });
 
 roteador_usuario.post("/", (req, res) => {
-    controller.criarUsuario(res, res);
+    controller.criarUsuario(req, res);
 });
 
 roteador_usuario.post("/desativar/:id", (req, res) => {
-    controller.desativarUsuario(res, res);
+    controller.desativarUsuario(req, res);
 });
 
 roteador_usuario.put("/:id", (req, res) => {
-    controller.atualizarUsuario(res, res);
+    controller.atualizarUsuario(req, res);
 });
 
 roteador_usuario.delete("/:id", (req, res) => {
-    controller.deletarUsuario(res, res);
+    controller.deletarUsuario(req, res);
 });
 
 
