@@ -258,7 +258,7 @@ export class HomeComponent implements OnInit {
       this.usuarioIniciais = this.gerarIniciais(this.usuarioNome);
     } else {
       // Se não tem usuário logado, volta para login
-      this.router.navigate(['/login']);
+      // this.router.navigate(['/login']);
     }
   }
 

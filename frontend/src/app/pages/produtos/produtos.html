@@ -14,35 +14,35 @@
         </div>
         <hr>
         <div class="menu-container">
-            <a href="#" class="menu-item">
+            <a routerLink="/home" class="menu-item" routerLinkActive="active">
                 <i class="fas fa-chart-line"></i>
                 <span class="menu-text">Dashboard</span>
             </a>
-            <a href="#" class="menu-item active">
+            <a routerLink="/produtos" class="menu-item" routerLinkActive="active">
                 <i class="fas fa-box-open"></i>
                 <span class="menu-text">Produtos</span>
             </a>
-            <a href="#" class="menu-item">
+            <a routerLink="/movimentacoes" class="menu-item" routerLinkActive="active">
                 <i class="fas fa-exchange-alt"></i>
                 <span class="menu-text">Movimentações</span>
             </a>
-            <a href="#" class="menu-item">
+            <a routerLink="/relatorios" class="menu-item" routerLinkActive="active">
                 <i class="fas fa-chart-bar"></i>
                 <span class="menu-text">Relatórios</span>
             </a>
-            <a href="#" class="menu-item">
+            <a routerLink="/previsao-ia" class="menu-item" routerLinkActive="active">
                 <i class="fas fa-robot"></i>
                 <span class="menu-text">Previsão IA</span>
             </a>
-            <a href="#" class="menu-item">
+            <a routerLink="/planos" class="menu-item" routerLinkActive="active">
                 <i class="fas fa-file-invoice-dollar"></i>
                 <span class="menu-text">Planos</span>
             </a>
-            <a href="#" class="menu-item">
+            <a routerLink="/configuracoes" class="menu-item" routerLinkActive="active">
                 <i class="fas fa-cog"></i>
                 <span class="menu-text">Configurações</span>
             </a>
-            <a href="#" class="menu-item">
+            <a routerLink="/usuarios" class="menu-item" routerLinkActive="active">
                 <i class="fas fa-users"></i>
                 <span class="menu-text">Usuários</span>
             </a>
@@ -50,13 +50,13 @@
         <hr>    
         <div class="user-section">
             <div class="user-info">
-                <div class="user-avatar">RL</div>
+                <div class="user-avatar">{{ usuarioIniciais || 'U' }}</div>
                 <div class="user-details">
-                    <div class="user-name">Rafael Luiz</div>
-                    <div class="user-email">rafaelpilonetto59@gmail.com</div>
+                    <div class="user-name">{{ usuarioNome || 'Usuário' }}</div>
+                    <div class="user-email">{{ usuarioEmail || 'email@exemplo.com' }}</div>
                 </div>
             </div>
-            <button class="logout-btn">
+            <button class="logout-btn" (click)="logout()">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Sair</span>
             </button>
@@ -70,7 +70,7 @@
                 <div class="subtitulo">Gerencie o catálogo do seu estoque</div>
             </div>
             <div class="adicionar-produto-container">
-                <div class="adicionar-produto">
+                <div class="adicionar-produto" (click)="abrirModalAdicionar()">
                     <i class="fas fa-plus"></i>
                     <div class="adicionar-produto-text">Adicionar Produto</div>
                 </div>
@@ -79,12 +79,356 @@
 
         <section class="conteudo-principal">
             <div class="search-bar">
-                <input  type text placeholder="Pesquisar produto">
-                <i class="fas fa plus"></i>
+                <input 
+                    type="text" 
+                    placeholder="Pesquisar produto..." 
+                    [(ngModel)]="termoBusca"
+                    (input)="filtrarProdutos()"
+                    class="search-input">
+                <i class="fas fa-search"></i>
             </div>   
             <div class="opcoes-filtro">
-                <button class="opcao-filtro">Grade</button>
-                <button class="opcao-filtro">Tabela</button>
+                <button 
+                    class="opcao-filtro" 
+                    [class.active]="modoVisualizacao === 'grade'"
+                    (click)="modoVisualizacao = 'grade'; alternarVisualizacao()">
+                    Grade
+                </button>
+                <button 
+                    class="opcao-filtro" 
+                    [class.active]="modoVisualizacao === 'tabela'"
+                    (click)="modoVisualizacao = 'tabela'; alternarVisualizacao()">
+                    Tabela
+                </button>
+            </div>
+
+            <!-- Visualização em Tabela -->
+            <div *ngIf="modoVisualizacao === 'tabela'" class="produtos-tabela">
+                <table class="tabela-produtos">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Categoria</th>
+                            <th>Código</th>
+                            <th>Preço Unitário</th>
+                            <th>Unidade</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let produto of produtosFiltrados; trackBy: trackByProdutoId">
+                            <td>{{ produto.id_produto }}</td>
+                            <td class="nome-produto">
+                                <strong>{{ produto.nome }}</strong>
+                                <div class="descricao-produto" *ngIf="produto.descricao">
+                                    {{ produto.descricao }}
+                                </div>
+                            </td>
+                            <td>{{ produto.categoria || '-' }}</td>
+                            <td>{{ produto.codigo_publico || '-' }}</td>
+                            <td>{{ formatarPreco(produto.preco_unitario) }}</td>
+                            <td>{{ produto.unidade_medida || '-' }}</td>
+                            <td>
+                                <span class="status-badge" [class.disponivel]="produto.status" [class.indisponivel]="!produto.status">
+                                    {{ produto.status ? 'Disponível' : 'Indisponível' }}
+                                </span>
+                            </td>
+                            <td class="acoes">
+                                <button class="btn-editar" (click)="abrirModalEditar(produto)" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-deletar" (click)="deletarProduto(produto.id_produto)" title="Deletar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr *ngIf="produtosFiltrados.length === 0">
+                            <td colspan="8" class="sem-produtos">
+                                <i class="fas fa-box-open"></i>
+                                <p>Nenhum produto encontrado</p>
+                                <small *ngIf="termoBusca">Tente outro termo de busca</small>
+                                <small *ngIf="!termoBusca">Adicione produtos para começar</small>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Visualização em Grade -->
+            <div *ngIf="modoVisualizacao === 'grade'" class="produtos-grade">
+                <div class="grid-produtos">
+                    <div *ngFor="let produto of produtosFiltrados; trackBy: trackByProdutoId" class="card-produto">
+                        <div class="card-header">
+                            <h3>{{ produto.nome }}</h3>
+                            <span class="status-badge" [class.disponivel]="produto.status" [class.indisponivel]="!produto.status">
+                                {{ produto.status ? 'Disponível' : 'Indisponível' }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <p class="categoria" *ngIf="produto.categoria">
+                                <i class="fas fa-tag"></i> {{ produto.categoria }}
+                            </p>
+                            <p class="codigo" *ngIf="produto.codigo_publico">
+                                <i class="fas fa-barcode"></i> {{ produto.codigo_publico }}
+                            </p>
+                            <p class="preco" *ngIf="produto.preco_unitario">
+                                <i class="fas fa-dollar-sign"></i> {{ formatarPreco(produto.preco_unitario) }}
+                            </p>
+                            <p class="unidade" *ngIf="produto.unidade_medida">
+                                <i class="fas fa-ruler"></i> {{ produto.unidade_medida }}
+                            </p>
+                            <p class="descricao" *ngIf="produto.descricao">
+                                {{ produto.descricao }}
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn-editar" (click)="abrirModalEditar(produto)" title="Editar">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="btn-deletar" (click)="deletarProduto(produto.id_produto)" title="Deletar">
+                                <i class="fas fa-trash"></i> Deletar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="produtosFiltrados.length === 0" class="sem-produtos">
+                    <i class="fas fa-box-open"></i>
+                    <p>Nenhum produto encontrado</p>
+                    <small *ngIf="termoBusca">Tente outro termo de busca</small>
+                    <small *ngIf="!termoBusca">Adicione produtos para começar</small>
+                </div>
+            </div>
+
+            <!-- Contador de produtos -->
+            <div class="produtos-info">
+                <p>
+                    <strong>{{ produtosFiltrados.length }}</strong> 
+                    produto(s) 
+                    <span *ngIf="termoBusca">encontrado(s)</span>
+                    <span *ngIf="!termoBusca">cadastrado(s)</span>
+                </p>
             </div>
         </section>
     </main>
+
+    <!-- Modal de Adicionar Produto -->
+    <div *ngIf="mostrarModalAdicionar" class="modal-overlay" (click)="fecharModalAdicionar()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Adicionar Novo Produto</h2>
+                <button class="btn-fechar" (click)="fecharModalAdicionar()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form (ngSubmit)="salvarProduto()" class="produto-form">
+                    <div class="form-group">
+                        <label for="nome">Nome do Produto <span class="obrigatorio">*</span></label>
+                        <input 
+                            type="text" 
+                            id="nome"
+                            [(ngModel)]="produtoForm.nome" 
+                            name="nome"
+                            class="form-control"
+                            [class.error]="formularioSubmetido && !produtoForm.nome?.trim()"
+                            placeholder="Ex: Notebook Dell"
+                            required>
+                        <small class="error-message" *ngIf="formularioSubmetido && !produtoForm.nome?.trim()">
+                            Nome do produto é obrigatório
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descricao">Descrição</label>
+                        <textarea 
+                            id="descricao"
+                            [(ngModel)]="produtoForm.descricao" 
+                            name="descricao"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Descreva o produto..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="categoria">Categoria</label>
+                            <input 
+                                type="text" 
+                                id="categoria"
+                                [(ngModel)]="produtoForm.categoria" 
+                                name="categoria"
+                                class="form-control"
+                                placeholder="Ex: Eletrônicos">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="codigo">Código Público</label>
+                            <input 
+                                type="text" 
+                                id="codigo"
+                                [(ngModel)]="produtoForm.codigo_publico" 
+                                name="codigo_publico"
+                                class="form-control"
+                                placeholder="Ex: PROD-001">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="preco">Preço Unitário (R$)</label>
+                            <input 
+                                type="number" 
+                                id="preco"
+                                [(ngModel)]="produtoForm.preco_unitario" 
+                                name="preco_unitario"
+                                class="form-control"
+                                step="0.01"
+                                min="0"
+                                placeholder="0.00">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="unidade">Unidade de Medida</label>
+                            <input 
+                                type="text" 
+                                id="unidade"
+                                [(ngModel)]="produtoForm.unidade_medida" 
+                                name="unidade_medida"
+                                class="form-control"
+                                placeholder="Ex: UN, KG, L">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input 
+                                type="checkbox"
+                                [(ngModel)]="produtoForm.status"
+                                name="status">
+                            <span>Produto disponível</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancelar" (click)="fecharModalAdicionar()">
+                    Cancelar
+                </button>
+                <button type="button" class="btn-salvar" (click)="salvarProduto()">
+                    <i class="fas fa-save"></i> Salvar Produto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Editar Produto -->
+    <div *ngIf="mostrarModalEditar" class="modal-overlay" (click)="fecharModalEditar()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Editar Produto</h2>
+                <button class="btn-fechar" (click)="fecharModalEditar()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form (ngSubmit)="atualizarProduto()" class="produto-form">
+                    <div class="form-group">
+                        <label for="nome-edit">Nome do Produto <span class="obrigatorio">*</span></label>
+                        <input 
+                            type="text" 
+                            id="nome-edit"
+                            [(ngModel)]="produtoForm.nome" 
+                            name="nome"
+                            class="form-control"
+                            [class.error]="formularioSubmetido && !produtoForm.nome?.trim()"
+                            placeholder="Ex: Notebook Dell"
+                            required>
+                        <small class="error-message" *ngIf="formularioSubmetido && !produtoForm.nome?.trim()">
+                            Nome do produto é obrigatório
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descricao-edit">Descrição</label>
+                        <textarea 
+                            id="descricao-edit"
+                            [(ngModel)]="produtoForm.descricao" 
+                            name="descricao"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Descreva o produto..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="categoria-edit">Categoria</label>
+                            <input 
+                                type="text" 
+                                id="categoria-edit"
+                                [(ngModel)]="produtoForm.categoria" 
+                                name="categoria"
+                                class="form-control"
+                                placeholder="Ex: Eletrônicos">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="codigo-edit">Código Público</label>
+                            <input 
+                                type="text" 
+                                id="codigo-edit"
+                                [(ngModel)]="produtoForm.codigo_publico" 
+                                name="codigo_publico"
+                                class="form-control"
+                                placeholder="Ex: PROD-001">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="preco-edit">Preço Unitário (R$)</label>
+                            <input 
+                                type="number" 
+                                id="preco-edit"
+                                [(ngModel)]="produtoForm.preco_unitario" 
+                                name="preco_unitario"
+                                class="form-control"
+                                step="0.01"
+                                min="0"
+                                placeholder="0.00">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="unidade-edit">Unidade de Medida</label>
+                            <input 
+                                type="text" 
+                                id="unidade-edit"
+                                [(ngModel)]="produtoForm.unidade_medida" 
+                                name="unidade_medida"
+                                class="form-control"
+                                placeholder="Ex: UN, KG, L">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input 
+                                type="checkbox"
+                                [(ngModel)]="produtoForm.status"
+                                name="status">
+                            <span>Produto disponível</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancelar" (click)="fecharModalEditar()">
+                    Cancelar
+                </button>
+                <button type="button" class="btn-salvar" (click)="atualizarProduto()">
+                    <i class="fas fa-save"></i> Atualizar Produto
+                </button>
+            </div>
+        </div>
+    </div>
