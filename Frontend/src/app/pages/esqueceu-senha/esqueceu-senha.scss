@@ -36,6 +36,11 @@
   overflow: hidden !important;
 }
 
+#texto {
+  text-align: center;
+  color: #333333;
+}
+
 .leftside {
   width: 50% !important;
   height: 100vh !important;
@@ -47,7 +52,7 @@
 }
 
 .leftside img {
-  width: 60% !important;
+  width: 70% !important;
   height: auto !important;
   max-height: 70% !important;
   object-fit: contain !important;

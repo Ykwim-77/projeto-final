@@ -1,18 +1,19 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { EsqueceuSenha } from './esqueceu-senha';
+import { ComponentFixture, TestBed, fakeAsync, tick  } from '@angular/core/testing';
+import { Router } from '@angular/router';
+import { By } from '@angular/platform-browser';
+import { EsqueceuSenhaComponent } from './esqueceu-senha';
 
 describe('EsqueceuSenha', () => {
-  let component: EsqueceuSenha;
-  let fixture: ComponentFixture<EsqueceuSenha>;
+  let component: EsqueceuSenhaComponent;
+  let fixture: ComponentFixture<EsqueceuSenhaComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EsqueceuSenha]
+      imports: [EsqueceuSenhaComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(EsqueceuSenha);
+    fixture = TestBed.createComponent(EsqueceuSenhaComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

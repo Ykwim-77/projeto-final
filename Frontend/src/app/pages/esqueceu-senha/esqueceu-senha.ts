@@ -1,12 +1,40 @@
 import { Component } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../guards/auth.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-esqueceu-senha',
-  imports: [],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './esqueceu-senha.html',
   styleUrl: './esqueceu-senha.scss',
 })
 
 export class EsqueceuSenhaComponent {
-  
+
+  email: string = '';
+  errorMessage: string = '';
+
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
+
+  onSubmit(event: Event): void {
+    event.preventDefault();
+    
+    const form = event.target as HTMLFormElement;
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    if (!this.email) {
+      this.errorMessage = 'Por favor, preencha o campo de E-mail';
+      return;
+    }
+
+
+  }
 }
