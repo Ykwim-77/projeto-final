@@ -21,6 +21,7 @@ export class LoginComponent {
   }
   email: string = '';
   senha: string = '';
+  
   isLoading: boolean = false;
   errorMessage: string = '';
 
@@ -29,6 +30,7 @@ export class LoginComponent {
     private authService: AuthService
   ) {}
 
+  
   fazerLogin(event?: Event): void { // ✅ Removeu o parâmetro 'credenciais'
     if (event) {
       event.preventDefault();
@@ -45,12 +47,11 @@ export class LoginComponent {
 
     this.authService.login({
       email: this.email,
-      senha: this.senha // ✅ Agora usa a propriedade da classe
+      senha: this.senha, // ✅ Agora usa a propriedade da classe
     }).subscribe({
       next: (res) => {
         console.log('✅ Login bem-sucedido:', res);
         this.isLoading = false;
-        
         // Redireciona para home
         this.router.navigate(['/home']).then(success => {
           if (!success) {
@@ -59,10 +60,11 @@ export class LoginComponent {
         });
       },
       error: (err) => {
-        console.error('❌ Erro no login:', err);
+        console.error('Erro no login:', err);
         this.isLoading = false;
         this.errorMessage = err.error?.message || 'Erro ao fazer login. Tente novamente.';
       }
     });
+    console.log(this.email, this.senha);
   }
 }

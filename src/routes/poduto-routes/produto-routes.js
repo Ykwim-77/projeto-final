@@ -1,10 +1,11 @@
 import controller from "../../controllers/produto-controller/produto-controller.js";
 import express, { Router } from "express";
+import authMiddleware from "../../midllewares/authController.js";
 
 const roteador_produto = express.Router();
 
 
-roteador_produto.get("/",  (req, res) => {
+roteador_produto.get("/", authMiddleware, (req, res) => {
     controller.pegarTodosProdutos(req, res);
 });
 
