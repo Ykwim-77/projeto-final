@@ -157,7 +157,19 @@ async function deletarUsuario(req, res){
     }
 }
 async function desativarUsuario(req, res){
-    
+    try{
+        await prisma.usuario.update({
+            where:{
+                id_usuario: req.params.id
+            },
+            data:{
+                ativo: false
+            }
+        })
+        return res.status(200).json({mensagem:"usuario foi desativado com sucesso"})
+    }catch(error){
+        return res.status(500).json({desativar_usuario:"ve oq q aconteceu para desativar o usuario ai paizão", error})
+    }
 }
 
 
