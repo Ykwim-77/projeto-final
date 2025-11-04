@@ -212,12 +212,10 @@ throw new Error('Method not implemented.');
       this.usuarioEmail = usuario.email || '';
       this.usuarioIniciais = this.gerarIniciais(this.usuarioNome);
     } else {
-<<<<<<< HEAD:frontend/src/app/pages/home/home.ts
       // Se não tem usuário logado, volta para login
       // this.router.navigate(['/login']);
-=======
+
       this.router.navigate(['/login']);
->>>>>>> origin/Rafa:Frontend/src/app/pages/home/home.ts
     }
   }
 
