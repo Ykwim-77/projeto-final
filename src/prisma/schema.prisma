@@ -101,6 +101,7 @@ model sala {
   descricao        String?
   capacidade       Int
   localizacao      String?
+  status           Boolean @default(true)
 
   estoques         estoque[]
 }

@@ -97,7 +97,7 @@ async function atualizarSala(req,res) {
 async function deletarSala(req,res) {
 
     try {
-        const sala = await Deletar('sala', 'id_sala', req.params.id_sala);
+        const sala = await Deletar('sala', 'id_sala', req.params.id);
 
         return res.status(200).json({sala});
 
@@ -106,14 +106,10 @@ async function deletarSala(req,res) {
         if (error.message === "ID deve ser um número válido") {
             return res.status(400).json({ mensagem: error.message });
 
-        }
-         else if (error.message === "Registro não encontrado") {
+        } else if (error.message === "Registro não encontrado") {
             return res.status(404).json({ mensagem: error.message });
 
-            
-
-        }
-         else {
+        } else {
             return res.status(500).json({ 
                 mensagem: "Erro interno no servidor", 
                 error: error.message 
@@ -130,23 +126,27 @@ async function reservarSala(req,res) {
     }
    const { data_reserva, hora_inicio, hora_fim, nome_reservante } = req.body;
 
-   if (isNaN(id = idNumber)) {
+    const sala = await prisma.sala.findUnique({
 
-       return res.status(400).json({ mensagem: "o id precisa ser um número inteiro" });
-   }
+        where: { id_sala: idNumber }  
+        
+    });
+    if (!sala) {
 
+        return res.status(404).json({ mensagem: "Sala não encontrada." });
+    }
+    if (sala.status === false) {
+
+        return res.status(400).json({ mensagem: "Sala já está reservada." });
+    }
    try {
     
-       const reserva = await prisma.reserva.create({
+       const reserva = await prisma.sala.update({
+
+           where: { id_sala: idNumber },
 
            data: {
-
-               sala: { connect: { id: id } },
-               usuario: { connect: { id: req.user.id } },
-               data_reserva,
-               hora_inicio,
-               hora_fim,
-               nome_reservante
+                status: false
            }
 
        });
@@ -166,20 +166,25 @@ async function reservarSala(req,res) {
 
 async function liberarSala(req,res) {
 
-    const id_sala = parseInt(req.params.id);
+    const idNumber = parseInt(req.params.id);
 
-    if (isNaN(id_sala)) {
+    if (isNaN(idNumber)) {
 
         return res.status(400).json({ mensagem: "id precisa ser um numero inteiro" });
 
+    }                                               //  prisma.[tabela].        update delete create findMany findUnique
+
+    const sala = await PegarApenasUm('sala', 'id_sala', idNumber)
+    
+    if(sala.status === true){
+        return res.status(401).json({"mensagem":"ja esta liberada"})
     }
 
     try {
 
-        await prisma.reserva.delete({
-
-            where: { salaId: id_sala }       
-
+        await prisma.sala.update({
+            where: { id_sala: idNumber },
+            data: { status: true }
         });
 
         res.status(200).json({ mensagem: "Sala liberada com sucesso." });
