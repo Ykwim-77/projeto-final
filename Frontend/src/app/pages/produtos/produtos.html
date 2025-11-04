@@ -134,6 +134,13 @@
                     </button>
                 </div>
             </div>
+            <div *ngIf="produtos.length === 0" class="sem-produtos">
+                <i class="fas fa-box-open"></i>
+                <p>Nenhum produto cadastrado</p>
+                <!--<button class="btn-adicionar-tabela" (click)="abrirCardCadastro()">
+                    <i class="fas fa-plus"></i> Adicionar Primeiro Produto
+                </button> -->
+            </div>
         </section>
 
         <!-- Lista de Produtos em Tabela -->
@@ -195,9 +202,9 @@
                 <div *ngIf="produtos.length === 0" class="sem-produtos">
                     <i class="fas fa-box-open"></i>
                     <p>Nenhum produto cadastrado</p>
-                    <button class="btn-adicionar-tabela" (click)="abrirCardCadastro()">
+                    <!--<button class="btn-adicionar-tabela" (click)="abrirCardCadastro()">
                         <i class="fas fa-plus"></i> Adicionar Primeiro Produto
-                    </button>
+                    </button> -->
                 </div>
             </div>
         </section>
