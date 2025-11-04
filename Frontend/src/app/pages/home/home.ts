@@ -309,30 +309,61 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   private atualizarProdutosEmBaixa(): void {
+    console.log('=== ATUALIZANDO PRODUTOS EM BAIXA ===');
+    console.log('Produtos disponíveis:', this.produtos);
+    
     this.lowStockProducts = [];
+    const limiteEstoqueBaixo = 5;
     
-    // Defina um limite para estoque baixo (ex: menos de 10 unidades)
-    const limiteEstoqueBaixo = 10;
-    
+    if (!this.produtos || this.produtos.length === 0) {
+      console.log('Nenhum produto disponível para análise');
+      this.lowStockAlert = 'Nenhum produto cadastrado para análise.';
+      this.lowStockCount = 0;
+      return;
+    }
+
     const produtosEmAtencao = this.produtos.filter(produto => {
-      // Ajuste conforme os campos reais do seu modelo de Produto
-      return (produto.quantidade || produto.estoque || 0) <= limiteEstoqueBaixo;
+      if (!produto) return false;
+      
+      // Obter quantidade usando diferentes possíveis nomes de propriedades
+      const quantidade = this.obterQuantidadeProduto(produto);
+      console.log(`Produto: ${produto.nome || produto.name}, Quantidade: ${quantidade}, Limite: ${limiteEstoqueBaixo}`);
+      
+      return quantidade <= limiteEstoqueBaixo;
     });
 
-    this.lowStockProducts = produtosEmAtencao.map(produto => ({
-      name: produto.nome || 'Produto sem nome',
-      category: produto.categoria || 'Sem categoria',
-      quantity: produto.quantidade || produto.estoque || 0,
-      maxStock: produto.estoque_maximo || 50 // Ajuste conforme seu modelo
-    }));
+    console.log('Produtos em atenção encontrados:', produtosEmAtencao);
+
+    this.lowStockProducts = produtosEmAtencao.map(produto => {
+      const quantidade = this.obterQuantidadeProduto(produto);
+      
+      return {
+        name: produto.nome || produto.name || 'Produto sem nome',
+        category: produto.categoria || produto.categoria || 'Sem categoria',
+        quantity: quantidade,
+        maxStock: produto.estoque_maximo || produto.maxStock || produto.estoque_maximo || 50
+      };
+    });
 
     this.lowStockCount = this.lowStockProducts.length;
     
+    console.log('Low stock products final:', this.lowStockProducts);
+    console.log('Low stock count:', this.lowStockCount);
+
     if (this.lowStockCount > 0) {
       this.lowStockAlert = `Atenção! Você tem ${this.lowStockCount} produto(s) com estoque baixo.`;
     } else {
       this.lowStockAlert = 'Estoque em dia! Todos os produtos estão com quantidade adequada.';
     }
+  }
+
+  private obterQuantidadeProduto(produto: any): number {
+    // Tenta diferentes nomes de propriedades possíveis para quantidade
+    const quantidade = produto.quantidade ?? produto.estoque ?? produto.quant ?? produto.stock ?? 0;
+    
+    // Converte para número e trata valores inválidos
+    const qtdNumero = Number(quantidade);
+    return isNaN(qtdNumero) ? 0 : qtdNumero;
   }
 
   private initializeMetrics(): void {
