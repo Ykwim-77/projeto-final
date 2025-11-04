@@ -20,7 +20,7 @@ app.use('/usuario', roteador_usuario);
 app.use('/produto',roteador_produto);
 app.use('/sala', roteador_sala);
 
-// Define allowed origins (your frontend URL)
+
 const corsOptions = {
   origin: 'http://localhost:4200',
   credentials: true,
@@ -28,13 +28,12 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 };
 
-// Middleware CORS
 app.use(cors(corsOptions));
 
-// Middleware para parsing JSON
+
 app.use(express.json());
 
-// Rota OPTIONS corrigida para preflight
+
 app.options('', (req, res) => {
   res.header('Access-Control-Allow-Origin', 'http://localhost:4200');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -44,12 +43,4 @@ app.options('', (req, res) => {
 });
 
 const PORT = 3000;
-app.listen(PORT, () => {
-  console.log('='.repeat(60));
-  console.log('🚀🚀🚀 SERVIDOR INICIADO COM SUCESSO 🚀🚀🚀');
-  console.log(`📍 Porta: ${PORT}`);
-  console.log('📡 URLs para teste:');
-  console.log('   http://localhost:3000/test');
-  console.log('   http://localhost:3000/usuario/login');
-  console.log('='.repeat(60));
-});
+app.listen(3000)

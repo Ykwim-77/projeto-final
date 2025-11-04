@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import cors from "cors";
 import express from "express";
 import bcrypt from "bcrypt";
+import {PegarApenasUm, Deletar} from "../../function.js";
 
 const app = express();
 
@@ -16,22 +17,10 @@ app.use(cors({
 const prisma = new PrismaClient()
 
 
-//rotas de usuarios
-//get
-    //pegar um usuario
-    //pegar todos os usuarios
-//post
-    //criar um usuario
-    //desativar um usuario
-//delete
-//put
-    //atualizar um usuario
-
 
 async function Login(req, res) {
     console.log(req.body);
-    const { email, senha } = req.body; // ✅ Frontend envia "senha"
-    console.log(email, senha);
+    const { email, senha } = req.body; 
     // Validação básica
     if (!email || !senha) {
         return res.status(400).json({ error: 'Email e senha são obrigatórios' });
@@ -45,7 +34,6 @@ async function Login(req, res) {
                 // O código atual compara texto com hash, o que não funciona
             }
         });
-        console.log('usuario', usuario);
         if (!usuario) {
             return res.status(401).json({ error: 'Credenciais inválidas' });
         }
@@ -68,7 +56,6 @@ async function Login(req, res) {
             { expiresIn: '1h' }
         );
 
-        console.log(token);
 
         // Define o cookie
         res.cookie("token", token, {
@@ -93,17 +80,8 @@ async function Login(req, res) {
 }
 
 async function pegar1Usuario(req, res){
-    const idNumber = parseInt(req.params.id)
-    if (isNaN(idNumber)) {
-        return res.status(400).json({ mensagem: "o id precisa ser um número inteiro" });
-    } 
-
     try{
-        const usuario = await prisma.usuario.findUnique({
-            where:{
-                id_usuario: idNumber
-            }
-        });
+        const usuario = await PegarApenasUm('usuario', 'id_usuario', req.params.id)
         return res.status(200).json(usuario)
 
     }catch(error){
@@ -114,12 +92,15 @@ async function pegar1Usuario(req, res){
 
 async function pegarTodosUsuarios(req, res){ // acabar o pegartodos os usuarios
     try{
-
+        const usuarios = await prisma.usuario.findMany()
+        return res.status(200).json(usuarios)
     }catch(error){
         return res.status(500).json({pegartodosusuario:"deu pau pra pegar todos os usuarios ", error})
     }
 
 }
+
+
 
 async function criarUsuario(req, res){ //acabar ao criar
     try{
@@ -145,10 +126,35 @@ async function criarUsuario(req, res){ //acabar ao criar
 
 }
 async function atualizarUsuario(req, res){
+    try{
+        const {nome, email, senha_hash, id_tipo_usuario, ativo, cpf} = req.body
+
+        await prisma.usuario.update({
+            where:{
+                id_usuario: req.params.id
+            },
+            data:{
+                nome: nome,
+                email: email,
+                senha_hash: senha_hash,
+                id_tipo_usuario: id_tipo_usuario,
+                ativo: ativo,
+                cpf: cpf
+            }
+        })
+        return res.status(200).json({mensagem:"usuario foi atualizado com sucesso"})
+    }catch(error){
+        return res.status(500).json({atualizar_usuario:"ve oq q aconteceu para atualizar o usuario ai paizão", error})
+    }
 
 }
 async function deletarUsuario(req, res){
-
+    try{
+        await Deletar('usuario', 'id_usuario', req.params.id)
+        return res.status(200).json({mensagem:"usuario foi deletado com sucesso"})
+    }catch(error){
+        return res.status(500).json({deletar_usuario:"ve oq q aconteceu para deletar o usuario ai paizão", error})
+    }
 }
 async function desativarUsuario(req, res){
     

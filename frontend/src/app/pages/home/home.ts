@@ -251,7 +251,7 @@ export class HomeComponent implements OnInit {
     const usuario = this.authService.getUsuarioLogado();
     
     if (usuario) {
-      this.usuarioNome = usuario.nome || 'Usuário';
+      this.usuarioNome = usuario.nome;
       this.usuarioEmail = usuario.email || '';
       
       // Gera iniciais do nome (ex: "Rafael Luiz" → "RL")

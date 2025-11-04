@@ -1,15 +1,20 @@
 import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
+import express from 'express';
+
+
+
+const app = express();
+app.use(cookieParser());
 
 const authMiddleware = (req, res, next) => {
   try {
-    // Opção 1: Pegar token do cookie (recomendado para web)
+
     const token = req.cookies.token;
     
-    // Opção 2: Pegar token do header Authorization (alternativa)
-    // const authHeader = req.headers.authorization;
-    // const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-
+    console.log(token);
     console.log('🔐 Verificando token...');
+
     
     if (!token) {
       console.log('❌ Token não encontrado');
@@ -18,7 +23,9 @@ const authMiddleware = (req, res, next) => {
 
     // Verificar e decodificar o token
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'segredo');
-    
+    console.log(decoded);
+
+
     // Adicionar os dados do usuário no request
     req.usuario = decoded;
     
