@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, catchError, of, map } from '../../../node_modules/rxjs/dist/types';
+import { Observable, tap, catchError, of, map } from 'rxjs';
 import { environment } from '../environments/environment';
 
 export interface LoginRequest {

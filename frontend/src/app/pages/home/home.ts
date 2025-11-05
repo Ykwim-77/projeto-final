@@ -327,7 +327,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
       
       // Obter quantidade usando diferentes possíveis nomes de propriedades
       const quantidade = this.obterQuantidadeProduto(produto);
-      console.log(`Produto: ${produto.nome || produto.name}, Quantidade: ${quantidade}, Limite: ${limiteEstoqueBaixo}`);
+      console.log(`Produto: ${produto.nome || 'Produto sem nome'}, Quantidade: ${quantidade}, Limite: ${limiteEstoqueBaixo}`);
       
       return quantidade <= limiteEstoqueBaixo;
     });
@@ -338,10 +338,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
       const quantidade = this.obterQuantidadeProduto(produto);
       
       return {
-        name: produto.nome || produto.name || 'Produto sem nome',
-        category: produto.categoria || produto.categoria || 'Sem categoria',
+        name: produto.nome || 'Produto sem nome',
+        category: produto.categoria || 'Sem categoria',
         quantity: quantidade,
-        maxStock: produto.estoque_maximo || produto.maxStock || produto.estoque_maximo || 50
+        maxStock: produto.estoque_maximo || 50
       };
     });
 

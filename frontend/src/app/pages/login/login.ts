@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../service/auth.service';
+import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -40,7 +40,7 @@ export class LoginComponent {
     this.errorMessage = '';
 
     // Corrige o nome esperado pelo backend para o campo de senha ("senha" em vez de "password")
-    this.authService.login({ email: this.email, senha: this.password }).subscribe({
+    this.authService.login(this.email, this.password).subscribe({
       next: (response) => {
         console.log('✅ Login realizado com sucesso!', response);
         this.isLoading = false;

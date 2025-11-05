@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from '../../../node_modules/rxjs/dist/types';
+import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 
 export interface Produto {
+  maxStock: number;
+  name: string;
   estoque: number;
   quantidade: number;
   estoque_maximo: number;
