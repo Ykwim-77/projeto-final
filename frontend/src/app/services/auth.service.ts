@@ -174,10 +174,14 @@ export class AuthService {
    * Retorna dados do usuário logado
    */
   getUsuarioLogado(): Usuario | null {
-    const userStr = this.getCookie(this.USER_KEY);
-    console.log(userStr);
+    const userStr = localStorage.getItem(this.USER_KEY);
     if (userStr) {
-      return JSON.parse(userStr);
+      try {
+        return JSON.parse(userStr);
+      } catch (e) {
+        console.error('Erro ao fazer parse do usuário:', e);
+        return null;
+      }
     }
     return null;
   }
