@@ -4,17 +4,18 @@ import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 
 export interface Produto {
+  preco: number | undefined;
+  name: string;
+  minStock: number;
   estoque: number;
   quantidade: number;
   estoque_maximo: number;
-  id_produto?: number;
+  id_produto: number;
   nome: string;
   descricao?: string;
-  categoria?: string;
-  codigo_publico?: string;
-  preco_unitario?: number;
+  categoria: string;
   unidade_medida?: string;
-  id_fornecedor?: number;
+  id_fornecedor: number;
   status?: boolean;
 }
 
