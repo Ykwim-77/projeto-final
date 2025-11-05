@@ -1,73 +1,342 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, RouterLinkActive, Router } from '@angular/router';
-import { ProdutoService, Produto } from '../../services/produto.service';
+import { Router } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
-// 1. Interfaces
 interface MenuItem {
   name: string;
   active?: boolean;
+}
+
+interface MetricCard {
+  title: string;
+  value: string | number;
+  variation: string;
+  trend: 'positive' | 'negative' | 'neutral';
+}
+
+interface Category {
+  name: string;
+  percentage: string;
+}
+
+interface LowStockProduct {
+  name: string;
+  category: string;
+}
+
+interface Produto {
+  id: number;
+  nome: string;
+  sku: string;
+  categoria: string;
+  quantidade: number;
+  preco: number;
+  descricao?: string;
 }
 
 @Component({
   selector: 'app-produtos',
   templateUrl: './produtos.html',
   styleUrls: ['./produtos.scss'],
-  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive]
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterLink]
 })
 export class ProdutosComponent implements OnInit {
-  
-  // Lista de produtos vindos da API
-  produtos: Produto[] = [];
-  produtosFiltrados: Produto[] = [];
-  
-  // Termo de busca
-  termoBusca: string = '';
-  
-  // Modo de visualização (grade ou tabela)
-  modoVisualizacao: 'grade' | 'tabela' = 'tabela';
-  
-  // Dados do usuário logado
-  usuarioNome: string = '';
-  usuarioEmail: string = '';
-  usuarioIniciais: string = '';
-
-  // Controle de modais
-  mostrarModalAdicionar: boolean = false;
-  mostrarModalEditar: boolean = false;
+  // Controle de exibição
+  showCardCadastro: boolean = false;
   produtoEditando: Produto | null = null;
+  visualizacao: 'grade' | 'tabela' = 'grade';
 
-  // Formulário de produto
-  produtoForm: Produto = {
+  // Produto em cadastro/edição
+  novoProduto = {
     nome: '',
-    descricao: '',
+    sku: '',
     categoria: '',
-    codigo_publico: '',
-    preco_unitario: undefined,
-    unidade_medida: '',
-    status: true
+    quantidade: 0,
+    preco: 0,
+    descricao: ''
   };
 
-  // Validação
-  formularioSubmetido: boolean = false;
+  // Lista de produtos
+  produtos: Produto[] = [
+    { 
+      id: 1, 
+      nome: 'Mouse Gamer RGB', 
+      sku: 'MG-001', 
+      categoria: 'Periféricos', 
+      quantidade: 15, 
+      preco: 89.90,
+      descricao: 'Mouse gamer com iluminação RGB'
+    },
+    { 
+      id: 2, 
+      nome: 'Teclado Mecânico', 
+      sku: 'TK-002', 
+      categoria: 'Periféricos', 
+      quantidade: 8, 
+      preco: 249.90,
+      descricao: 'Teclado mecânico switches blue'
+    },
+    { 
+      id: 3, 
+      nome: 'Monitor 24" Full HD', 
+      sku: 'MN-003', 
+      categoria: 'Eletrônicos', 
+      quantidade: 3, 
+      preco: 899.90,
+      descricao: 'Monitor LED 24 polegadas'
+    },
+    { 
+      id: 4, 
+      nome: 'Headphone Bluetooth', 
+      sku: 'HP-004', 
+      categoria: 'Áudio', 
+      quantidade: 12, 
+      preco: 199.90,
+      descricao: 'Fone de ouvido sem fio'
+    },
+    { 
+      id: 5, 
+      nome: 'Webcam 1080p', 
+      sku: 'WC-005', 
+      categoria: 'Vídeo', 
+      quantidade: 2, 
+      preco: 159.90,
+      descricao: 'Câmera para reuniões online'
+    },
+    { 
+      id: 6, 
+      nome: 'SSD 500GB', 
+      sku: 'SS-006', 
+      categoria: 'Armazenamento', 
+      quantidade: 20, 
+      preco: 299.90,
+      descricao: 'Unidade de estado sólido'
+    }
+  ];
+
+  // Dados de interface
+  menuItems: MenuItem[] = [];
+  lowStockCount: number = 0;
+  lowStockAlert: string = '';
+
+  // Cards de Métricas
+  metricCards: MetricCard[] = [];
+
+  // Dados individuais
+  totalProducts: number = 0;
+  stockValue: string = '';
+
+  // Listas
+  categories: Category[] = [];
+  lowStockProducts: LowStockProduct[] = [];
+
+  // Usuário
+  usuarioNome: string = 'João Silva';
+  usuarioEmail: string = 'joao.silva@empresa.com';
+  usuarioIniciais: string = 'JS';
 
   constructor(
-    private produtoService: ProdutoService,
-    private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
-  // 3. Initialize data
+  // Inicialização
   ngOnInit() {
     this.carregarDadosUsuario();
-    this.carregarProdutos();
+    this.initializeMenu();
+    this.initializeAlerts();
+    this.initializeMetrics();
+    this.initializeCategories();
+    this.initializeLowStockProducts();
+    this.atualizarMetricas();
   }
 
-  /**
-   * Carrega os dados do usuário logado
-   */
+  // 🔧 MÉTODOS DO CRUD
+
+  // Abrir card de cadastro
+  abrirCardCadastro() {
+    this.produtoEditando = null;
+    this.novoProduto = {
+      nome: '',
+      sku: '',
+      categoria: '',
+      quantidade: 0,
+      preco: 0,
+      descricao: ''
+    };
+    this.showCardCadastro = true;
+  }
+
+  // Editar produto
+  editarProduto(produto: Produto) {
+    this.produtoEditando = produto;
+    this.novoProduto = {
+      nome: produto.nome,
+      sku: produto.sku,
+      categoria: produto.categoria,
+      quantidade: produto.quantidade,
+      preco: produto.preco,
+      descricao: produto.descricao || ''
+    };
+    this.showCardCadastro = true;
+  }
+
+  // Salvar produto (criar ou atualizar)
+  salvarProduto() {
+    if (this.produtoEditando) {
+      // Atualizar produto existente
+      const index = this.produtos.findIndex(p => p.id === this.produtoEditando!.id);
+      if (index !== -1) {
+        this.produtos[index] = {
+          ...this.produtoEditando,
+          nome: this.novoProduto.nome,
+          sku: this.novoProduto.sku,
+          categoria: this.novoProduto.categoria,
+          quantidade: Number(this.novoProduto.quantidade),
+          preco: Number(this.novoProduto.preco),
+          descricao: this.novoProduto.descricao
+        };
+      }
+    } else {
+      // Criar novo produto
+      const novoId = this.produtos.length > 0 
+        ? Math.max(...this.produtos.map(p => p.id)) + 1 
+        : 1;
+      
+      const produto: Produto = {
+        id: novoId,
+        nome: this.novoProduto.nome,
+        sku: this.novoProduto.sku,
+        categoria: this.novoProduto.categoria,
+        quantidade: Number(this.novoProduto.quantidade),
+        preco: Number(this.novoProduto.preco),
+        descricao: this.novoProduto.descricao
+      };
+      
+      this.produtos.push(produto);
+    }
+
+    this.fecharCardCadastro();
+    this.atualizarMetricas();
+  }
+
+  // Excluir produto
+  excluirProduto(id: number) {
+    if (confirm('Tem certeza que deseja excluir este produto?')) {
+      this.produtos = this.produtos.filter(produto => produto.id !== id);
+      this.atualizarMetricas();
+    }
+  }
+
+  // Fechar card de cadastro
+  fecharCardCadastro() {
+    this.showCardCadastro = false;
+    this.produtoEditando = null;
+    this.novoProduto = {
+      nome: '',
+      sku: '',
+      categoria: '',
+      quantidade: 0,
+      preco: 0,
+      descricao: ''
+    };
+  }
+
+  // Mudar entre visualização grade/tabela
+  mudarVisualizacao(tipo: 'grade' | 'tabela') {
+    this.visualizacao = tipo;
+  }
+
+  // Atualizar métricas
+  atualizarMetricas() {
+    this.totalProducts = this.produtos.length;
+    
+    const valorTotal = this.produtos.reduce((total, produto) => 
+      total + (produto.preco * produto.quantidade), 0
+    );
+    
+    this.stockValue = new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(valorTotal);
+
+    this.lowStockCount = this.produtos.filter(p => p.quantidade < 5).length;
+
+    // Atualizar metricCards
+    this.metricCards = [
+      {
+        title: 'Total de Produtos',
+        value: this.totalProducts,
+        variation: '+12% este mês',
+        trend: 'positive'
+      },
+      {
+        title: 'Valor do Estoque',
+        value: this.stockValue,
+        variation: '+8.2%',
+        trend: 'positive'
+      },
+      {
+        title: 'Itens em Baixa',
+        value: this.lowStockCount,
+        variation: 'atenção',
+        trend: this.lowStockCount > 0 ? 'negative' : 'neutral'
+      },
+      {
+        title: 'Saídas do Mês',
+        value: 20,
+        variation: '+5%',
+        trend: 'positive'
+      }
+    ];
+  }
+
+  // 🔧 MÉTODOS AUXILIARES
+
+  private initializeMenu(): void {
+    this.menuItems = [
+      { name: 'Dashboard' },
+      { name: 'Produtos', active: true },
+      { name: 'Movimentações' },
+      { name: 'Relatórios' },
+      { name: 'Previsão IA' },
+      { name: 'Planos' },
+      { name: 'Configurações' },
+      { name: 'Usuários' }
+    ];
+  }
+
+  private initializeAlerts(): void {
+    this.lowStockCount = this.produtos.filter(p => p.quantidade < 5).length;
+    this.lowStockAlert = `Atenção! Você tem ${this.lowStockCount} produto(s) com estoque baixo.`;
+  }
+
+  private initializeMetrics(): void {
+    this.atualizarMetricas();
+  }
+
+  private initializeCategories(): void {
+    this.categories = [
+      { name: 'Periféricos', percentage: '45%' },
+      { name: 'Eletrônicos', percentage: '20%' },
+      { name: 'Informática', percentage: '15%' },
+      { name: 'Acessórios', percentage: '20%' }
+    ];
+  }
+
+  private initializeLowStockProducts(): void {
+    this.lowStockProducts = this.produtos
+      .filter(p => p.quantidade < 5)
+      .map(p => ({
+        name: p.nome,
+        category: p.categoria
+      }));
+  }
+
   private carregarDadosUsuario(): void {
     const usuario = this.authService.getUsuarioLogado();
     
@@ -75,12 +344,11 @@ export class ProdutosComponent implements OnInit {
       this.usuarioNome = usuario.nome || 'Usuário';
       this.usuarioEmail = usuario.email || '';
       this.usuarioIniciais = this.gerarIniciais(this.usuarioNome);
+    } else {
+      // this.router.navigate(['/login']);
     }
   }
 
-  /**
-   * Gera as iniciais do nome para o avatar
-   */
   private gerarIniciais(nome: string): string {
     const palavras = nome.trim().split(' ');
     if (palavras.length >= 2) {
@@ -89,249 +357,8 @@ export class ProdutosComponent implements OnInit {
     return nome.substring(0, 2).toUpperCase();
   }
 
-  /**
-   * Busca produtos da API
-   */
-  private carregarProdutos(): void {
-    this.produtoService.listarProdutos().subscribe({
-      next: (produtos) => {
-        this.produtos = produtos;
-        this.produtosFiltrados = produtos;
-        console.log('✅ Produtos carregados:', produtos);
-        console.log('📊 Total de produtos:', produtos.length);
-      },
-      error: (error) => {
-        console.error('❌ Erro ao carregar produtos:', error);
-        this.produtos = [];
-        this.produtosFiltrados = [];
-      }
-    });
-  }
-
-  /**
-   * Filtra produtos baseado no termo de busca
-   */
-  filtrarProdutos(): void {
-    if (!this.termoBusca || this.termoBusca.trim() === '') {
-      this.produtosFiltrados = this.produtos;
-      return;
-    }
-
-    const termo = this.termoBusca.toLowerCase().trim();
-    this.produtosFiltrados = this.produtos.filter(produto => {
-      return (
-        produto.nome?.toLowerCase().includes(termo) ||
-        produto.categoria?.toLowerCase().includes(termo) ||
-        produto.codigo_publico?.toLowerCase().includes(termo) ||
-        produto.descricao?.toLowerCase().includes(termo)
-      );
-    });
-  }
-
-  /**
-   * Alterna entre visualização em grade e tabela
-   */
-  alternarVisualizacao(): void {
-    this.modoVisualizacao = this.modoVisualizacao === 'grade' ? 'tabela' : 'grade';
-  }
-
-  /**
-   * Formata preço para moeda brasileira
-   */
-  formatarPreco(preco: number | undefined): string {
-    if (!preco) return 'R$ 0,00';
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(preco);
-  }
-
-  /**
-   * Realiza logout do usuário
-   */
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
-  }
-
-  /**
-   * Deleta um produto
-   */
-  deletarProduto(id: number | undefined): void {
-    if (!id) return;
-    
-    if (confirm('Tem certeza que deseja deletar este produto?')) {
-      this.produtoService.deletarProduto(id).subscribe({
-        next: () => {
-          console.log('✅ Produto deletado com sucesso');
-          // Recarrega a lista de produtos
-          this.carregarProdutos();
-        },
-        error: (error) => {
-          console.error('❌ Erro ao deletar produto:', error);
-          alert('Erro ao deletar produto. Tente novamente.');
-        }
-      });
-    }
-  }
-
-  /**
-   * Função trackBy para melhorar performance do ngFor
-   */
-  trackByProdutoId(index: number, produto: Produto): number | undefined {
-    return produto.id_produto;
-  }
-
-  /**
-   * Abre o modal de adicionar produto
-   */
-  abrirModalAdicionar(): void {
-    this.limparFormulario();
-    this.mostrarModalAdicionar = true;
-    this.formularioSubmetido = false;
-  }
-
-  /**
-   * Fecha o modal de adicionar produto
-   */
-  fecharModalAdicionar(): void {
-    this.mostrarModalAdicionar = false;
-    this.limparFormulario();
-    this.formularioSubmetido = false;
-  }
-
-  /**
-   * Abre o modal de editar produto
-   */
-  abrirModalEditar(produto: Produto): void {
-    if (!produto || !produto.id_produto) return;
-    
-    // Preenche o formulário com os dados do produto
-    this.produtoForm = {
-      nome: produto.nome || '',
-      descricao: produto.descricao || '',
-      categoria: produto.categoria || '',
-      codigo_publico: produto.codigo_publico || '',
-      preco_unitario: produto.preco_unitario || undefined,
-      unidade_medida: produto.unidade_medida || '',
-      status: produto.status !== undefined ? produto.status : true
-    };
-    
-    this.produtoEditando = produto;
-    this.mostrarModalEditar = true;
-    this.formularioSubmetido = false;
-  }
-
-  /**
-   * Fecha o modal de editar produto
-   */
-  fecharModalEditar(): void {
-    this.mostrarModalEditar = false;
-    this.produtoEditando = null;
-    this.limparFormulario();
-    this.formularioSubmetido = false;
-  }
-
-  /**
-   * Limpa o formulário
-   */
-  private limparFormulario(): void {
-    this.produtoForm = {
-      nome: '',
-      descricao: '',
-      categoria: '',
-      codigo_publico: '',
-      preco_unitario: undefined,
-      unidade_medida: '',
-      status: true
-    };
-  }
-
-  /**
-   * Valida o formulário
-   */
-  validarFormulario(): boolean {
-    return !!(
-      this.produtoForm.nome && 
-      this.produtoForm.nome.trim() !== ''
-    );
-  }
-
-  /**
-   * Salva um novo produto
-   */
-  salvarProduto(): void {
-    this.formularioSubmetido = true;
-
-    if (!this.validarFormulario()) {
-      return;
-    }
-
-    // Prepara os dados para enviar
-    const produtoParaSalvar: Produto = {
-      nome: this.produtoForm.nome.trim(),
-      descricao: this.produtoForm.descricao?.trim() || undefined,
-      categoria: this.produtoForm.categoria?.trim() || undefined,
-      codigo_publico: this.produtoForm.codigo_publico?.trim() || undefined,
-      preco_unitario: this.produtoForm.preco_unitario || undefined,
-      unidade_medida: this.produtoForm.unidade_medida?.trim() || undefined,
-      status: this.produtoForm.status !== undefined ? this.produtoForm.status : true
-    };
-
-    this.produtoService.criarProduto(produtoParaSalvar).subscribe({
-      next: (response) => {
-        console.log('✅ Produto criado com sucesso:', response);
-        this.fecharModalAdicionar();
-        this.carregarProdutos();
-        alert('Produto criado com sucesso!');
-      },
-      error: (error) => {
-        console.error('❌ Erro ao criar produto:', error);
-        alert('Erro ao criar produto. Verifique os dados e tente novamente.');
-      }
-    });
-  }
-
-  /**
-   * Atualiza um produto existente
-   */
-  atualizarProduto(): void {
-    if (!this.produtoEditando || !this.produtoEditando.id_produto) {
-      alert('Erro: Produto não encontrado para edição.');
-      return;
-    }
-
-    this.formularioSubmetido = true;
-
-    if (!this.validarFormulario()) {
-      return;
-    }
-
-    // Prepara os dados para atualizar
-    const produtoParaAtualizar: Partial<Produto> = {
-      nome: this.produtoForm.nome.trim(),
-      descricao: this.produtoForm.descricao?.trim() || undefined,
-      categoria: this.produtoForm.categoria?.trim() || undefined,
-      codigo_publico: this.produtoForm.codigo_publico?.trim() || undefined,
-      preco_unitario: this.produtoForm.preco_unitario || undefined,
-      unidade_medida: this.produtoForm.unidade_medida?.trim() || undefined,
-      status: this.produtoForm.status !== undefined ? this.produtoForm.status : true
-    };
-
-    this.produtoService.atualizarProduto(
-      this.produtoEditando.id_produto,
-      produtoParaAtualizar
-    ).subscribe({
-      next: (response) => {
-        console.log('✅ Produto atualizado com sucesso:', response);
-        this.fecharModalEditar();
-        this.carregarProdutos();
-        alert('Produto atualizado com sucesso!');
-      },
-      error: (error) => {
-        console.error('❌ Erro ao atualizar produto:', error);
-        alert('Erro ao atualizar produto. Verifique os dados e tente novamente.');
-      }
-    });
   }
 }

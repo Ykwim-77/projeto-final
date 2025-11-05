@@ -1,9 +1,8 @@
-// src/app/app.routes.ts
 import { Routes } from '@angular/router';
 import { LoginComponent } from './pages/login/login';
+import { CadastroComponent } from './pages/cadastro/cadastro';
 import { HomeComponent } from './pages/home/home';
 import { ProdutosComponent } from './pages/produtos/produtos';
-import { CadastroComponent } from './pages/cadastro/cadastro';
 
 
 export const routes: Routes = [

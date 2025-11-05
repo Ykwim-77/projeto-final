@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">s
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Menu Lateral -->
     <nav class="sidebar">
         <div class="logo-container">
             <div class="logo">
-                <img src="assets/imagens/logoProgestao.png" alt="Logo StockSmart" class="logoTopo">
+                <img src="assets/imagens/logonova.png" alt="Logo StockSmart" class="logoTopo">
                 <span>ProGest</span>
                 <div id="tagline">Gestão Inteligente</div>
             </div>
@@ -129,17 +132,54 @@
         <section class="graficos-container">
             <div class="grafico-card">
                 <div class="card-title">Gráfico de Estoque Por Categoria</div>
-                <canvas id="estoquePorCategoria"></canvas>
+                <canvas #pieChart width="400" height="300"></canvas>
             </div>
             
             <div class="grafico-card">
                 <div class="card-title">Produtos em Baixa</div>
-                <canvas id="produtosEmBaixa"></canvas>
-                 <!--<div class="alertas avisos"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#7A611D"><path d="M640-640h120-120Zm-440 0h338-18 14-334Zm16-80h528l-34-40H250l-34 40Zm184 270 80-40 80 40v-190H400v190Zm182 330H200q-33 0-56.5-23.5T120-200v-499q0-14 4.5-27t13.5-24l50-61q11-14 27.5-21.5T250-840h460q18 0 34.5 7.5T772-811l50 61q9 11 13.5 24t4.5 27v196q-19-7-39-11t-41-4v-122H640v153q-35 20-61 49.5T538-371l-58-29-160 80v-320H200v440h334q8 23 20 43t28 37Zm138 0v-120H600v-80h120v-120h80v120h120v80H800v120h-80Z"/></svg>
-                <span><strong>Atenção</strong>: X produtos estão com estoque baixo!</span></div> -->
+                
+                <!-- Debug info (pode remover depois que funcionar) -->
+                <div class="debug-info" style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                    Total produtos: {{ produtos?.length || 0 }} | 
+                    Em baixa: {{ lowStockCount }}
+                </div>
+
+                <!-- Lista de produtos em baixa -->
+                <div class="low-stock-list" *ngIf="lowStockProducts.length > 0">
+                    <div class="low-stock-item" *ngFor="let produto of lowStockProducts; let i = index">
+                        <div class="item-index">{{ i + 1 }}</div>
+                        <div class="product-info">
+                            <span class="product-name">{{ produto.name }}</span>
+                            <span class="product-category">{{ produto.category }}</span>
+                            <span class="product-quantity" style="color: red; font-weight: bold;">
+                                ({{ produto.quantity }} unidades)
+                            </span>
+                        </div>
+                        <div class="stock-alert">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Estoque Baixo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estado quando não há produtos em baixa -->
+                <div class="no-low-stock" *ngIf="lowStockProducts.length === 0 && produtos && produtos.length > 0">
+                    <i class="fas fa-check-circle"></i>
+                    <p>Nenhum produto com estoque baixo</p>
+                    <small>Todos os produtos estão acima do limite mínimo</small>
+                </div>
+
+                <!-- Estado quando não há produtos cadastrados -->
+                <div class="no-products" *ngIf="!produtos || produtos.length === 0">
+                    <i class="fas fa-box-open"></i>
+                    <p>Nenhum produto cadastrado</p>
+                    <small>Adicione produtos para monitorar o estoque</small>
+                </div>
             </div>
         </section>
         <section class="cardMovimentacoes">
             <div class="card-title">Últimas Movimentações</div>
         </section>
      </main>
+</body>
+</html>

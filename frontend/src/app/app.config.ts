@@ -1,14 +1,13 @@
-// src/app/app.config.ts
 import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
-import { authInterceptor } from './interceptors/auth.interceptor';
+import { provideClientHydration } from '@angular/platform-browser';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
-    // Registra o interceptor para adicionar withCredentials automaticamente
-    provideHttpClient(withInterceptors([authInterceptor]))
+    provideClientHydration(),
+    provideHttpClient(withInterceptorsFromDi())
   ]
 };
