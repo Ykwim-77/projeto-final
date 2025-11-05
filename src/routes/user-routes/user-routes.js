@@ -1,12 +1,12 @@
 import express from 'express';
 import  controller  from '../../controllers/user-controller/user-controller.js';
-
+import authMiddleware from '../../midllewares/authController.js';
 
 const roteador_usuario = express.Router();
+ 
 
-
-roteador_usuario.get("/", (req, res) =>{
-    controller.pegarTodosUsuarios(res, res);
+roteador_usuario.get("/", authMiddleware, (req, res) =>{
+    controller.pegarTodosUsuarios(req, res);
 })
 
 roteador_usuario.get("/:id", (req, res) => {
@@ -28,6 +28,19 @@ roteador_usuario.put("/:id", (req, res) => {
 roteador_usuario.delete("/:id", (req, res) => {
     controller.deletarUsuario(req, res);
 });
+roteador_usuario.post("/login", (req, res) => {
+    controller.Login(req, res);
+})
+
+//midlleware
+//vai verificar se o usuário está autorizado a fazer alguma coisa na rota que o midlleware estiver
+
+//controller
+//procurar o usuário
+//criar o token
+//armazenar o token nos cookies do navegador
+//
+
 
 
 

@@ -17,7 +17,7 @@ model usuario {
   criado_em        DateTime  @default(now())
   cpf              String?
 
-  tipo_usuario     tipo_usuario  @relation(fields: [id_tipo_usuario], references: [id_tipo_usuario])
+  tipo_usuario     tipo_usuario  @relation(fields: [id_tipo_usuario], references: [id_tipo_usuario], onDelete: Cascade)
   compras          compra[]      @relation("UsuarioCompras")
   movimentacoes    movimentacao[]
   relatorios       relatorio[]
@@ -49,7 +49,7 @@ model produto {
   historicos       historico_previsao[]
   movimentacoes    movimentacao[]
   garantias        garantia[]    @relation("ProdutoGarantias")
-  fornecedor       fornecedor?   @relation(fields: [id_fornecedor], references: [id_fornecedor])
+  fornecedor       fornecedor?   @relation(fields: [id_fornecedor], references: [id_fornecedor], onDelete: Cascade)
 }
 
 model estoque {
@@ -61,8 +61,8 @@ model estoque {
   ultima_atualizacao DateTime
   status            String?
 
-  produto           produto   @relation(fields: [id_produto], references: [id_produto])
-  sala              sala      @relation(fields: [id_sala], references: [id_sala])
+  produto           produto   @relation(fields: [id_produto], references: [id_produto], onDelete: Cascade)
+  sala              sala      @relation(fields: [id_sala], references: [id_sala], onDelete: Cascade)
 }
 
 model financeiro {
@@ -89,10 +89,10 @@ model compra {
   origem           String?
   observacoes      String?
 
-  produto          produto     @relation("ProdutoCompras", fields: [id_produto], references: [id_produto])
-  fornecedor       fornecedor  @relation(fields: [id_fornecedor], references: [id_fornecedor])
-  financeiro       financeiro  @relation(fields: [id_financeiro], references: [id_financeiro])
-  usuario          usuario     @relation("UsuarioCompras", fields: [id_usuario], references: [id_usuario])
+  produto          produto     @relation("ProdutoCompras", fields: [id_produto], references: [id_produto], onDelete: Cascade)
+  fornecedor       fornecedor  @relation(fields: [id_fornecedor], references: [id_fornecedor], onDelete: Cascade)
+  financeiro       financeiro  @relation(fields: [id_financeiro], references: [id_financeiro], onDelete: Cascade)
+  usuario          usuario     @relation("UsuarioCompras", fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
 }
 
 model sala {
@@ -115,8 +115,8 @@ model movimentacao {
   status           String?
   observacao       String?
 
-  produto          produto   @relation(fields: [id_produto], references: [id_produto])
-  usuario          usuario   @relation(fields: [id_usuario], references: [id_usuario])
+  produto          produto   @relation(fields: [id_produto], references: [id_produto], onDelete: Cascade)
+  usuario          usuario   @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
 }
 
 model alerta {
@@ -125,7 +125,7 @@ model alerta {
   tipo_alerta      String
   mensagem         String
 
-  produto          produto   @relation(fields: [id_produto], references: [id_produto])
+  produto          produto   @relation(fields: [id_produto], references: [id_produto], onDelete: Cascade)
 }
 
 model previsao_demanda {
@@ -136,7 +136,7 @@ model previsao_demanda {
   id_financeiro    Int?
   confianca_modelo Float?
 
-  produto          produto   @relation(fields: [id_produto], references: [id_produto])
+  produto          produto   @relation(fields: [id_produto], references: [id_produto], onDelete: Cascade)
   historicos       historico_previsao[]
 }
 
@@ -161,9 +161,9 @@ model historico_previsao {
   diferenca        Int
   precisao_modelo  Float?
 
-  produto          produto   @relation(fields: [id_produto], references: [id_produto])
-  previsao         previsao_demanda @relation(fields: [id_previsao], references: [id_previsao])
-  financeiro       financeiro? @relation(fields: [id_financeiro], references: [id_financeiro])
+  produto          produto   @relation(fields: [id_produto], references: [id_produto], onDelete: Cascade)
+  previsao         previsao_demanda @relation(fields: [id_previsao], references: [id_previsao], onDelete: Cascade)
+  financeiro       financeiro? @relation(fields: [id_financeiro], references: [id_financeiro], onDelete: Cascade)
 }
 
 model relatorio {
@@ -175,7 +175,7 @@ model relatorio {
   gerado_em        DateTime
   status           String?
 
-  usuario          usuario   @relation(fields: [id_usuario], references: [id_usuario])
+  usuario          usuario   @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
 }
 
 model garantia {
@@ -187,6 +187,6 @@ model garantia {
   descricao    String?
   status       String   @default("Ativa")
 
-  produto      produto  @relation("ProdutoGarantias", fields: [id_produto], references: [id_produto])
-  usuario      usuario  @relation("UsuarioGarantias", fields: [id_usuario], references: [id_usuario])
+  produto      produto  @relation("ProdutoGarantias", fields: [id_produto], references: [id_produto], onDelete: Cascade)
+  usuario      usuario  @relation("UsuarioGarantias", fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
 }
