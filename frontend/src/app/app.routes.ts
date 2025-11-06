@@ -1,6 +1,7 @@
 // src/app/app.routes.ts
 import { Routes } from '@angular/router';
 import { LoginComponent } from './pages/login/login';
+<<<<<<< HEAD
 import { EsqueceuSenhaComponent } from './pages/esqueceu-senha/esqueceu-senha';
 import { CodigoVerificacao } from './pages/codigo-verificacao/codigo-verificacao';
 import { RedefinirSenha } from './pages/redefinir-senha/redefinir-senha';
@@ -8,6 +9,11 @@ import { HomeComponent } from './pages/home/home';
 import { ProdutosComponent } from './pages/produtos/produtos';
 import { CadastroComponent } from './pages/cadastro/cadastro';
 import { Component } from '@angular/core';
+=======
+import { CadastroComponent } from './pages/cadastro/cadastro';
+import { HomeComponent } from './pages/home/home';
+import { ProdutosComponent } from './pages/produtos/produtos';
+>>>>>>> main
 
 
 export const routes: Routes = [
@@ -20,4 +26,8 @@ export const routes: Routes = [
   { path: 'home', component: HomeComponent },
   { path: 'produtos', component: ProdutosComponent },
   { path: '*', redirectTo: '/login' }
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 ];

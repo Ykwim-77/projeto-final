@@ -1,4 +1,3 @@
-// src/app/app.component.ts
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
@@ -6,10 +5,9 @@ import { RouterOutlet } from '@angular/router';
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet],
-  template: `
-    <router-outlet></router-outlet>
-  `
+  templateUrl: './app.html',
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'seu-app';
+  title = 'frontend';
 }

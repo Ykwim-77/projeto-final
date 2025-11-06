@@ -302,7 +302,7 @@ export class CodigoVerificacao implements AfterViewInit, OnDestroy {
     
     // Limpa os valores dos inputs na DOM
     setTimeout(() => {
-      this.inputs.forEach((input, index) => {
+      this.inputs.forEach((input: { nativeElement: { value: string; }; }, index: any) => {
         input.nativeElement.value = '';
       });
       

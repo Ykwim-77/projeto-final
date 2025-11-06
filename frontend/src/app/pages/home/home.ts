@@ -5,6 +5,11 @@ import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
+// Interface extendida para incluir o ID
+interface ProdutoComId extends Produto {
+  id: number;
+}
+
 @Component({
   selector: 'app-home',
   templateUrl: './home.html',
@@ -33,8 +38,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
   categories: any[] = [];
   lowStockProducts: any[] = [];
   
-  // Propriedade para armazenar produtos da API
-  produtos: Produto[] = [];
+  // Propriedade para armazenar produtos da API - usando a interface com ID
+  produtos: ProdutoComId[] = [];
 
   // Dados do usuário logado
   usuarioNome: string = '';
@@ -309,30 +314,82 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   private atualizarProdutosEmBaixa(): void {
+    console.log('=== ATUALIZANDO PRODUTOS EM BAIXA ===');
+    console.log('Produtos disponíveis:', this.produtos);
+    
     this.lowStockProducts = [];
+    const limiteEstoqueBaixo = 5;
     
-    // Defina um limite para estoque baixo (ex: menos de 10 unidades)
-    const limiteEstoqueBaixo = 10;
-    
-    const produtosEmAtencao = this.produtos.filter(produto => {
-      // Ajuste conforme os campos reais do seu modelo de Produto
-      return (produto.quantidade || produto.estoque || 0) <= limiteEstoqueBaixo;
+    if (!this.produtos || this.produtos.length === 0) {
+      console.log('Nenhum produto disponível para análise');
+      this.lowStockAlert = 'Nenhum produto cadastrado para análise.';
+      this.lowStockCount = 0;
+      return;
+    }
+
+    // DEBUG: Mostrar todas as quantidades
+    console.log('Detalhes das quantidades:');
+    this.produtos.forEach((produto, index) => {
+      const quantidade = this.obterQuantidadeProduto(produto);
+      console.log(`Produto ${index + 1} (ID: ${produto.id}): ${produto.nome || produto.name}, Quantidade: ${quantidade}`);
     });
 
-    this.lowStockProducts = produtosEmAtencao.map(produto => ({
-      name: produto.nome || 'Produto sem nome',
-      category: produto.categoria || 'Sem categoria',
-      quantity: produto.quantidade || produto.estoque || 0,
-      maxStock: produto.estoque_maximo || 50 // Ajuste conforme seu modelo
-    }));
+    const produtosEmAtencao = this.produtos.filter(produto => {
+      if (!produto) return false;
+      
+      const quantidade = this.obterQuantidadeProduto(produto);
+<<<<<<< HEAD:Frontend/src/app/pages/home/home.ts
+      const estaEmBaixa = quantidade <= limiteEstoqueBaixo;
+=======
+      console.log(`Produto: ${produto.nome || 'Produto sem nome'}, Quantidade: ${quantidade}, Limite: ${limiteEstoqueBaixo}`);
+>>>>>>> origin/main:frontend/src/app/pages/home/home.ts
+      
+      console.log(`Filtro: ${produto.nome || produto.name} (ID: ${produto.id}) - Qtd: ${quantidade} - Em baixa: ${estaEmBaixa}`);
+      
+      return estaEmBaixa;
+    });
+
+    console.log('Produtos em atenção encontrados:', produtosEmAtencao);
+
+    this.lowStockProducts = produtosEmAtencao.map(produto => {
+      const quantidade = this.obterQuantidadeProduto(produto);
+      
+      return {
+<<<<<<< HEAD:Frontend/src/app/pages/home/home.ts
+        id: produto.id,
+        name: produto.nome || produto.name || 'Produto sem nome',
+        category: produto.categoria || produto.categoria || 'Sem categoria',
+        quantity: quantidade,
+        maxStock: produto.estoque_maximo || produto.minStock || produto.estoque_maximo || 50
+=======
+        name: produto.nome || 'Produto sem nome',
+        category: produto.categoria || 'Sem categoria',
+        quantity: quantidade,
+        maxStock: produto.estoque_maximo || 50
+>>>>>>> origin/main:frontend/src/app/pages/home/home.ts
+      };
+    });
 
     this.lowStockCount = this.lowStockProducts.length;
     
+    console.log('Low stock products final:', this.lowStockProducts);
+    console.log('Low stock count:', this.lowStockCount);
+    console.log('=== FIM ATUALIZAÇÃO PRODUTOS BAIXA ===');
+
     if (this.lowStockCount > 0) {
       this.lowStockAlert = `Atenção! Você tem ${this.lowStockCount} produto(s) com estoque baixo.`;
     } else {
       this.lowStockAlert = 'Estoque em dia! Todos os produtos estão com quantidade adequada.';
     }
+  }
+
+  private obterQuantidadeProduto(produto: any): number {
+    // Tenta diferentes nomes de propriedades possíveis para quantidade
+    const quantidade = produto.quantidade ?? produto.estoque ?? produto.quant ?? produto.stock ?? 0;
+    
+    // Converte para número e trata valores inválidos
+    const qtdNumero = Number(quantidade);
+    return isNaN(qtdNumero) ? 0 : qtdNumero;
   }
 
   private initializeMetrics(): void {
@@ -369,19 +426,19 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   private atualizarMetricas(): void {
     this.totalProducts = this.produtos.length;
-    
+  
     let valorTotal = 0;
     this.produtos.forEach(produto => {
-      if (produto.preco_unitario) {
-        valorTotal += produto.preco_unitario * (produto.quantidade || 1);
-      }
-    });
-    
+      const quantidade = this.obterQuantidadeProduto(produto);
+      const preco = produto.preco || 0; // usa apenas o campo 'preco'
+      valorTotal += preco * quantidade;
+    }); // ← REMOVIDO o "};" extra que estava aqui
+      
     this.stockValue = new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(valorTotal);
-    
+      
     this.metricCards = [
       {
         title: 'Total de Produtos',
@@ -427,14 +484,17 @@ export class HomeComponent implements OnInit, AfterViewInit {
     const usuario = this.authService.getUsuarioLogado();
     
     if (usuario) {
-      this.usuarioNome = usuario.nome || 'Usuário';
+      this.usuarioNome = usuario.nome;
       this.usuarioEmail = usuario.email || '';
       this.usuarioIniciais = this.gerarIniciais(this.usuarioNome);
     } else {
       // Se não tem usuário logado, volta para login
+<<<<<<< HEAD
       // this.router.navigate(['/login']);
 
       this.router.navigate(['/login']);
+=======
+>>>>>>> main
       // this.router.navigate(['/login']);
     }
   }
@@ -453,16 +513,75 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   private carregarProdutos(): void {
+    console.log('🔄 Iniciando carregamento de produtos da API...');
+    
     this.produtoService.listarProdutos().subscribe({
       next: (produtos) => {
-        this.produtos = produtos;
-        console.log('✅ Produtos carregados:', produtos);
+        console.log('✅ Produtos carregados da API:', produtos);
+        console.log('🔍 Tipo dos dados:', typeof produtos);
+        console.log('🔍 Número de produtos:', produtos.length);
+        
+        // Convertendo para ProdutoComId para incluir o ID
+        this.produtos = produtos as ProdutoComId[];
         this.atualizarMetricas();
         this.atualizarProdutosEmBaixa();
       },
       error: (error) => {
-        console.error('❌ Erro ao carregar produtos:', error);
+        console.error('❌ Erro ao carregar produtos da API:', error);
+        console.log('🔄 Usando dados mock para teste...');
+        
+        // Dados mock COM ID - usando a interface ProdutoComId
+        this.produtos = [
+          {
+            id: 1,
+            nome: 'Notebook Dell',
+            categoria: 'Eletrônicos',
+            quantidade: 3,
+            estoque_maximo: 50,
+            preco: undefined,
+            name: '',
+            minStock: 0,
+            estoque: 0,
+            id_produto: 0,
+            id_fornecedor: 0
+          },
+          {
+            id: 2,
+            nome: 'Mouse Gamer',
+            categoria: 'Informática',
+            estoque: 2,
+            estoque_maximo: 30,
+            preco: 150,
+            name: '',
+            minStock: 0,
+            quantidade: 0,
+            id_produto: 0,
+            id_fornecedor: 0
+          },
+          {
+            id: 3,
+            nome: 'Caderno Universitário',
+            categoria: 'Papelaria',
+            quantidade: 7,
+            estoque_maximo: 20,
+            preco: undefined,
+            name: '',
+            minStock: 0,
+            estoque: 0,
+            id_produto: 0,
+            id_fornecedor: 0
+          }
+        ];
+        
+        this.atualizarMetricas();
+        this.atualizarProdutosEmBaixa();
       }
     });
+  }
+
+  // Método para forçar atualização (útil para testes)
+  public atualizarDados(): void {
+    console.log('🔄 Forçando atualização dos dados...');
+    this.carregarProdutos();
   }
 }

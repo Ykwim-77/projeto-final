@@ -18,7 +18,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  login(credenciais: { email: string; senha: string }): Observable<any> {
+  login(email: string, password: string, credenciais: { email: string; senha: string; }): Observable<any> {
     // ✅ URL correta: /login (não /usuario/login)
     return this.http.post(`${this.apiUrl}/login`, credenciais, {
       withCredentials: true

@@ -13,7 +13,7 @@
     <nav class="sidebar">
         <div class="logo-container">
             <div class="logo">
-                <img src="assets/imagens/logoProgestao.png" alt="Logo StockSmart" class="logoTopo">
+                <img src="assets/imagens/logonova.png" alt="Logo StockSmart" class="logoTopo">
                 <span>ProGest</span>
                 <div id="tagline">Gestão Inteligente</div>
             </div>
@@ -60,7 +60,7 @@
             <div class="user-info">
                 <div class="user-avatar">{{ usuarioIniciais || 'U' }}</div>
                 <div class="user-details">
-                    <div class="user-name">{{ usuarioNome || 'Usuário' }}</div>
+                    <div class="user-name">{{ usuarioNome}}</div>
                     <div class="user-email">{{ usuarioEmail || 'email@exemplo.com' }}</div>
                 </div>
             </div>
@@ -137,12 +137,23 @@
             
             <div class="grafico-card">
                 <div class="card-title">Produtos em Baixa</div>
-                <!-- Substitua o canvas por uma lista -->
+                
+                <!-- Debug info (pode remover depois que funcionar) -->
+                <div class="debug-info" style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                    Total produtos: {{ produtos.length || 0 }} | 
+                    Em baixa: {{ lowStockCount }}
+                </div>
+
+                <!-- Lista de produtos em baixa -->
                 <div class="low-stock-list" *ngIf="lowStockProducts.length > 0">
-                    <div class="low-stock-item" *ngFor="let produto of lowStockProducts">
+                    <div class="low-stock-item" *ngFor="let produto of lowStockProducts; let i = index">
+                        <div class="item-index">{{ i + 1 }}</div>
                         <div class="product-info">
                             <span class="product-name">{{ produto.name }}</span>
                             <span class="product-category">{{ produto.category }}</span>
+                            <span class="product-quantity" style="color: red; font-weight: bold;">
+                                ({{ produto.quantity }} unidades)
+                            </span>
                         </div>
                         <div class="stock-alert">
                             <i class="fas fa-exclamation-triangle"></i>
@@ -150,16 +161,25 @@
                         </div>
                     </div>
                 </div>
-                <div class="no-low-stock" *ngIf="lowStockProducts.length === 0">
+
+                <!-- Estado quando não há produtos em baixa -->
+                <div class="no-low-stock" *ngIf="lowStockProducts.length === 0 && produtos && produtos.length > 0">
                     <i class="fas fa-check-circle"></i>
                     <p>Nenhum produto com estoque baixo</p>
+                    <small>Todos os produtos estão acima do limite mínimo</small>
+                </div>
+
+                <!-- Estado quando não há produtos cadastrados -->
+                <div class="no-products" *ngIf="!produtos || produtos.length === 0">
+                    <i class="fas fa-box-open"></i>
+                    <p>Nenhum produto cadastrado</p>
+                    <small>Adicione produtos para monitorar o estoque</small>
                 </div>
             </div>
         </section>
         <section class="cardMovimentacoes">
             <div class="card-title">Últimas Movimentações</div>
         </section>
-        <section>
-            
-        </section>
      </main>
+</body>
+</html>
