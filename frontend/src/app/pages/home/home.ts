@@ -529,7 +529,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
             minStock: 0,
             estoque: 0,
             id_produto: 0,
-            id_fornecedor: 0
+            id_fornecedor: 0,
+            maxStock: 0
           },
           {
             id: 2,
@@ -542,7 +543,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
             minStock: 0,
             quantidade: 0,
             id_produto: 0,
-            id_fornecedor: 0
+            id_fornecedor: 0,
+            maxStock: 0
           },
           {
             id: 3,
@@ -555,7 +557,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
             minStock: 0,
             estoque: 0,
             id_produto: 0,
-            id_fornecedor: 0
+            id_fornecedor: 0,
+            maxStock: 0
           }
         ];
         

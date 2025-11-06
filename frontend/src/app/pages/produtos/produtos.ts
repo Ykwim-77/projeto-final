@@ -360,4 +360,8 @@ export class ProdutosComponent implements OnInit {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+
+  get categoriasUnicas(): string[] {
+    return [...new Set(this.produtos.map(p => p.categoria))];
+  }
 }
