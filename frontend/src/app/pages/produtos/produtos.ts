@@ -1,12 +1,9 @@
+
 import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-<<<<<<< HEAD
 import { RouterLink, RouterLinkActive } from '@angular/router';
-=======
-import { RouterLink } from '@angular/router';
->>>>>>> main
 import { AuthService } from '../../services/auth.service';
 
 interface MenuItem {
@@ -54,7 +51,6 @@ export class ProdutosComponent implements OnInit {
   produtoEditando: Produto | null = null;
   visualizacao: 'grade' | 'tabela' = 'grade';
 
-<<<<<<< HEAD
   // Produto em cadastro/edição
   novoProduto = {
     nome: '',
@@ -65,31 +61,6 @@ export class ProdutosComponent implements OnInit {
     descricao: ''
   };
 
-=======
-  // Filtros
-  filtros = {
-    nome: '',
-    sku: '', 
-    categoria: '',
-    precoMin: 0,
-    precoMax: 10000,
-    estoqueMin: 0
-  };
-
-  // Controle do dropdown de filtros
-  filtroAberto: string | null = null;
-
-  // Produto em cadastro/edição
-  novoProduto = {
-    nome: '',
-    sku: '',
-    categoria: '',
-    quantidade: 0,
-    preco: 0,
-    descricao: ''
-  };
-
->>>>>>> main
   // Lista de produtos
   produtos: Produto[] = [
     { 
@@ -123,11 +94,7 @@ export class ProdutosComponent implements OnInit {
       id: 4, 
       nome: 'Headphone Bluetooth', 
       sku: 'HP-004', 
-<<<<<<< HEAD
       categoria: 'Áudio', 
-=======
-      categoria: 'Acessórios', 
->>>>>>> main
       quantidade: 12, 
       preco: 199.90,
       descricao: 'Fone de ouvido sem fio'
@@ -136,7 +103,6 @@ export class ProdutosComponent implements OnInit {
       id: 5, 
       nome: 'Webcam 1080p', 
       sku: 'WC-005', 
-<<<<<<< HEAD
       categoria: 'Vídeo', 
       quantidade: 2, 
       preco: 159.90,
@@ -150,21 +116,6 @@ export class ProdutosComponent implements OnInit {
       quantidade: 20, 
       preco: 299.90,
       descricao: 'Unidade de estado sólido'
-=======
-      categoria: 'Periféricos', 
-      quantidade: 2, 
-      preco: 149.90,
-      descricao: 'Webcam Full HD para streaming'
-    },
-    { 
-      id: 6, 
-      nome: 'SSD 512GB', 
-      sku: 'SS-006', 
-      categoria: 'Informática', 
-      quantidade: 20, 
-      preco: 299.90,
-      descricao: 'SSD NVMe de alta velocidade'
->>>>>>> main
     }
   ];
 
@@ -175,11 +126,6 @@ export class ProdutosComponent implements OnInit {
 
   // Cards de Métricas
   metricCards: MetricCard[] = [];
-<<<<<<< HEAD
-
-=======
-  
->>>>>>> main
   // Dados individuais
   totalProducts: number = 0;
   stockValue: string = '';
@@ -198,95 +144,6 @@ export class ProdutosComponent implements OnInit {
     private authService: AuthService
   ) {}
 
-<<<<<<< HEAD
-=======
-  // Fechar dropdown quando clicar fora
-  @HostListener('document:click', ['$event'])
-  fecharDropdown(event: Event) {
-    const target = event.target as HTMLElement;
-    if (!target.closest('.coluna-filtravel')) {
-      this.filtroAberto = null;
-    }
-  }
-
-  // Abrir/fechar dropdown de filtro
-  toggleFiltro(tipo: string) {
-    if (this.filtroAberto === tipo) {
-      this.filtroAberto = null;
-    } else {
-      this.filtroAberto = tipo;
-    }
-  }
-
-  // Limpar filtro de preço
-  limparFiltroPreco() {
-    this.filtros.precoMin = 0;
-    this.filtros.precoMax = 10000;
-  }
-
-  // Limpar todos os filtros
-  limparTodosFiltros() {
-    this.filtros = {
-      nome: '',
-      sku: '', 
-      categoria: '',
-      precoMin: 0,
-      precoMax: 10000,
-      estoqueMin: 0
-    };
-    this.filtroAberto = null;
-  }
-
-  // Verificar se há algum filtro ativo
-  get filtrosAtivos(): boolean {
-    return !!(
-      this.filtros.nome ||
-      this.filtros.sku ||
-      this.filtros.categoria ||
-      this.filtros.precoMin > 0 ||
-      this.filtros.precoMax < 10000 ||
-      this.filtros.estoqueMin > 0
-    );
-  }
-
-  // Método para filtrar produtos
-  get produtosFiltrados(): Produto[] {
-    return this.produtos.filter(produto => {
-      // Filtro por nome
-      if (this.filtros.nome && !produto.nome.toLowerCase().includes(this.filtros.nome.toLowerCase())) {
-        return false;
-      }
-      
-      // Filtro por SKU
-      if (this.filtros.sku && !produto.sku.toLowerCase().includes(this.filtros.sku.toLowerCase())) {
-        return false;
-      }
-      
-      // Filtro por categoria
-      if (this.filtros.categoria && produto.categoria !== this.filtros.categoria) {
-        return false;
-      }
-      
-      // Filtro por preço mínimo
-      if (this.filtros.precoMin && produto.preco < this.filtros.precoMin) {
-        return false;
-      }
-      
-      // Filtro por preço máximo
-      if (this.filtros.precoMax && produto.preco > this.filtros.precoMax) {
-        return false;
-      }
-      
-      // Filtro por estoque mínimo
-      if (this.filtros.estoqueMin && produto.quantidade < this.filtros.estoqueMin) {
-        return false;
-      }
-      
-      return true;
-    });
-  }
-
->>>>>>> main
   // Inicialização
   ngOnInit() {
     this.carregarDadosUsuario();
@@ -330,30 +187,6 @@ export class ProdutosComponent implements OnInit {
 
   // Salvar produto (criar ou atualizar)
   salvarProduto() {
-<<<<<<< HEAD
-=======
-    // Validações básicas
-    if (!this.novoProduto.nome.trim()) {
-      alert('O nome do produto é obrigatório!');
-      return;
-    }
-
-    if (!this.novoProduto.sku.trim()) {
-      alert('O SKU do produto é obrigatório!');
-      return;
-    }
-
-    if (this.novoProduto.quantidade < 0) {
-      alert('A quantidade não pode ser negativa!');
-      return;
-    }
-
-    if (this.novoProduto.preco <= 0) {
-      alert('O preço deve ser maior que zero!');
-      return;
-    }
-
->>>>>>> main
     if (this.produtoEditando) {
       // Atualizar produto existente
       const index = this.produtos.findIndex(p => p.id === this.produtoEditando!.id);
@@ -487,22 +320,12 @@ export class ProdutosComponent implements OnInit {
   }
 
   private initializeCategories(): void {
-<<<<<<< HEAD
     this.categories = [
       { name: 'Periféricos', percentage: '45%' },
       { name: 'Eletrônicos', percentage: '20%' },
       { name: 'Informática', percentage: '15%' },
       { name: 'Acessórios', percentage: '20%' }
     ];
-=======
-    // Obter categorias únicas dos produtos
-    const categoriasUnicas = [...new Set(this.produtos.map(p => p.categoria))];
-    
-    this.categories = categoriasUnicas.map(categoria => ({
-      name: categoria,
-      percentage: Math.round((this.produtos.filter(p => p.categoria === categoria).length / this.produtos.length) * 100) + '%'
-    }));
->>>>>>> main
   }
 
   private initializeLowStockProducts(): void {
@@ -538,12 +361,4 @@ export class ProdutosComponent implements OnInit {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
-<<<<<<< HEAD
-=======
-
-  // Método para obter categorias únicas (usado no dropdown de categoria)
-  get categoriasUnicas(): string[] {
-    return [...new Set(this.produtos.map(p => p.categoria))];
-  }
->>>>>>> main
 }

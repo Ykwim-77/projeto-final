@@ -338,11 +338,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
       if (!produto) return false;
       
       const quantidade = this.obterQuantidadeProduto(produto);
-<<<<<<< HEAD:Frontend/src/app/pages/home/home.ts
       const estaEmBaixa = quantidade <= limiteEstoqueBaixo;
-=======
-      console.log(`Produto: ${produto.nome || 'Produto sem nome'}, Quantidade: ${quantidade}, Limite: ${limiteEstoqueBaixo}`);
->>>>>>> origin/main:frontend/src/app/pages/home/home.ts
       
       console.log(`Filtro: ${produto.nome || produto.name} (ID: ${produto.id}) - Qtd: ${quantidade} - Em baixa: ${estaEmBaixa}`);
       
@@ -355,18 +351,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
       const quantidade = this.obterQuantidadeProduto(produto);
       
       return {
-<<<<<<< HEAD:Frontend/src/app/pages/home/home.ts
         id: produto.id,
         name: produto.nome || produto.name || 'Produto sem nome',
         category: produto.categoria || produto.categoria || 'Sem categoria',
         quantity: quantidade,
         maxStock: produto.estoque_maximo || produto.minStock || produto.estoque_maximo || 50
-=======
-        name: produto.nome || 'Produto sem nome',
-        category: produto.categoria || 'Sem categoria',
-        quantity: quantidade,
-        maxStock: produto.estoque_maximo || 50
->>>>>>> origin/main:frontend/src/app/pages/home/home.ts
       };
     });
 
@@ -489,12 +478,9 @@ export class HomeComponent implements OnInit, AfterViewInit {
       this.usuarioIniciais = this.gerarIniciais(this.usuarioNome);
     } else {
       // Se não tem usuário logado, volta para login
-<<<<<<< HEAD
       // this.router.navigate(['/login']);
 
       this.router.navigate(['/login']);
-=======
->>>>>>> main
       // this.router.navigate(['/login']);
     }
   }
