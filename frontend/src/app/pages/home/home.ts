@@ -489,6 +489,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
       this.usuarioIniciais = this.gerarIniciais(this.usuarioNome);
     } else {
       // Se não tem usuário logado, volta para login
+<<<<<<< HEAD
+      // this.router.navigate(['/login']);
+
+      this.router.navigate(['/login']);
+=======
+>>>>>>> main
       // this.router.navigate(['/login']);
     }
   }
