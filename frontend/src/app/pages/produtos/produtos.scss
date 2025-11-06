@@ -732,27 +732,6 @@ main {
         }
     }
 }
-<<<<<<< HEAD
-
-=======
-.header-com-filtro {
-    display: flex;
-    align-items: center;
-    /*justify-content: space-between;*/ 
-    gap: 2px; /* Espaço controlado entre elementos */
-    padding: 0 8px;
-    
-    .titulo-coluna {
-      flex: 1;
-    }
-  }
-th{
-    border-right: 1px solid rgba(0, 0, 0, 0.216);
-}
-.nome-produto, .estoque, .categoria, .preco, .sku, .valor-total, .acoes{
-    border-right: 1px solid rgba(0, 0, 0, 0.224);
-}
->>>>>>> main
 /* ===== RESPONSIVIDADE ===== */
 @media (max-width: 768px) {
     .produtos-grade {
@@ -785,11 +764,7 @@ th{
 
     .tabela {
         th, td {
-<<<<<<< HEAD
             padding: 8px 15 px;
-=======
-            padding: 8px 0px;
->>>>>>> main
         }
 
         .nome-produto small {
@@ -801,7 +776,6 @@ th{
         }
     }
 }
-<<<<<<< HEAD
 
 @media (max-width: 480px) {
     .tabela {
@@ -848,5 +822,3 @@ th{
         }
     }
 }
-=======
->>>>>>> main
