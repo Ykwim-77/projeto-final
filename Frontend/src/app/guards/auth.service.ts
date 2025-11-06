@@ -1,55 +1,77 @@
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { delay, tap } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private usuarioLogado = new BehaviorSubject<any>(null);
   
-  // Usuário mock para teste
-  private usuarioMock = {
-    nome: 'João Silva',
-    email: 'joao.silva@empresa.com'
-  };
+  constructor(private http: HttpClient) {}
 
-  constructor(private router: Router) {
-    // Verifica se há usuário no localStorage ao inicializar
-    const usuarioSalvo = localStorage.getItem('usuarioLogado');
-    if (usuarioSalvo) {
-      this.usuarioLogado.next(JSON.parse(usuarioSalvo));
-    }
+  // MÉTODO LOGIN CORRIGIDO - deve retornar Observable
+  login(email: string, password: string): Observable<any> {
+    // Implementação real (quando tiver a API)
+    /*
+    return this.http.post('/api/auth/login', { 
+      email: email,
+      password: password 
+    });
+    */
+
+    // SIMULAÇÃO TEMPORÁRIA para teste
+    return new Observable(observer => {
+      setTimeout(() => {
+        // Simula credenciais válidas
+        if (email === 'teste@email.com' && password === '123456') {
+          observer.next({
+            success: true,
+            token: 'token_jwt_simulado',
+            user: {
+              id: 1,
+              name: 'Usuário Teste',
+              email: email
+            },
+            mensagem: 'Login realizado com sucesso'
+          });
+        } else {
+          observer.error({
+            error: {
+              mensagem: 'Email ou senha incorretos'
+            }
+          });
+        }
+        observer.complete();
+      }, 1500);
+    });
   }
 
-  login(email: string, password: string): Observable<any> {
-    // Simulação de login
+  // Método de verificação de código (do código anterior)
+  verificarCodigo(codigo: string): Observable<any> {
+    return new Observable(observer => {
+      setTimeout(() => {
+        if (codigo === '123456') {
+          observer.next({
+            success: true,
+            token: 'token_temporario_' + codigo,
+            message: 'Código verificado com sucesso'
+          });
+        } else {
+          observer.error({
+            error: 'Código inválido',
+            message: 'O código digitado não é válido. Use 123456 para teste.'
+          });
+        }
+        observer.complete();
+      }, 1500);
+    });
+  }
+
+  reenviarCodigo(): Observable<any> {
     return of({ 
       success: true, 
-      usuario: this.usuarioMock 
-    }).pipe(
-      delay(1000),
-      tap(response => {
-        if (response.success) {
-          this.usuarioLogado.next(response.usuario);
-          localStorage.setItem('usuarioLogado', JSON.stringify(response.usuario));
-        }
-      })
-    );
-  }
-
-  logout(): void {
-    this.usuarioLogado.next(null);
-    localStorage.removeItem('usuarioLogado');
-    this.router.navigate(['/login']);
-  }
-
-  getUsuarioLogado(): any {
-    return this.usuarioLogado.value;
-  }
-
-  isLoggedIn(): boolean {
-    return this.usuarioLogado.value !== null;
+      message: 'Código reenviado com sucesso' 
+    }).pipe(delay(1000));
   }
 }

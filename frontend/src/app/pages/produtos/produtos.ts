@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 interface MenuItem {
   name: string;
@@ -38,7 +41,8 @@ interface Produto {
   selector: 'app-produtos',
   templateUrl: './produtos.html',
   styleUrls: ['./produtos.scss'],
-  imports: [CommonModule, FormsModule]
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterLink]
 })
 export class ProdutosComponent implements OnInit {
   // Controle de exibição
@@ -135,8 +139,14 @@ export class ProdutosComponent implements OnInit {
   usuarioEmail: string = 'joao.silva@empresa.com';
   usuarioIniciais: string = 'JS';
 
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
+
   // Inicialização
   ngOnInit() {
+    this.carregarDadosUsuario();
     this.initializeMenu();
     this.initializeAlerts();
     this.initializeMetrics();
@@ -325,5 +335,30 @@ export class ProdutosComponent implements OnInit {
         name: p.nome,
         category: p.categoria
       }));
+  }
+
+  private carregarDadosUsuario(): void {
+    const usuario = this.authService.getUsuarioLogado();
+    
+    if (usuario) {
+      this.usuarioNome = usuario.nome || 'Usuário';
+      this.usuarioEmail = usuario.email || '';
+      this.usuarioIniciais = this.gerarIniciais(this.usuarioNome);
+    } else {
+      // this.router.navigate(['/login']);
+    }
+  }
+
+  private gerarIniciais(nome: string): string {
+    const palavras = nome.trim().split(' ');
+    if (palavras.length >= 2) {
+      return (palavras[0][0] + palavras[palavras.length - 1][0]).toUpperCase();
+    }
+    return nome.substring(0, 2).toUpperCase();
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

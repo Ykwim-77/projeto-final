@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { EsqueceuSenhaComponent } from './esqueceu-senha';
 
-describe('EsqueceuSenha', () => {
+describe('EsqueceuSenhaComponent', () => {
   let component: EsqueceuSenhaComponent;
   let fixture: ComponentFixture<EsqueceuSenhaComponent>;
 

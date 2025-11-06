@@ -1,18 +1,16 @@
 import { Component } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../../guards/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-esqueceu-senha',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './esqueceu-senha.html',
   styleUrl: './esqueceu-senha.scss',
 })
-
 export class EsqueceuSenhaComponent {
-
   email: string = '';
   errorMessage: string = '';
 
@@ -23,10 +21,11 @@ export class EsqueceuSenhaComponent {
 
   onSubmit(event: Event): void {
     event.preventDefault();
-    
+
     const form = event.target as HTMLFormElement;
-    if (!form.checkValidity()) {
-      form.reportValidity();
+
+    if (form.checkValidity()) {
+      this.router.navigate(['/codigo-verificacao']);
       return;
     }
 
@@ -35,6 +34,6 @@ export class EsqueceuSenhaComponent {
       return;
     }
 
-
+    form.reportValidity();
   }
 }

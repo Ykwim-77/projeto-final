@@ -43,16 +43,16 @@ export class LoginComponent {
     this.errorMessage = '';
 
     this.authService.login(this.email, this.password).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         console.log('✅ Login realizado com sucesso!', response);
         this.isLoading = false;
         this.router.navigate(['/home']);
       },
-      error: (error) => {
+      error: (error: { error: { mensagem: string; }; }) => {
         console.error('❌ Erro no login:', error);
         this.isLoading = false;
         this.errorMessage = error.error?.mensagem || 'Email ou senha incorretos. Tente novamente.';
-      }
+      } 
     });
   }
 }
