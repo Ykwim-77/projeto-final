@@ -53,63 +53,8 @@ export class ProdutosComponent implements OnInit {
     descricao: ''
   };
 
-  // // Lista de produtos
-  // produtos: Produto[] = [
-  //   { 
-  //     id: 1, 
-  //     nome: 'Mouse Gamer RGB', 
-  //     sku: 'MG-001', 
-  //     categoria: 'Periféricos', 
-  //     quantidade: 15, 
-  //     preco: 89.90,
-  //     descricao: 'Mouse gamer com iluminação RGB'
-  //   },
-  //   { 
-  //     id: 2, 
-  //     nome: 'Teclado Mecânico', 
-  //     sku: 'TK-002', 
-  //     categoria: 'Periféricos', 
-  //     quantidade: 8, 
-  //     preco: 249.90,
-  //     descricao: 'Teclado mecânico switches blue'
-  //   },
-  //   { 
-  //     id: 3, 
-  //     nome: 'Monitor 24" Full HD', 
-  //     sku: 'MN-003', 
-  //     categoria: 'Eletrônicos', 
-  //     quantidade: 3, 
-  //     preco: 899.90,
-  //     descricao: 'Monitor LED 24 polegadas'
-  //   },
-  //   { 
-  //     id: 4, 
-  //     nome: 'Headphone Bluetooth', 
-  //     sku: 'HP-004', 
-  //     categoria: 'Áudio', 
-  //     quantidade: 12, 
-  //     preco: 199.90,
-  //     descricao: 'Fone de ouvido sem fio'
-  //   },
-  //   { 
-  //     id: 5, 
-  //     nome: 'Webcam 1080p', 
-  //     sku: 'WC-005', 
-  //     categoria: 'Vídeo', 
-  //     quantidade: 2, 
-  //     preco: 159.90,
-  //     descricao: 'Câmera para reuniões online'
-  //   },
-  //   { 
-  //     id: 6, 
-  //     nome: 'SSD 500GB', 
-  //     sku: 'SS-006', 
-  //     categoria: 'Armazenamento', 
-  //     quantidade: 20, 
-  //     preco: 299.90,
-  //     descricao: 'Unidade de estado sólido'
-  //   }
-  // ];
+  // Lista de produtos
+  produtos: Produto[] = [];
 
   // Dados de interface
   menuItems: MenuItem[] = [];
