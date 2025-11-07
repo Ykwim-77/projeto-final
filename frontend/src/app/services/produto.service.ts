@@ -7,7 +7,6 @@ export interface Produto {
   preco: number | undefined;
   name: string;
   minStock: number;
-  maxStock: number;
   estoque: number;
   quantidade: number;
   estoque_maximo: number;
