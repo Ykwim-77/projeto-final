@@ -4,9 +4,8 @@ import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 
 export interface Produto {
-  preco: number | undefined;
+  maxStock: number;
   name: string;
-  minStock: number;
   estoque: number;
   quantidade: number;
   estoque_maximo: number;

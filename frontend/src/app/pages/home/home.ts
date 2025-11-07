@@ -7,6 +7,8 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 
 // Interface extendida para incluir o ID
 interface ProdutoComId extends Produto {
+  preco: number;
+  minStock: number;
   id: number;
 }
 
@@ -517,47 +519,47 @@ export class HomeComponent implements OnInit, AfterViewInit {
         console.log('🔄 Usando dados mock para teste...');
         
         // Dados mock COM ID - usando a interface ProdutoComId
-        this.produtos = [
-          {
-            id: 1,
-            nome: 'Notebook Dell',
-            categoria: 'Eletrônicos',
-            quantidade: 3,
-            estoque_maximo: 50,
-            preco: undefined,
-            name: '',
-            minStock: 0,
-            estoque: 0,
-            id_produto: 0,
-            id_fornecedor: 0
-          },
-          {
-            id: 2,
-            nome: 'Mouse Gamer',
-            categoria: 'Informática',
-            estoque: 2,
-            estoque_maximo: 30,
-            preco: 150,
-            name: '',
-            minStock: 0,
-            quantidade: 0,
-            id_produto: 0,
-            id_fornecedor: 0
-          },
-          {
-            id: 3,
-            nome: 'Caderno Universitário',
-            categoria: 'Papelaria',
-            quantidade: 7,
-            estoque_maximo: 20,
-            preco: undefined,
-            name: '',
-            minStock: 0,
-            estoque: 0,
-            id_produto: 0,
-            id_fornecedor: 0
-          }
-        ];
+        // this.produtos = [
+        //   {
+        //     id: 1,
+        //     nome: 'Notebook Dell',
+        //     categoria: 'Eletrônicos',
+        //     quantidade: 3,
+        //     estoque_maximo: 50,
+        //     preco: undefined,
+        //     name: '',
+        //     minStock: 0,
+        //     estoque: 0,
+        //     id_produto: 0,
+        //     id_fornecedor: 0
+        //   },
+        //   {
+        //     id: 2,
+        //     nome: 'Mouse Gamer',
+        //     categoria: 'Informática',
+        //     estoque: 2,
+        //     estoque_maximo: 30,
+        //     preco: 150,
+        //     name: '',
+        //     minStock: 0,
+        //     quantidade: 0,
+        //     id_produto: 0,
+        //     id_fornecedor: 0
+        //   },
+        //   {
+        //     id: 3,
+        //     nome: 'Caderno Universitário',
+        //     categoria: 'Papelaria',
+        //     quantidade: 7,
+        //     estoque_maximo: 20,
+        //     preco: undefined,
+        //     name: '',
+        //     minStock: 0,
+        //     estoque: 0,
+        //     id_produto: 0,
+        //     id_fornecedor: 0
+        //   }
+        // ];
         
         this.atualizarMetricas();
         this.atualizarProdutosEmBaixa();

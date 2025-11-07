@@ -12,7 +12,7 @@ npm-debug.log
 yarn-error.log
 
 
-afcasdqwwwdqasxdas
+
 
 # IDEs and editors
 .idea/
@@ -45,4 +45,5 @@ __screenshots__/
 .DS_Store
 Thumbs.db
 
-**node_modules/
+# nodemodules
+**/node_modules/
