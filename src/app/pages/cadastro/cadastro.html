@@ -1,0 +1,88 @@
+<div class="form" [class.blur]="isLoading">
+    <div class="leftside">
+        <img src="assets/imagens/telaLogin2.png" alt="Tela de cadastro">
+    </div>
+    <div class="rightside">
+        <div class="login-title">
+            <img src="assets/imagens/logoProgestao.png" alt="Logo" class="login-logo">
+            <h2>ProGest</h2>
+        </div>
+        <h3 class="subtitle">Crie sua conta gratuita</h3>
+        
+        <form class="input-container" (ngSubmit)="onSubmit($event)">
+            <div class="input">
+                <i class="fa fa-user"></i>
+                <input
+                    type="text"
+                    [(ngModel)]="nome"
+                    name="nome"
+                    placeholder="Nome completo"
+                    required
+                />
+            </div>
+
+            <div class="input">
+                <i class="fa fa-envelope"></i>
+                <input
+                    type="email"
+                    [(ngModel)]="email"
+                    name="email"
+                    placeholder="Email"
+                    required
+                />
+            </div>
+
+            <div class="input">
+                <i class="fa fa-id-card"></i>
+                <input
+                    type="text"
+                    [(ngModel)]="cpf"
+                    name="cpf"
+                    placeholder="CPF (opcional)"
+                    maxlength="14"
+                />
+            </div>
+
+            <div class="input">
+                <i class="fa fa-lock"></i>
+                <input
+                    type="password"
+                    [(ngModel)]="password"
+                    name="password"
+                    placeholder="Senha"
+                    required
+                    minlength="6"
+                />
+            </div>
+
+            <div class="input">
+                <i class="fa fa-lock"></i>
+                <input
+                    type="password"
+                    [(ngModel)]="confirmPassword"
+                    name="confirmPassword"
+                    placeholder="Confirmar senha"
+                    required
+                    minlength="6"
+                />
+            </div>
+
+            <div *ngIf="errorMessage" class="error-message">
+                {{ errorMessage }}
+            </div>
+
+            <div *ngIf="successMessage" class="success-message">
+                {{ successMessage }}
+            </div>
+
+            <button type="submit" class="login" [disabled]="isLoading">
+                {{ isLoading ? 'Criando conta...' : 'Criar conta' }}
+            </button>
+
+            <div class="links-row">
+                <span>Já tem uma conta?</span>
+                <a (click)="goToLogin()" style="cursor: pointer;">Entrar</a>
+            </div>
+        </form>
+    </div>
+</div>
