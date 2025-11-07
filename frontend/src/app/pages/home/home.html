@@ -141,11 +141,11 @@
                 <div class="card-title">Produtos em Baixa</div>
                 
                 <!-- Debug info (pode remover depois que funcionar) -->
-                <div class="debug-info" style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                <!--<div class="debug-info" style="font-size: 12px; color: #666; margin-bottom: 10px;">
                     Total produtos: {{ produtos.length || 0 }} | 
                     Em baixa: {{ lowStockCount }}
-                </div>
-
+                </div>-->
+<br>    
                 <!-- Lista de produtos em baixa -->
                 <div class="low-stock-list" *ngIf="lowStockProducts.length > 0">
                     <div class="low-stock-item" *ngFor="let produto of lowStockProducts; let i = index">

@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { DecimalPipe } from '@angular/common';
+import { ProdutoService, Produto } from '../../services/produto.service';
 
 interface MenuItem {
   name: string;
@@ -27,22 +29,12 @@ interface LowStockProduct {
   category: string;
 }
 
-interface Produto {
-  id: number;
-  nome: string;
-  sku: string;
-  categoria: string;
-  quantidade: number;
-  preco: number;
-  descricao?: string;
-}
-
 @Component({
   selector: 'app-produtos',
   templateUrl: './produtos.html',
   styleUrls: ['./produtos.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink]
+  imports: [CommonModule, FormsModule, RouterLink, DecimalPipe]
 })
 export class ProdutosComponent implements OnInit {
   // Controle de exibição
@@ -74,62 +66,7 @@ export class ProdutosComponent implements OnInit {
   };
 
   // Lista de produtos
-  produtos: Produto[] = [
-    { 
-      id: 1, 
-      nome: 'Mouse Gamer RGB', 
-      sku: 'MG-001', 
-      categoria: 'Periféricos', 
-      quantidade: 15, 
-      preco: 89.90,
-      descricao: 'Mouse gamer com iluminação RGB'
-    },
-    { 
-      id: 2, 
-      nome: 'Teclado Mecânico', 
-      sku: 'TK-002', 
-      categoria: 'Periféricos', 
-      quantidade: 8, 
-      preco: 249.90,
-      descricao: 'Teclado mecânico switches blue'
-    },
-    { 
-      id: 3, 
-      nome: 'Monitor 24" Full HD', 
-      sku: 'MN-003', 
-      categoria: 'Eletrônicos', 
-      quantidade: 3, 
-      preco: 899.90,
-      descricao: 'Monitor LED 24 polegadas'
-    },
-    { 
-      id: 4, 
-      nome: 'Headphone Bluetooth', 
-      sku: 'HP-004', 
-      categoria: 'Acessórios', 
-      quantidade: 12, 
-      preco: 199.90,
-      descricao: 'Fone de ouvido sem fio'
-    },
-    { 
-      id: 5, 
-      nome: 'Webcam 1080p', 
-      sku: 'WC-005', 
-      categoria: 'Periféricos', 
-      quantidade: 2, 
-      preco: 149.90,
-      descricao: 'Webcam Full HD para streaming'
-    },
-    { 
-      id: 6, 
-      nome: 'SSD 512GB', 
-      sku: 'SS-006', 
-      categoria: 'Informática', 
-      quantidade: 20, 
-      preco: 299.90,
-      descricao: 'SSD NVMe de alta velocidade'
-    }
-  ];
+  produtos: Produto[] = [];
 
   // Dados de interface
   menuItems: MenuItem[] = [];
@@ -148,13 +85,14 @@ export class ProdutosComponent implements OnInit {
   lowStockProducts: LowStockProduct[] = [];
 
   // Usuário
-  usuarioNome: string = 'João Silva';
-  usuarioEmail: string = 'joao.silva@empresa.com';
-  usuarioIniciais: string = 'JS';
+  usuarioNome: string = '';
+  usuarioEmail: string = '';
+  usuarioIniciais: string = '';
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private produtoService: ProdutoService
   ) {}
 
   // Fechar dropdown quando clicar fora
@@ -209,8 +147,9 @@ export class ProdutosComponent implements OnInit {
   // Método para filtrar produtos
   get produtosFiltrados(): Produto[] {
     return this.produtos.filter(produto => {
-      // Filtro por nome
-      if (this.filtros.nome && !produto.nome.toLowerCase().includes(this.filtros.nome.toLowerCase())) {
+      // Filtro por nome (usando 'name' da interface Produto)
+      const nomeProduto = produto.name || '';
+      if (this.filtros.nome && !nomeProduto.toLowerCase().includes(this.filtros.nome.toLowerCase())) {
         return false;
       }
       
@@ -223,19 +162,25 @@ export class ProdutosComponent implements OnInit {
       if (this.filtros.categoria && produto.categoria !== this.filtros.categoria) {
         return false;
       }
-      
+
       // Filtro por preço mínimo
-      if (this.filtros.precoMin && produto.preco < this.filtros.precoMin) {
+      if (
+        this.filtros.precoMin &&
+        (produto.preco === undefined || produto.preco < this.filtros.precoMin)
+      ) {
         return false;
       }
-      
+
       // Filtro por preço máximo
-      if (this.filtros.precoMax && produto.preco > this.filtros.precoMax) {
+      if (
+        this.filtros.precoMax &&
+        (produto.preco === undefined || produto.preco > this.filtros.precoMax)
+      ) {
         return false;
       }
       
-      // Filtro por estoque mínimo
-      if (this.filtros.estoqueMin && produto.quantidade < this.filtros.estoqueMin) {
+      // Filtro por estoque mínimo (usando 'estoque' da interface Produto)
+      if (this.filtros.estoqueMin && produto.estoque < this.filtros.estoqueMin) {
         return false;
       }
       
@@ -247,11 +192,11 @@ export class ProdutosComponent implements OnInit {
   ngOnInit() {
     this.carregarDadosUsuario();
     this.initializeMenu();
+    this.carregarProdutos();
     this.initializeAlerts();
     this.initializeMetrics();
     this.initializeCategories();
     this.initializeLowStockProducts();
-    this.atualizarMetricas();
   }
 
   // 🔧 MÉTODOS DO CRUD
@@ -274,11 +219,11 @@ export class ProdutosComponent implements OnInit {
   editarProduto(produto: Produto) {
     this.produtoEditando = produto;
     this.novoProduto = {
-      nome: produto.nome,
+      nome: produto.name || '',
       sku: produto.sku,
-      categoria: produto.categoria,
-      quantidade: produto.quantidade,
-      preco: produto.preco,
+      categoria: produto.categoria || '',
+      quantidade: produto.estoque || 0,
+      preco: produto.preco || 0,
       descricao: produto.descricao || ''
     };
     this.showCardCadastro = true;
@@ -313,28 +258,39 @@ export class ProdutosComponent implements OnInit {
       if (index !== -1) {
         this.produtos[index] = {
           ...this.produtoEditando,
-          nome: this.novoProduto.nome,
+          name: this.novoProduto.nome,
           sku: this.novoProduto.sku,
           categoria: this.novoProduto.categoria,
-          quantidade: Number(this.novoProduto.quantidade),
+          minStock: this.produtoEditando.minStock || 0,
+          estoque: Number(this.novoProduto.quantidade),
+          estoque_maximo: this.produtoEditando.estoque_maximo || 0,
           preco: Number(this.novoProduto.preco),
-          descricao: this.novoProduto.descricao
+          descricao: this.novoProduto.descricao,
+          id_produto: this.produtoEditando.id_produto || 0,
+          id_fornecedor: this.produtoEditando.id_fornecedor || 0
         };
       }
     } else {
       // Criar novo produto
       const novoId = this.produtos.length > 0 
-        ? Math.max(...this.produtos.map(p => p.id)) + 1 
+        ? Math.max(...this.produtos.map(p => p.id || 0)) + 1 
         : 1;
       
+      // Criar objeto com TODAS as propriedades da interface Produto
       const produto: Produto = {
         id: novoId,
-        nome: this.novoProduto.nome,
-        sku: this.novoProduto.sku,
+        name: this.novoProduto.nome.trim(),
+        sku: this.novoProduto.sku.trim(),
         categoria: this.novoProduto.categoria,
-        quantidade: Number(this.novoProduto.quantidade),
+        minStock: 0,
+        estoque: Number(this.novoProduto.quantidade),
+        estoque_maximo: 0,
         preco: Number(this.novoProduto.preco),
-        descricao: this.novoProduto.descricao
+        descricao: this.novoProduto.descricao?.trim(),
+        id_produto: 0,
+        id_fornecedor: 0,
+        quantidade: 0,
+        nome: ''
       };
       
       this.produtos.push(produto);
@@ -376,7 +332,7 @@ export class ProdutosComponent implements OnInit {
     this.totalProducts = this.produtos.length;
     
     const valorTotal = this.produtos.reduce((total, produto) => 
-      total + (produto.preco * produto.quantidade), 0
+      total + ((produto.preco || 0) * (produto.estoque || 0)), 0
     );
     
     this.stockValue = new Intl.NumberFormat('pt-BR', {
@@ -384,33 +340,33 @@ export class ProdutosComponent implements OnInit {
       currency: 'BRL'
     }).format(valorTotal);
 
-    this.lowStockCount = this.produtos.filter(p => p.quantidade < 5).length;
+    this.lowStockCount = this.produtos.filter(p => (p.estoque || 0) < 5).length;
 
     // Atualizar metricCards
     this.metricCards = [
       {
         title: 'Total de Produtos',
         value: this.totalProducts,
-        variation: '+12% este mês',
-        trend: 'positive'
+        variation: this.totalProducts > 0 ? '+12% este mês' : '-',
+        trend: this.totalProducts > 0 ? 'positive' : 'neutral'
       },
       {
         title: 'Valor do Estoque',
         value: this.stockValue,
-        variation: '+8.2%',
-        trend: 'positive'
+        variation: valorTotal > 0 ? '+8.2%' : '-',
+        trend: valorTotal > 0 ? 'positive' : 'neutral'
       },
       {
         title: 'Itens em Baixa',
         value: this.lowStockCount,
-        variation: 'atenção',
-        trend: this.lowStockCount > 0 ? 'negative' : 'neutral'
+        variation: this.lowStockCount > 0 ? 'atenção' : 'tudo ok',
+        trend: this.lowStockCount > 0 ? 'negative' : 'positive'
       },
       {
         title: 'Saídas do Mês',
-        value: 20,
-        variation: '+5%',
-        trend: 'positive'
+        value: 0,
+        variation: '-',
+        trend: 'neutral'
       }
     ];
   }
@@ -431,8 +387,14 @@ export class ProdutosComponent implements OnInit {
   }
 
   private initializeAlerts(): void {
-    this.lowStockCount = this.produtos.filter(p => p.quantidade < 5).length;
-    this.lowStockAlert = `Atenção! Você tem ${this.lowStockCount} produto(s) com estoque baixo.`;
+    this.lowStockCount = this.produtos.filter(p => (p.estoque || 0) < 5).length;
+    if (this.lowStockCount > 0) {
+      this.lowStockAlert = `Atenção! Você tem ${this.lowStockCount} produto(s) com estoque baixo.`;
+    } else if (this.produtos.length === 0) {
+      this.lowStockAlert = 'Nenhum produto cadastrado.';
+    } else {
+      this.lowStockAlert = 'Estoque em dia! Todos os produtos estão com quantidade adequada.';
+    }
   }
 
   private initializeMetrics(): void {
@@ -445,15 +407,17 @@ export class ProdutosComponent implements OnInit {
     
     this.categories = categoriasUnicas.map(categoria => ({
       name: categoria,
-      percentage: Math.round((this.produtos.filter(p => p.categoria === categoria).length / this.produtos.length) * 100) + '%'
+      percentage: this.produtos.length > 0 
+        ? Math.round((this.produtos.filter(p => p.categoria === categoria).length / this.produtos.length) * 100) + '%'
+        : '0%'
     }));
   }
 
   private initializeLowStockProducts(): void {
     this.lowStockProducts = this.produtos
-      .filter(p => p.quantidade < 5)
+      .filter(p => (p.estoque || 0) < 5)
       .map(p => ({
-        name: p.nome,
+        name: p.name || '',
         category: p.categoria
       }));
   }
@@ -465,9 +429,30 @@ export class ProdutosComponent implements OnInit {
       this.usuarioNome = usuario.nome || 'Usuário';
       this.usuarioEmail = usuario.email || '';
       this.usuarioIniciais = this.gerarIniciais(this.usuarioNome);
-    } else {
-      // this.router.navigate(['/login']);
     }
+  }
+
+  private carregarProdutos(): void {
+    console.log('🔄 Iniciando carregamento de produtos da API...');
+    
+    this.produtoService.listarProdutos().subscribe({
+      next: (produtos) => {
+        console.log('✅ Produtos carregados da API:', produtos);
+        this.produtos = produtos;
+        this.atualizarMetricas();
+        this.initializeAlerts();
+        this.initializeCategories();
+        this.initializeLowStockProducts();
+      },
+      error: (error) => {
+        console.error('❌ Erro ao carregar produtos da API:', error);
+        this.produtos = [];
+        this.atualizarMetricas();
+        this.initializeAlerts();
+        this.initializeCategories();
+        this.initializeLowStockProducts();
+      }
+    });
   }
 
   private gerarIniciais(nome: string): string {
@@ -486,5 +471,24 @@ export class ProdutosComponent implements OnInit {
   // Método para obter categorias únicas (usado no dropdown de categoria)
   get categoriasUnicas(): string[] {
     return [...new Set(this.produtos.map(p => p.categoria))];
+  }
+
+  // Método auxiliar para formatação de preço
+  formatarPreco(preco: number | undefined): string {
+    const valor = preco || 0;
+    return valor.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  // Método auxiliar para obter nome do produto
+  obterNomeProduto(produto: Produto): string {
+    return produto.name || 'Produto sem nome';
+  }
+
+  // Método auxiliar para obter quantidade em estoque
+  obterQuantidadeProduto(produto: Produto): number {
+    return produto.estoque || 0;
   }
 }

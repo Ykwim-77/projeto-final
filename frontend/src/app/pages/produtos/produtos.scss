@@ -12,14 +12,17 @@ body {
 
 /* ===== LAYOUT PRINCIPAL ===== */
 main {
-    margin-left: 21%;
+    margin-left: 20%;
     flex: 1;
     padding: 20px;
+}
+html{
+    overflow-y :scroll;
 }
 
 /* ===== MENU LATERAL ===== */
 .sidebar {  
-    width: 280px;
+    width: 260px;
     background: #F0F4FF;
     color: #1C1C1C;
     display: flex;
@@ -201,7 +204,7 @@ main {
     width: 15.5%;
     height: 6%;
     margin-top: -5%;
-    margin-left: 86%;
+    margin-left: 82%;
 }
 
 .adicionar-produto:hover {
@@ -217,7 +220,7 @@ main {
 
 .search-bar {
     position: relative;
-    width: 85%;
+    width: 80%;
     margin-top: 4%;
     height: 4%;
 }
@@ -253,7 +256,7 @@ main {
     width: 7.5%;
     height: 6%;
     margin-top: -3.5%;
-    margin-left: 86%;
+    margin-left: 82%;
 }
 
 .botao-opcoes:hover {
@@ -275,7 +278,7 @@ main {
     width: 7.5%;
     height: 6%;
     margin-top: -3.5%;
-    margin-left: 94%;
+    margin-left: 90%;
 }
 
 .botao-opcoes-tabela:hover {
@@ -295,7 +298,7 @@ main {
 .produtos-grade {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 30px;
+    gap: 10px;
     margin-top: 30px;
     padding: 20px 0;
 }

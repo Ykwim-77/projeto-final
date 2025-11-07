@@ -10,6 +10,12 @@ interface ProdutoComId extends Produto {
   id: number;
 }
 
+interface ChartSlice {
+  label: string;
+  value: number;
+  color: string;
+}
+
 @Component({
   selector: 'app-home',
   templateUrl: './home.html',
@@ -46,16 +52,17 @@ export class HomeComponent implements OnInit, AfterViewInit {
   usuarioEmail: string = '';
   usuarioIniciais: string = '';
 
-  // Dados do gráfico de pizza
+  // Dados do gráfico de pizza - AGORA DINÂMICOS
   chartData = {
-    pie: [
-      { label: 'Eletrônicos', value: 75, color: '#1E2A4F' },
-      { label: 'Alimentos', value: 120, color: '#2C3E6F' },
-      { label: 'Papelaria', value: 85, color: '#10B981' },
-      { label: 'Limpeza', value: 60, color: '#F59E0B' },
-      { label: 'Escritório', value: 45, color: '#EF4444' }
-    ]
+    pie: [] as ChartSlice[]
   };
+
+  // Paleta de cores para as categorias
+  private colorPalette = [
+    '#1E2A4F', '#2C3E6F', '#10B981', '#F59E0B', '#EF4444',
+    '#8B5CF6', '#06B6D4', '#84CC16', '#F97316', '#EC4899',
+    '#6366F1', '#14B8A6', '#F43F5E', '#8B5CF6', '#06B6D4'
+  ];
 
   // Variáveis para controle do tooltip
   private hoveredSlice: any = null;
@@ -83,6 +90,43 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }, 100);
   }
 
+  // NOVO MÉTODO: Atualizar dados do gráfico baseado nos produtos
+  private atualizarDadosGrafico(): void {
+    if (!this.produtos || this.produtos.length === 0) {
+      this.chartData.pie = [
+        { label: 'Sem produtos', value: 1, color: '#CCCCCC' }
+      ];
+      return;
+    }
+
+    // Agrupar produtos por categoria
+    const categoriasMap = new Map<string, number>();
+    
+    this.produtos.forEach(produto => {
+      const categoria = produto.categoria || 'Sem Categoria';
+      const quantidade = this.obterQuantidadeProduto(produto);
+      
+      if (categoriasMap.has(categoria)) {
+        categoriasMap.set(categoria, categoriasMap.get(categoria)! + quantidade);
+      } else {
+        categoriasMap.set(categoria, quantidade);
+      }
+    });
+
+    // Converter para array e ordenar por quantidade (decrescente)
+    const categoriasArray = Array.from(categoriasMap.entries())
+      .map(([label, value], index) => ({
+        label,
+        value,
+        color: this.colorPalette[index % this.colorPalette.length]
+      }))
+      .sort((a, b) => b.value - a.value);
+
+    this.chartData.pie = categoriasArray;
+    
+    console.log('📊 Dados do gráfico atualizados:', this.chartData.pie);
+  }
+
   // Gráfico de Pizza com Tooltip
   drawPieChart(): void {
     if (!this.pieChart?.nativeElement) return;
@@ -94,6 +138,15 @@ export class HomeComponent implements OnInit, AfterViewInit {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     const total = this.chartData.pie.reduce((sum, item) => sum + item.value, 0);
+    
+    // Se não há dados válidos, mostrar mensagem
+    if (total === 0 || this.chartData.pie.length === 0) {
+      ctx.fillStyle = '#666';
+      ctx.font = '16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Sem dados para exibir', canvas.width / 2, canvas.height / 2);
+      return;
+    }
     
     let currentAngle = 0;
     const centerX = canvas.width / 2;
@@ -111,7 +164,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
       
       // Se é a fatia hovered, destacar
       if (this.hoveredSlice && this.hoveredSlice.label === item.label) {
-        ctx.fillStyle = this.lightenColor(item.color, 20); // Cor mais clara
+        ctx.fillStyle = this.lightenColor(item.color, 20);
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
       } else {
@@ -143,17 +196,14 @@ export class HomeComponent implements OnInit, AfterViewInit {
       const mouseX = event.clientX - rect.left;
       const mouseY = event.clientY - rect.top;
       
-      // Verificar se o mouse está sobre alguma fatia
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
       const radius = Math.min(centerX, centerY) - 20;
       
       const newHoveredSlice = this.getHoveredSlice(mouseX, mouseY, centerX, centerY, radius);
       
-      // Mudar cursor se estiver sobre uma fatia
       canvas.style.cursor = newHoveredSlice ? 'pointer' : 'default';
       
-      // Redesenhar apenas se o hover mudou
       if (this.hoveredSlice?.label !== newHoveredSlice?.label) {
         this.hoveredSlice = newHoveredSlice;
         this.drawPieChart();
@@ -165,7 +215,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
       this.drawPieChart();
     });
 
-    // Adicionar evento de clique (opcional)
     canvas.addEventListener('click', (event) => {
       const rect = canvas.getBoundingClientRect();
       const mouseX = event.clientX - rect.left;
@@ -184,22 +233,18 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   // Método para verificar qual fatia está sob o mouse
   getHoveredSlice(mouseX: number, mouseY: number, centerX: number, centerY: number, radius: number): any {
-    // Calcular ângulo do mouse em relação ao centro
     const dx = mouseX - centerX;
     const dy = mouseY - centerY;
     const distance = Math.sqrt(dx * dx + dy * dy);
     
-    // Se o mouse está fora do círculo, retorna null
     if (distance > radius) return null;
     
-    // Calcular ângulo em radianos
     let angle = Math.atan2(dy, dx);
     if (angle < 0) angle += 2 * Math.PI;
     
     const total = this.chartData.pie.reduce((sum, item) => sum + item.value, 0);
     let currentAngle = 0;
     
-    // Encontrar a fatia correspondente ao ângulo
     for (const item of this.chartData.pie) {
       const sliceAngle = (2 * Math.PI * item.value) / total;
       const percentage = ((item.value / total) * 100).toFixed(1);
@@ -220,15 +265,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   // Método para desenhar o tooltip
   drawTooltip(ctx: CanvasRenderingContext2D, slice: any): void {
-    const tooltipWidth = 180;
-    const tooltipHeight = 60;
+    const tooltipWidth = 200;
+    const tooltipHeight = 70;
     const padding = 10;
     
-    // Posição do tooltip (canto superior direito)
     const tooltipX = 10;
     const tooltipY = 10;
     
-    // Fundo do tooltip
     ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
     ctx.strokeStyle = '#ccc';
     ctx.lineWidth = 1;
@@ -237,7 +280,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
     ctx.fill();
     ctx.stroke();
     
-    // Sombra
     ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
     ctx.shadowBlur = 10;
     ctx.shadowOffsetX = 2;
@@ -256,7 +298,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     ctx.font = '12px Arial';
     ctx.fillText(`${slice.percentage}%`, tooltipX + padding, tooltipY + padding + 35);
     
-    // Valor
+    // Quantidade total
     ctx.fillText(`Quantidade: ${slice.value}`, tooltipX + padding + 80, tooltipY + padding + 35);
     
     // Resetar sombra
@@ -314,38 +356,20 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   private atualizarProdutosEmBaixa(): void {
-    console.log('=== ATUALIZANDO PRODUTOS EM BAIXA ===');
-    console.log('Produtos disponíveis:', this.produtos);
-    
     this.lowStockProducts = [];
     const limiteEstoqueBaixo = 5;
     
     if (!this.produtos || this.produtos.length === 0) {
-      console.log('Nenhum produto disponível para análise');
       this.lowStockAlert = 'Nenhum produto cadastrado para análise.';
       this.lowStockCount = 0;
       return;
     }
 
-    // DEBUG: Mostrar todas as quantidades
-    console.log('Detalhes das quantidades:');
-    this.produtos.forEach((produto, index) => {
-      const quantidade = this.obterQuantidadeProduto(produto);
-      console.log(`Produto ${index + 1} (ID: ${produto.id}): ${produto.nome || produto.name}, Quantidade: ${quantidade}`);
-    });
-
     const produtosEmAtencao = this.produtos.filter(produto => {
       if (!produto) return false;
-      
       const quantidade = this.obterQuantidadeProduto(produto);
-      const estaEmBaixa = quantidade <= limiteEstoqueBaixo;
-      
-      console.log(`Filtro: ${produto.nome || produto.name} (ID: ${produto.id}) - Qtd: ${quantidade} - Em baixa: ${estaEmBaixa}`);
-      
-      return estaEmBaixa;
+      return quantidade <= limiteEstoqueBaixo;
     });
-
-    console.log('Produtos em atenção encontrados:', produtosEmAtencao);
 
     this.lowStockProducts = produtosEmAtencao.map(produto => {
       const quantidade = this.obterQuantidadeProduto(produto);
@@ -360,10 +384,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
     });
 
     this.lowStockCount = this.lowStockProducts.length;
-    
-    console.log('Low stock products final:', this.lowStockProducts);
-    console.log('Low stock count:', this.lowStockCount);
-    console.log('=== FIM ATUALIZAÇÃO PRODUTOS BAIXA ===');
 
     if (this.lowStockCount > 0) {
       this.lowStockAlert = `Atenção! Você tem ${this.lowStockCount} produto(s) com estoque baixo.`;
@@ -373,10 +393,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   private obterQuantidadeProduto(produto: any): number {
-    // Tenta diferentes nomes de propriedades possíveis para quantidade
     const quantidade = produto.quantidade ?? produto.estoque ?? produto.quant ?? produto.stock ?? 0;
-    
-    // Converte para número e trata valores inválidos
     const qtdNumero = Number(quantidade);
     return isNaN(qtdNumero) ? 0 : qtdNumero;
   }
@@ -419,9 +436,9 @@ export class HomeComponent implements OnInit, AfterViewInit {
     let valorTotal = 0;
     this.produtos.forEach(produto => {
       const quantidade = this.obterQuantidadeProduto(produto);
-      const preco = produto.preco || 0; // usa apenas o campo 'preco'
+      const preco = produto.preco || 0;
       valorTotal += preco * quantidade;
-    }); // ← REMOVIDO o "};" extra que estava aqui
+    });
       
     this.stockValue = new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -432,13 +449,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
       {
         title: 'Total de Produtos',
         value: this.totalProducts,
-        variation: '+12% este mês',
+        variation: this.totalProducts > 0 ? '+12% este mês' : '-',
         trend: this.totalProducts > 0 ? 'positive' : 'neutral'
       },
       {
         title: 'Valor do Estoque',
         value: this.stockValue,
-        variation: '+8.2%',
+        variation: valorTotal > 0 ? '+8.2%' : '-',
         trend: valorTotal > 0 ? 'positive' : 'neutral'
       },
       {
@@ -449,20 +466,15 @@ export class HomeComponent implements OnInit, AfterViewInit {
       },
       {
         title: 'Saídas do Mês',
-        value: 20,
-        variation: '+5%',
-        trend: 'positive'
+        value: 0,
+        variation: '-',
+        trend: 'neutral'
       }
     ];
   }
 
   private initializeCategories(): void {
-    this.categories = [
-      { name: 'Alimentos', percentage: '45%' },
-      { name: 'Eletrônicos', percentage: '20%' },
-      { name: 'Cosméticos', percentage: '2%' },
-      { name: 'Papelaria', percentage: '32%' }
-    ];
+    this.categories = [];
   }
 
   private initializeLowStockProducts(): void {
@@ -476,9 +488,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
       this.usuarioNome = usuario.nome;
       this.usuarioEmail = usuario.email || '';
       this.usuarioIniciais = this.gerarIniciais(this.usuarioNome);
-    } else {
-      // Se não tem usuário logado, volta para login
-      // this.router.navigate(['/login']);
     }
   }
 
@@ -501,63 +510,36 @@ export class HomeComponent implements OnInit, AfterViewInit {
     this.produtoService.listarProdutos().subscribe({
       next: (produtos) => {
         console.log('✅ Produtos carregados da API:', produtos);
-        console.log('🔍 Tipo dos dados:', typeof produtos);
-        console.log('🔍 Número de produtos:', produtos.length);
         
         // Convertendo para ProdutoComId para incluir o ID
         this.produtos = produtos as ProdutoComId[];
+        
+        // ATUALIZAR GRÁFICO COM DADOS REAIS
+        this.atualizarDadosGrafico();
+        
         this.atualizarMetricas();
         this.atualizarProdutosEmBaixa();
+        
+        // Redesenhar o gráfico após os dados serem atualizados
+        setTimeout(() => {
+          this.drawPieChart();
+        }, 200);
       },
       error: (error) => {
         console.error('❌ Erro ao carregar produtos da API:', error);
-        console.log('🔄 Usando dados mock para teste...');
         
-        // Dados mock COM ID - usando a interface ProdutoComId
-        this.produtos = [
-          {
-            id: 1,
-            nome: 'Notebook Dell',
-            categoria: 'Eletrônicos',
-            quantidade: 3,
-            estoque_maximo: 50,
-            preco: undefined,
-            name: '',
-            minStock: 0,
-            estoque: 0,
-            id_produto: 0,
-            id_fornecedor: 0
-          },
-          {
-            id: 2,
-            nome: 'Mouse Gamer',
-            categoria: 'Informática',
-            estoque: 2,
-            estoque_maximo: 30,
-            preco: 150,
-            name: '',
-            minStock: 0,
-            quantidade: 0,
-            id_produto: 0,
-            id_fornecedor: 0
-          },
-          {
-            id: 3,
-            nome: 'Caderno Universitário',
-            categoria: 'Papelaria',
-            quantidade: 7,
-            estoque_maximo: 20,
-            preco: undefined,
-            name: '',
-            minStock: 0,
-            estoque: 0,
-            id_produto: 0,
-            id_fornecedor: 0
-          }
-        ];
+        this.produtos = [];
+        
+        // ATUALIZAR GRÁFICO COM ESTADO VAZIO
+        this.atualizarDadosGrafico();
         
         this.atualizarMetricas();
         this.atualizarProdutosEmBaixa();
+        
+        // Redesenhar o gráfico
+        setTimeout(() => {
+          this.drawPieChart();
+        }, 200);
       }
     });
   }
