@@ -7,8 +7,7 @@
 body {
     background-color: #e6ebf8;
     display: flex;
-    min-height: 110%;
-
+    min-height: 100vh;
 }
 
 /* ===== LAYOUT PRINCIPAL ===== */
@@ -733,6 +732,23 @@ main {
         }
     }
 }
+.header-com-filtro {
+    display: flex;
+    align-items: center;
+    /*justify-content: space-between;*/ 
+    gap: 2px; /* Espaço controlado entre elementos */
+    padding: 0 8px;
+    
+    .titulo-coluna {
+      flex: 1;
+    }
+  }
+th{
+    border-right: 1px solid rgba(0, 0, 0, 0.216);
+}
+.nome-produto, .estoque, .categoria, .preco, .sku, .valor-total, .acoes{
+    border-right: 1px solid rgba(0, 0, 0, 0.224);
+}
 /* ===== RESPONSIVIDADE ===== */
 @media (max-width: 768px) {
     .produtos-grade {
@@ -765,7 +781,7 @@ main {
 
     .tabela {
         th, td {
-            padding: 8px 15 px;
+            padding: 8px 0px;
         }
 
         .nome-produto small {
@@ -774,52 +790,6 @@ main {
 
         .estoque-alerta {
             font-size: 0.6rem;
-        }
-    }
-}
-
-@media (max-width: 480px) {
-    .tabela {
-        display: block;
-
-        thead {
-            display: none;
-        }
-
-        tbody, tr, td {
-            display: block;
-            width: 100%;
-        }
-
-        tr {
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            position: relative;
-        }
-
-        td {
-            border: none;
-            padding: 8px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-
-            &::before {
-                content: attr(data-label);
-                font-weight: bold;
-                color: #0B1D5A;
-                text-transform: uppercase;
-                font-size: 0.7rem;
-            }
-        }
-
-        .acoes {
-            justify-content: center;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #eee;
         }
     }
 }

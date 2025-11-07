@@ -338,7 +338,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
       if (!produto) return false;
       
       const quantidade = this.obterQuantidadeProduto(produto);
+<<<<<<< HEAD:Frontend/src/app/pages/home/home.ts
       const estaEmBaixa = quantidade <= limiteEstoqueBaixo;
+=======
+      console.log(`Produto: ${produto.nome || 'Produto sem nome'}, Quantidade: ${quantidade}, Limite: ${limiteEstoqueBaixo}`);
+>>>>>>> origin/main:frontend/src/app/pages/home/home.ts
       
       console.log(`Filtro: ${produto.nome || produto.name} (ID: ${produto.id}) - Qtd: ${quantidade} - Em baixa: ${estaEmBaixa}`);
       
@@ -351,11 +355,18 @@ export class HomeComponent implements OnInit, AfterViewInit {
       const quantidade = this.obterQuantidadeProduto(produto);
       
       return {
+<<<<<<< HEAD:Frontend/src/app/pages/home/home.ts
         id: produto.id,
         name: produto.nome || produto.name || 'Produto sem nome',
         category: produto.categoria || produto.categoria || 'Sem categoria',
         quantity: quantidade,
         maxStock: produto.estoque_maximo || produto.minStock || produto.estoque_maximo || 50
+=======
+        name: produto.nome || 'Produto sem nome',
+        category: produto.categoria || 'Sem categoria',
+        quantity: quantidade,
+        maxStock: produto.estoque_maximo || 50
+>>>>>>> origin/main:frontend/src/app/pages/home/home.ts
       };
     });
 
@@ -421,7 +432,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
       const quantidade = this.obterQuantidadeProduto(produto);
       const preco = produto.preco || 0; // usa apenas o campo 'preco'
       valorTotal += preco * quantidade;
-    });
+    }); // ← REMOVIDO o "};" extra que estava aqui
       
     this.stockValue = new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -473,21 +484,16 @@ export class HomeComponent implements OnInit, AfterViewInit {
     const usuario = this.authService.getUsuarioLogado();
     
     if (usuario) {
-      this.usuarioNome = usuario.nome || 'Usuário';
+      this.usuarioNome = usuario.nome;
       this.usuarioEmail = usuario.email || '';
       this.usuarioIniciais = this.gerarIniciais(this.usuarioNome);
     } else {
       // Se não tem usuário logado, volta para login
-      this.router.navigate(['/login']);
+      // this.router.navigate(['/login']);
     }
   }
 
   private gerarIniciais(nome: string): string {
-    // Verificação de segurança para evitar o erro
-    if (!nome || typeof nome !== 'string') {
-      return 'US';
-    }
-    
     const palavras = nome.trim().split(' ');
     if (palavras.length >= 2) {
       return (palavras[0][0] + palavras[palavras.length - 1][0]).toUpperCase();

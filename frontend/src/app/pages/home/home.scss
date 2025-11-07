@@ -1,37 +1,27 @@
-/* ===== CORREÇÃO DEFINITIVA - SUBSTITUIR TODO O ARQUIVO ===== */
+/* ===== RESET E ESTILOS GLOBAIS ===== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* FORÇAR FUNDO LILÁS EM TODOS OS NÍVEIS */
-:root, html, body {
-    background-color: #ebe6f8 !important;
-    height: 100%;
-}
-
 body {
+    background-color: #e6ebf8;
     display: flex;
     min-height: 100vh;
-    background-color: #ebe6f8 !important;
-    margin: 0;
 }
 
-/* MAIN COM FUNDO LILÁS */
+/* ===== LAYOUT PRINCIPAL ===== */
 main {
     margin-left: 21%;
     flex: 1;
-    background-color: #ebe6f8 !important;
     padding: 20px;
-    min-height: 100vh;
-    width: 100%;
 }
 
-/* MENU LATERAL - MANTÉM COR ORIGINAL */
+/* ===== MENU LATERAL ===== */
 .sidebar {  
     width: 280px;
-    background: #F0F4FF !important;
+    background: #F0F4FF;
     color: #1C1C1C;
     display: flex;
     flex-direction: column;
@@ -41,19 +31,8 @@ main {
     transition: all 0.3s ease;
     z-index: 1000;
     position: fixed;
-    left: 0;
-    top: 0;
 }
 
-/* GARANTIR QUE ELEMENTOS INTERNOS NÃO TENHAM FUNDO BRANCO */
-.conteudo-principal,
-.graficos-container,
-.topo,
-.header {
-    background-color: transparent !important;
-}
-
-/* MANTENHA TODO O RESTO DO SEU CSS ORIGINAL AQUI */
 .logo-container {
     padding: 25px 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -194,6 +173,7 @@ main {
     margin-right: 8px;
 }
 
+/* ===== CABEÇALHO ===== */
 .titulo-Topo {
     margin-top: 0%;
     color: #0B1D5A;
@@ -209,6 +189,7 @@ main {
     color: rgba(44, 40, 40, 0.801);
 }
 
+/* ===== COMPONENTES DE ALERTA ===== */
 .alertas {
     border: 1px solid black;
     margin-top: 3%;
@@ -236,6 +217,7 @@ main {
     margin-top: -30%;
 }
 
+/* ===== BOTÕES ===== */
 .addProduto {
     margin-top: 1%;
     background-color: #28a745;
@@ -249,6 +231,7 @@ main {
     width: 30%;
 }
 
+/* ===== SISTEMA DE CARDS ===== */
 .conteudo-principal {
     display: flex;
     gap: 20px;
@@ -294,6 +277,7 @@ main {
     padding-bottom: 10px;
 }
 
+/* ===== ELEMENTOS DOS CARDS ===== */
 .imgCard {
     width: 40px;
     height: 40px;
@@ -370,6 +354,7 @@ main {
     content: "▼";
 }
 
+/* ===== LAYOUT DE GRÁFICOS  ===== */
 .graficos-container {
     display: flex;
     gap: 20px;
@@ -385,6 +370,7 @@ main {
     box-shadow: 5px 5px 10px rgba(0,0,0,0.3);
     padding: 30px;
     border: 1px solid rgba(0, 0, 0, 0.193);
+    //margin-left: 30px;
 }
 
 .grafico-card .card-title {
@@ -395,14 +381,15 @@ main {
     border-bottom: 2px solid rgba(0, 0, 0, 0.193);
     padding-bottom: 10px;
 }
-
+/* ===== ESTILOS PARA LISTA DE PRODUTOS EM BAIXA ===== */
+/* ===== ESTILOS PARA LISTA DE PRODUTOS EM BAIXA ===== */
 .low-stock-list {
     max-height: 250px;
     overflow-y: auto;
     padding: 10px;
-}
+  }
   
-.low-stock-item {
+  .low-stock-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -412,74 +399,75 @@ main {
     border: 1px solid #fecaca;
     border-radius: 8px;
     transition: all 0.3s ease;
-}
   
-.low-stock-item:hover {
-    background-color: #fee2e2;
-    transform: translateX(5px);
-}
+    &:hover {
+      background-color: #fee2e2;
+      transform: translateX(5px);
+    }
+  }
   
-.product-info {
+  .product-info {
     display: flex;
     flex-direction: column;
-}
+  }
   
-.product-name {
+  .product-name {
     font-weight: 600;
     color: #dc2626;
     font-size: 14px;
-}
+  }
   
-.product-category {
+  .product-category {
     font-size: 12px;
     color: #6b7280;
     margin-top: 2px;
-}
+  }
   
-.stock-alert {
+  .stock-alert {
     display: flex;
     align-items: center;
     gap: 5px;
     color: #dc2626;
     font-size: 12px;
     font-weight: 500;
-}
+  }
   
-.no-low-stock {
+  .no-low-stock {
     text-align: center;
     padding: 40px 20px;
     color: #059669;
-}
   
-.no-low-stock i {
-    font-size: 48px;
-    margin-bottom: 15px;
-    color: #10b981;
-}
+    i {
+      font-size: 48px;
+      margin-bottom: 15px;
+      color: #10b981;
+    }
   
-.no-low-stock p {
-    font-size: 14px;
-    margin: 0;
-}
+    p {
+      font-size: 14px;
+      margin: 0;
+    }
+  }
   
-.low-stock-list::-webkit-scrollbar {
+  /* Scrollbar personalizada */
+  .low-stock-list::-webkit-scrollbar {
     width: 6px;
-}
+  }
   
-.low-stock-list::-webkit-scrollbar-track {
+  .low-stock-list::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 10px;
-}
+  }
   
-.low-stock-list::-webkit-scrollbar-thumb {
+  .low-stock-list::-webkit-scrollbar-thumb {
     background: #c1c1c1;
     border-radius: 10px;
-}
+  }
   
-.low-stock-list::-webkit-scrollbar-thumb:hover {
+  .low-stock-list::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
-}
-
+  }
+/* ===== ESTILOS PARA O GRÁFICO DE PIZZA ===== */
 .grafico-card canvas {
     max-width: 100%;
     height: auto;
@@ -487,6 +475,7 @@ main {
     margin-left: 30px;
 }
 
+/* ===== CLASSES UTILITÁRIAS ===== */
 .flex { display: flex; }
 .flex-gap { display: flex; gap: 20px; }
 .flex-wrap { flex-wrap: wrap; }
@@ -494,12 +483,14 @@ main {
 .flex-between { justify-content: space-between; }
 .flex-middle { align-items: center; }
 
+/* Gap Utilities */
 .flex.gap-xs { gap: 5px; }
 .flex.gap-sm { gap: 10px; }
 .flex.gap-md { gap: 20px; }
 .flex.gap-lg { gap: 30px; }
 .flex.gap-xl { gap: 40px; }
 
+/* ===== CLASSES DE COMPATIBILIDADE ===== */
 .card-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));

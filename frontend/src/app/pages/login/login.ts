@@ -12,9 +12,6 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./login.scss']
 })
 export class LoginComponent {
-  fazerLogin() {
-    throw new Error('Method not implemented.');
-  }
   email: string = '';
   password: string = '';
   isLoading: boolean = false;
