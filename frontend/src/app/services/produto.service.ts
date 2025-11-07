@@ -4,7 +4,9 @@ import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 
 export interface Produto {
-  maxStock: number;
+sku: any;
+  id: number;
+  preco: number | undefined;
   name: string;
   estoque: number;
   quantidade: number;
