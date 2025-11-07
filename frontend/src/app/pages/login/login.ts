@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../guards/auth.service';
+import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-login',
   standalone: true, // ✅ ADICIONE ESTA LINHA
-  imports: [CommonModule, FormsModule, RouterLink], // ✅ ADICIONE ESTA LINHA
+  imports: [CommonModule, FormsModule], // ✅ ADICIONE ESTA LINHA
   templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })
@@ -42,17 +42,18 @@ export class LoginComponent {
     this.isLoading = true;
     this.errorMessage = '';
 
+    // Corrige o nome esperado pelo backend para o campo de senha ("senha" em vez de "password")
     this.authService.login(this.email, this.password).subscribe({
-      next: (response: any) => {
+      next: (response) => {
         console.log('✅ Login realizado com sucesso!', response);
         this.isLoading = false;
         this.router.navigate(['/home']);
       },
-      error: (error: { error: { mensagem: string; }; }) => {
+      error: (error) => {
         console.error('❌ Erro no login:', error);
         this.isLoading = false;
         this.errorMessage = error.error?.mensagem || 'Email ou senha incorretos. Tente novamente.';
-      } 
+      }
     });
   }
 }

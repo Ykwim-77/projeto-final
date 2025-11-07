@@ -9,7 +9,6 @@ import { ProdutosComponent } from './pages/produtos/produtos';
 import { CadastroComponent } from './pages/cadastro/cadastro';
 import { Component } from '@angular/core';
 
-
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
