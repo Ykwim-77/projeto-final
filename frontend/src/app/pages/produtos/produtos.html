@@ -135,6 +135,85 @@
                     <button class="btn-excluir" (click)="excluirProduto(produto.id)">
                         <i class="fas fa-trash"></i> Excluir
                     </button>
+<<<<<<< HEAD
+                </div>
+            </div>
+            <div *ngIf="produtos.length === 0" class="sem-produtos">
+                <i class="fas fa-box-open"></i>
+                <p>Nenhum produto cadastrado</p>
+                <!--<button class="btn-adicionar-tabela" (click)="abrirCardCadastro()">
+                    <i class="fas fa-plus"></i> Adicionar Primeiro Produto
+                </button> -->
+            </div>
+        </section>
+
+        <!-- Lista de Produtos em Tabela -->
+        <section *ngIf="visualizacao === 'tabela'" class="tabela-produtos">
+            <div class="tabela-container">
+                <table class="tabela">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>SKU</th>
+                            <th>Categoria</th>
+                            <th>Preço</th>
+                            <th>Estoque</th>
+                            <th>Valor Total</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let produto of produtos" 
+                            [class.estoque-baixo]="produto.quantidade < 5">
+                            <td class="nome-produto">
+                                <strong>{{ produto.nome }}</strong>
+                                <small *ngIf="produto.descricao">{{ produto.descricao }}</small>
+                            </td>
+                            <td class="sku">{{ produto.sku }}</td>
+                            <td class="categoria">
+                                <span class="categoria-badge">{{ produto.categoria }}</span>
+                            </td>
+                            <td class="preco">R$ {{ produto.preco.toFixed(2) }}</td>
+                            <td class="estoque">
+                                <span [class.estoque-critico]="produto.quantidade < 5">
+                                    {{ produto.quantidade }} unidades
+                                </span>
+                                <div *ngIf="produto.quantidade < 5" class="estoque-alerta">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Estoque baixo
+                                </div>
+                            </td>
+                            <td class="valor-total">
+                                R$ {{ (produto.preco * produto.quantidade).toFixed(2) }}
+                            </td>
+                            <td class="acoes">
+                                <button class="btn-acao btn-editar-tabela" 
+                                        (click)="editarProduto(produto)"
+                                        title="Editar produto">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-acao btn-excluir-tabela" 
+                                        (click)="excluirProduto(produto.id)"
+                                        title="Excluir produto">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <!-- Mensagem quando não há produtos -->
+                <div *ngIf="produtos.length === 0" class="sem-produtos">
+                    <i class="fas fa-box-open"></i>
+                    <p>Nenhum produto cadastrado</p>
+                    <!--<button class="btn-adicionar-tabela" (click)="abrirCardCadastro()">
+                        <i class="fas fa-plus"></i> Adicionar Primeiro Produto
+                    </button> -->
+                </div>
+            </div>
+        </section>
+
+=======
                 </div>
             </div>
             <div *ngIf="produtos.length === 0" class="sem-produtos">
@@ -298,6 +377,7 @@
             </div>
           </section>
 
+>>>>>>> main
         <!-- Card de Cadastro -->
         <section>
             <div *ngIf="showCardCadastro" class="card-cadastro-overlay">

@@ -2,7 +2,11 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+<<<<<<< HEAD
+import { RouterLink, RouterLinkActive } from '@angular/router';
+=======
 import { RouterLink } from '@angular/router';
+>>>>>>> main
 import { AuthService } from '../../services/auth.service';
 
 interface MenuItem {
@@ -50,6 +54,18 @@ export class ProdutosComponent implements OnInit {
   produtoEditando: Produto | null = null;
   visualizacao: 'grade' | 'tabela' = 'grade';
 
+<<<<<<< HEAD
+  // Produto em cadastro/edição
+  novoProduto = {
+    nome: '',
+    sku: '',
+    categoria: '',
+    quantidade: 0,
+    preco: 0,
+    descricao: ''
+  };
+
+=======
   // Filtros
   filtros = {
     nome: '',
@@ -73,6 +89,7 @@ export class ProdutosComponent implements OnInit {
     descricao: ''
   };
 
+>>>>>>> main
   // Lista de produtos
   produtos: Produto[] = [
     { 
@@ -106,7 +123,11 @@ export class ProdutosComponent implements OnInit {
       id: 4, 
       nome: 'Headphone Bluetooth', 
       sku: 'HP-004', 
+<<<<<<< HEAD
+      categoria: 'Áudio', 
+=======
       categoria: 'Acessórios', 
+>>>>>>> main
       quantidade: 12, 
       preco: 199.90,
       descricao: 'Fone de ouvido sem fio'
@@ -115,6 +136,21 @@ export class ProdutosComponent implements OnInit {
       id: 5, 
       nome: 'Webcam 1080p', 
       sku: 'WC-005', 
+<<<<<<< HEAD
+      categoria: 'Vídeo', 
+      quantidade: 2, 
+      preco: 159.90,
+      descricao: 'Câmera para reuniões online'
+    },
+    { 
+      id: 6, 
+      nome: 'SSD 500GB', 
+      sku: 'SS-006', 
+      categoria: 'Armazenamento', 
+      quantidade: 20, 
+      preco: 299.90,
+      descricao: 'Unidade de estado sólido'
+=======
       categoria: 'Periféricos', 
       quantidade: 2, 
       preco: 149.90,
@@ -128,6 +164,7 @@ export class ProdutosComponent implements OnInit {
       quantidade: 20, 
       preco: 299.90,
       descricao: 'SSD NVMe de alta velocidade'
+>>>>>>> main
     }
   ];
 
@@ -138,7 +175,11 @@ export class ProdutosComponent implements OnInit {
 
   // Cards de Métricas
   metricCards: MetricCard[] = [];
+<<<<<<< HEAD
+
+=======
   
+>>>>>>> main
   // Dados individuais
   totalProducts: number = 0;
   stockValue: string = '';
@@ -157,6 +198,8 @@ export class ProdutosComponent implements OnInit {
     private authService: AuthService
   ) {}
 
+<<<<<<< HEAD
+=======
   // Fechar dropdown quando clicar fora
   @HostListener('document:click', ['$event'])
   fecharDropdown(event: Event) {
@@ -243,6 +286,7 @@ export class ProdutosComponent implements OnInit {
     });
   }
 
+>>>>>>> main
   // Inicialização
   ngOnInit() {
     this.carregarDadosUsuario();
@@ -286,6 +330,8 @@ export class ProdutosComponent implements OnInit {
 
   // Salvar produto (criar ou atualizar)
   salvarProduto() {
+<<<<<<< HEAD
+=======
     // Validações básicas
     if (!this.novoProduto.nome.trim()) {
       alert('O nome do produto é obrigatório!');
@@ -307,6 +353,7 @@ export class ProdutosComponent implements OnInit {
       return;
     }
 
+>>>>>>> main
     if (this.produtoEditando) {
       // Atualizar produto existente
       const index = this.produtos.findIndex(p => p.id === this.produtoEditando!.id);
@@ -440,6 +487,14 @@ export class ProdutosComponent implements OnInit {
   }
 
   private initializeCategories(): void {
+<<<<<<< HEAD
+    this.categories = [
+      { name: 'Periféricos', percentage: '45%' },
+      { name: 'Eletrônicos', percentage: '20%' },
+      { name: 'Informática', percentage: '15%' },
+      { name: 'Acessórios', percentage: '20%' }
+    ];
+=======
     // Obter categorias únicas dos produtos
     const categoriasUnicas = [...new Set(this.produtos.map(p => p.categoria))];
     
@@ -447,6 +502,7 @@ export class ProdutosComponent implements OnInit {
       name: categoria,
       percentage: Math.round((this.produtos.filter(p => p.categoria === categoria).length / this.produtos.length) * 100) + '%'
     }));
+>>>>>>> main
   }
 
   private initializeLowStockProducts(): void {
@@ -482,9 +538,12 @@ export class ProdutosComponent implements OnInit {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+<<<<<<< HEAD
+=======
 
   // Método para obter categorias únicas (usado no dropdown de categoria)
   get categoriasUnicas(): string[] {
     return [...new Set(this.produtos.map(p => p.categoria))];
   }
+>>>>>>> main
 }
