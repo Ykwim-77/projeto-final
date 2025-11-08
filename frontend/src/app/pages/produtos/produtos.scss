@@ -12,14 +12,22 @@ body {
 
 /* ===== LAYOUT PRINCIPAL ===== */
 main {
-    margin-left: 21%;
+    margin-left: 20%;
     flex: 1;
-    padding: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-left: 0;
+    padding-right: 0;
+    min-height: 100vh;
+    background: #e6ebf8;
+}
+html{
+    overflow-y :scroll;
 }
 
 /* ===== MENU LATERAL ===== */
 .sidebar {  
-    width: 280px;
+    width: 260px;
     background: #F0F4FF;
     color: #1C1C1C;
     display: flex;
@@ -201,7 +209,7 @@ main {
     width: 15.5%;
     height: 6%;
     margin-top: -5%;
-    margin-left: 86%;
+    margin-left: 82%;
 }
 
 .adicionar-produto:hover {
@@ -217,7 +225,7 @@ main {
 
 .search-bar {
     position: relative;
-    width: 85%;
+    width: 80%;
     margin-top: 4%;
     height: 4%;
 }
@@ -253,7 +261,7 @@ main {
     width: 7.5%;
     height: 6%;
     margin-top: -3.5%;
-    margin-left: 86%;
+    margin-left: 82%;
 }
 
 .botao-opcoes:hover {
@@ -275,7 +283,7 @@ main {
     width: 7.5%;
     height: 6%;
     margin-top: -3.5%;
-    margin-left: 94%;
+    margin-left: 90%;
 }
 
 .botao-opcoes-tabela:hover {
@@ -295,9 +303,16 @@ main {
 .produtos-grade {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 30px;
+    gap: 10px;
     margin-top: 30px;
     padding: 20px 0;
+    width: 100%;
+    margin: 0;
+    padding-left: 0;
+    padding-right: 0;
+    background: white;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.10);
 }
 
 .produto-card {
@@ -410,10 +425,14 @@ main {
 /* ===== TABELA DE PRODUTOS ===== */
 .tabela-produtos {
     margin-top: 20px;
+    width: 100%;
     background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.10);
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 20px;
+    padding-bottom: 20px;
 }
 
 .tabela-container {
@@ -434,6 +453,7 @@ main {
         text-transform: uppercase;
         font-size: 0.8rem;
         letter-spacing: 0.5px;
+        position: relative;
 
         &:first-child {
             border-top-left-radius: 8px;
@@ -441,6 +461,220 @@ main {
 
         &:last-child {
             border-top-right-radius: 8px;
+        }
+    }
+
+    // Estilos para colunas filtráveis
+    .coluna-filtravel {
+        position: relative;
+    }
+
+    .header-com-filtro {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        position: relative;
+
+        .titulo-coluna,
+        span {
+            flex: 1;
+        }
+    }
+
+    .btn-filtro {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        padding: 0;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+        position: relative;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
+        }
+
+        &:active {
+            transform: scale(0.95);
+        }
+
+        &.active {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+        }
+
+        // Indicador quando há filtro aplicado (badge)
+        &.has-filter::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            background: #ffc107;
+            border-radius: 50%;
+            border: 2px solid #0B1D5A;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        i {
+            font-size: 0.75rem;
+        }
+    }
+
+    .dropdown-filtro {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        padding: 16px;
+        z-index: 100;
+        animation: slideDown 0.2s ease;
+        border: 1px solid #e0e0e0;
+        min-width: 200px;
+        max-width: 300px;
+
+        // Garantir que o dropdown não saia da tela
+        @media (max-width: 768px) {
+            right: 0;
+            left: auto;
+            min-width: 180px;
+            max-width: 250px;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #0B1D5A;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-filtro,
+        .select-filtro {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+            font-family: inherit;
+
+            &:focus {
+                outline: none;
+                border-color: #0B1D5A;
+                box-shadow: 0 0 0 3px rgba(11, 29, 90, 0.1);
+            }
+
+            &::placeholder {
+                color: #999;
+            }
+        }
+
+        .select-filtro {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%230B1D5A' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 40px;
+            appearance: none;
+        }
+
+        .input-filtro-pequeno {
+            width: 100%;
+            padding: 8px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+            font-family: inherit;
+
+            &:focus {
+                outline: none;
+                border-color: #0B1D5A;
+                box-shadow: 0 0 0 3px rgba(11, 29, 90, 0.1);
+            }
+
+            &::placeholder {
+                color: #999;
+            }
+        }
+
+        .faixa-preco-filtro {
+            margin-bottom: 12px;
+
+            label {
+                display: block;
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: #0B1D5A;
+                margin-bottom: 6px;
+                margin-top: 8px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+
+                &:first-child {
+                    margin-top: 0;
+                }
+            }
+        }
+
+        .btn-limpar {
+            width: 100%;
+            padding: 10px 16px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            color: #666;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+
+            &:hover {
+                background: #e9ecef;
+                border-color: #dc3545;
+                color: #dc3545;
+                transform: translateY(-1px);
+            }
+
+            &:active {
+                transform: translateY(0);
+            }
         }
     }
 
@@ -732,27 +966,6 @@ main {
         }
     }
 }
-<<<<<<< HEAD
-
-=======
-.header-com-filtro {
-    display: flex;
-    align-items: center;
-    /*justify-content: space-between;*/ 
-    gap: 2px; /* Espaço controlado entre elementos */
-    padding: 0 8px;
-    
-    .titulo-coluna {
-      flex: 1;
-    }
-  }
-th{
-    border-right: 1px solid rgba(0, 0, 0, 0.216);
-}
-.nome-produto, .estoque, .categoria, .preco, .sku, .valor-total, .acoes{
-    border-right: 1px solid rgba(0, 0, 0, 0.224);
-}
->>>>>>> main
 /* ===== RESPONSIVIDADE ===== */
 @media (max-width: 768px) {
     .produtos-grade {
@@ -785,11 +998,7 @@ th{
 
     .tabela {
         th, td {
-<<<<<<< HEAD
-            padding: 8px 15 px;
-=======
-            padding: 8px 0px;
->>>>>>> main
+            padding: 8px 15px;
         }
 
         .nome-produto small {
@@ -799,9 +1008,32 @@ th{
         .estoque-alerta {
             font-size: 0.6rem;
         }
+
+        .dropdown-filtro {
+            min-width: 180px;
+            padding: 12px;
+            left: auto;
+            right: 0;
+        }
+
+        .btn-filtro {
+            width: 28px;
+            height: 28px;
+            font-size: 0.75rem;
+        }
+    }
+    main {
+        margin-left: 0;
+        padding-left: 0;
+        padding-right: 0;
+    }
+    .produtos-grade,
+    .tabela-produtos {
+        border-radius: 0;
+        padding-left: 0;
+        padding-right: 0;
     }
 }
-<<<<<<< HEAD
 
 @media (max-width: 480px) {
     .tabela {
@@ -848,5 +1080,228 @@ th{
         }
     }
 }
-=======
->>>>>>> main
+
+/* Styles for the modal/form we added - match existing site look */
+.overlay-cadastro {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.cadastro-card {
+    background: white;
+    border-radius: 16px;
+    width: 800px;
+    max-width: calc(100% - 40px);
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    border: 1px solid #e6e9f2;
+    animation: slideUp 0.3s ease;
+    position: relative;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.cadastro-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 28px;
+    border-bottom: 2px solid #f0f4ff;
+    background: linear-gradient(135deg, #0B1D5A 0%, #0A2D8A 100%);
+    color: white;
+    border-radius: 16px 16px 0 0;
+    margin: -1px -1px 0 -1px;
+
+    h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .btn-fechar-modal {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        font-size: 1.2rem;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+    }
+}
+
+.form-cadastro {
+    padding: 28px;
+
+    .campo {
+        margin-bottom: 20px;
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            color: #0B1D5A;
+            font-weight: 600;
+            font-size: 0.95rem;
+
+            i {
+                color: #0A2D8A;
+                font-size: 0.9rem;
+            }
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+
+            &:focus {
+                outline: none;
+                border-color: #0B1D5A;
+                box-shadow: 0 0 0 3px rgba(11, 29, 90, 0.1);
+            }
+
+            &::placeholder {
+                color: #999;
+            }
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%230B1D5A' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 40px;
+            appearance: none;
+        }
+    }
+
+    .campo-duplo {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+}
+
+.acoes-form {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid #f0f4ff;
+
+    button {
+        padding: 12px 24px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 140px;
+        justify-content: center;
+
+        i {
+            font-size: 0.9rem;
+        }
+    }
+
+    .btn-cancel {
+        background: #dc3545;
+        color: white;
+
+        &:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+    }
+
+    .btn-salvar {
+        background: #0B1D5A;
+        color: white;
+
+        &:hover {
+            background: #0A2D8A;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(11, 29, 90, 0.3);
+        }
+    }
+}
+
+/* Ensure mobile-friendly layout for the modal */
+@media (max-width: 768px) {
+    .cadastro-card {
+        width: 95%;
+        padding: 0;
+    }
+
+    .cadastro-header {
+        padding: 20px;
+    }
+
+    .form-cadastro {
+        padding: 20px;
+    }
+
+    .campo-duplo {
+        grid-template-columns: 1fr !important;
+    }
+
+    .acoes-form {
+        flex-direction: column;
+
+        button {
+            width: 100%;
+        }
+    }
+}

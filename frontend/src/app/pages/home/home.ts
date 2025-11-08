@@ -1,8 +1,9 @@
-import { Component, OnInit, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { ProdutoService, Produto } from '../../services/produto.service';
+import { Produto } from '../../services/produto.service';
 import { AuthService } from '../../services/auth.service';
-import { CommonModule } from '@angular/common';
+import { environment } from '../../environments/environment';
+import { CommonModule, DecimalPipe, CurrencyPipe } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 // Interface extendida para incluir o ID
@@ -10,15 +11,23 @@ interface ProdutoComId extends Produto {
   id: number;
 }
 
+interface ChartSlice {
+  label: string;
+  value: number;
+  color: string;
+}
+
 @Component({
   selector: 'app-home',
   templateUrl: './home.html',
   styleUrls: ['./home.scss'],
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive]
+  imports: [CommonModule, RouterLink, RouterLinkActive, DecimalPipe, CurrencyPipe]
 })
 export class HomeComponent implements OnInit, AfterViewInit {
   @ViewChild('pieChart') pieChart!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('barChart') barChart!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('lineChart') lineChart!: ElementRef<HTMLCanvasElement>;
 
   // Dados do Menu
   menuItems: any[] = [];
@@ -37,6 +46,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
   // Listas
   categories: any[] = [];
   lowStockProducts: any[] = [];
+  topProducts: any[] = [];
+  movimentacoes: any[] = [];
   
   // Propriedade para armazenar produtos da API - usando a interface com ID
   produtos: ProdutoComId[] = [];
@@ -46,54 +57,128 @@ export class HomeComponent implements OnInit, AfterViewInit {
   usuarioEmail: string = '';
   usuarioIniciais: string = '';
 
-  // Dados do gráfico de pizza
+  // Dados do gráfico de pizza - AGORA DINÂMICOS
   chartData = {
-    pie: [
-      { label: 'Eletrônicos', value: 75, color: '#1E2A4F' },
-      { label: 'Alimentos', value: 120, color: '#2C3E6F' },
-      { label: 'Papelaria', value: 85, color: '#10B981' },
-      { label: 'Limpeza', value: 60, color: '#F59E0B' },
-      { label: 'Escritório', value: 45, color: '#EF4444' }
-    ]
+    pie: [] as ChartSlice[]
   };
+
+  // Paleta de cores para as categorias
+  private colorPalette = [
+    '#1E2A4F', '#2C3E6F', '#10B981', '#F59E0B', '#EF4444',
+    '#8B5CF6', '#06B6D4', '#84CC16', '#F97316', '#EC4899',
+    '#6366F1', '#14B8A6', '#F43F5E', '#8B5CF6', '#06B6D4'
+  ];
 
   // Variáveis para controle do tooltip
   private hoveredSlice: any = null;
 
   constructor(
-    private produtoService: ProdutoService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
+    console.log('🚀 HomeComponent ngOnInit iniciado');
     this.carregarDadosUsuario();
     this.initializeMenu();
-    this.carregarProdutos();
     this.initializeAlerts();
     this.initializeMetrics();
     this.initializeCategories();
     this.initializeLowStockProducts();
+    // Carregar produtos por último para garantir que tudo está inicializado
+    this.carregarProdutos();
   }
 
   ngAfterViewInit(): void {
+    // Aguardar um pouco mais para garantir que os dados foram carregados
     setTimeout(() => {
       this.drawPieChart();
+      this.drawBarChart();
+      this.drawLineChart();
       this.setupEventListeners();
-    }, 100);
+    }, 500);
+  }
+
+  // NOVO MÉTODO: Atualizar dados do gráfico baseado nos produtos
+  private atualizarDadosGrafico(): void {
+    console.log('🔄 Atualizando dados do gráfico...', {
+      produtosLength: this.produtos?.length || 0
+    });
+    
+    if (!this.produtos || this.produtos.length === 0) {
+      this.chartData.pie = [
+        { label: 'Sem produtos', value: 1, color: '#CCCCCC' }
+      ];
+      console.log('⚠️ Sem produtos, usando dados padrão');
+      return;
+    }
+
+    // Agrupar produtos por categoria
+    const categoriasMap = new Map<string, number>();
+    
+    this.produtos.forEach(produto => {
+      const categoria = produto.categoria || 'Sem Categoria';
+      const quantidade = this.obterQuantidadeProduto(produto);
+      
+      if (categoriasMap.has(categoria)) {
+        categoriasMap.set(categoria, categoriasMap.get(categoria)! + quantidade);
+      } else {
+        categoriasMap.set(categoria, quantidade);
+      }
+    });
+
+    // Converter para array e ordenar por quantidade (decrescente)
+    const categoriasArray = Array.from(categoriasMap.entries())
+      .map(([label, value], index) => ({
+        label,
+        value,
+        color: this.colorPalette[index % this.colorPalette.length]
+      }))
+      .sort((a, b) => b.value - a.value);
+
+    this.chartData.pie = categoriasArray;
+    
+    console.log('✅ Dados do gráfico atualizados:', {
+      categorias: categoriasArray.length,
+      dados: categoriasArray
+    });
   }
 
   // Gráfico de Pizza com Tooltip
   drawPieChart(): void {
-    if (!this.pieChart?.nativeElement) return;
+    if (!this.pieChart?.nativeElement) {
+      console.warn('⚠️ pieChart não está disponível ainda');
+      return;
+    }
     
     const canvas = this.pieChart.nativeElement;
     const ctx = canvas.getContext('2d')!;
+    
+    if (!ctx) {
+      console.error('❌ Não foi possível obter contexto do canvas');
+      return;
+    }
     
     // Limpar canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     const total = this.chartData.pie.reduce((sum, item) => sum + item.value, 0);
+    
+    console.log('🎨 Desenhando gráfico de pizza:', {
+      total,
+      items: this.chartData.pie.length,
+      dados: this.chartData.pie
+    });
+    
+    // Se não há dados válidos, mostrar mensagem
+    if (total === 0 || this.chartData.pie.length === 0) {
+      ctx.fillStyle = '#666';
+      ctx.font = '16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Sem dados para exibir', canvas.width / 2, canvas.height / 2);
+      return;
+    }
     
     let currentAngle = 0;
     const centerX = canvas.width / 2;
@@ -111,7 +196,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
       
       // Se é a fatia hovered, destacar
       if (this.hoveredSlice && this.hoveredSlice.label === item.label) {
-        ctx.fillStyle = this.lightenColor(item.color, 20); // Cor mais clara
+        ctx.fillStyle = this.lightenColor(item.color, 20);
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
       } else {
@@ -143,17 +228,14 @@ export class HomeComponent implements OnInit, AfterViewInit {
       const mouseX = event.clientX - rect.left;
       const mouseY = event.clientY - rect.top;
       
-      // Verificar se o mouse está sobre alguma fatia
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
       const radius = Math.min(centerX, centerY) - 20;
       
       const newHoveredSlice = this.getHoveredSlice(mouseX, mouseY, centerX, centerY, radius);
       
-      // Mudar cursor se estiver sobre uma fatia
       canvas.style.cursor = newHoveredSlice ? 'pointer' : 'default';
       
-      // Redesenhar apenas se o hover mudou
       if (this.hoveredSlice?.label !== newHoveredSlice?.label) {
         this.hoveredSlice = newHoveredSlice;
         this.drawPieChart();
@@ -165,7 +247,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
       this.drawPieChart();
     });
 
-    // Adicionar evento de clique (opcional)
     canvas.addEventListener('click', (event) => {
       const rect = canvas.getBoundingClientRect();
       const mouseX = event.clientX - rect.left;
@@ -184,22 +265,18 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   // Método para verificar qual fatia está sob o mouse
   getHoveredSlice(mouseX: number, mouseY: number, centerX: number, centerY: number, radius: number): any {
-    // Calcular ângulo do mouse em relação ao centro
     const dx = mouseX - centerX;
     const dy = mouseY - centerY;
     const distance = Math.sqrt(dx * dx + dy * dy);
     
-    // Se o mouse está fora do círculo, retorna null
     if (distance > radius) return null;
     
-    // Calcular ângulo em radianos
     let angle = Math.atan2(dy, dx);
     if (angle < 0) angle += 2 * Math.PI;
     
     const total = this.chartData.pie.reduce((sum, item) => sum + item.value, 0);
     let currentAngle = 0;
     
-    // Encontrar a fatia correspondente ao ângulo
     for (const item of this.chartData.pie) {
       const sliceAngle = (2 * Math.PI * item.value) / total;
       const percentage = ((item.value / total) * 100).toFixed(1);
@@ -220,15 +297,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   // Método para desenhar o tooltip
   drawTooltip(ctx: CanvasRenderingContext2D, slice: any): void {
-    const tooltipWidth = 180;
-    const tooltipHeight = 60;
+    const tooltipWidth = 200;
+    const tooltipHeight = 70;
     const padding = 10;
     
-    // Posição do tooltip (canto superior direito)
     const tooltipX = 10;
     const tooltipY = 10;
     
-    // Fundo do tooltip
     ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
     ctx.strokeStyle = '#ccc';
     ctx.lineWidth = 1;
@@ -237,7 +312,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
     ctx.fill();
     ctx.stroke();
     
-    // Sombra
     ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
     ctx.shadowBlur = 10;
     ctx.shadowOffsetX = 2;
@@ -256,7 +330,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     ctx.font = '12px Arial';
     ctx.fillText(`${slice.percentage}%`, tooltipX + padding, tooltipY + padding + 35);
     
-    // Valor
+    // Quantidade total
     ctx.fillText(`Quantidade: ${slice.value}`, tooltipX + padding + 80, tooltipY + padding + 35);
     
     // Resetar sombra
@@ -314,67 +388,34 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   private atualizarProdutosEmBaixa(): void {
-    console.log('=== ATUALIZANDO PRODUTOS EM BAIXA ===');
-    console.log('Produtos disponíveis:', this.produtos);
-    
     this.lowStockProducts = [];
     const limiteEstoqueBaixo = 5;
     
     if (!this.produtos || this.produtos.length === 0) {
-      console.log('Nenhum produto disponível para análise');
       this.lowStockAlert = 'Nenhum produto cadastrado para análise.';
       this.lowStockCount = 0;
       return;
     }
 
-    // DEBUG: Mostrar todas as quantidades
-    console.log('Detalhes das quantidades:');
-    this.produtos.forEach((produto, index) => {
-      const quantidade = this.obterQuantidadeProduto(produto);
-      console.log(`Produto ${index + 1} (ID: ${produto.id}): ${produto.nome || produto.name}, Quantidade: ${quantidade}`);
-    });
-
     const produtosEmAtencao = this.produtos.filter(produto => {
       if (!produto) return false;
-      
       const quantidade = this.obterQuantidadeProduto(produto);
-<<<<<<< HEAD:Frontend/src/app/pages/home/home.ts
-      const estaEmBaixa = quantidade <= limiteEstoqueBaixo;
-=======
-      console.log(`Produto: ${produto.nome || 'Produto sem nome'}, Quantidade: ${quantidade}, Limite: ${limiteEstoqueBaixo}`);
->>>>>>> origin/main:frontend/src/app/pages/home/home.ts
-      
-      console.log(`Filtro: ${produto.nome || produto.name} (ID: ${produto.id}) - Qtd: ${quantidade} - Em baixa: ${estaEmBaixa}`);
-      
-      return estaEmBaixa;
+      return quantidade <= limiteEstoqueBaixo;
     });
-
-    console.log('Produtos em atenção encontrados:', produtosEmAtencao);
 
     this.lowStockProducts = produtosEmAtencao.map(produto => {
       const quantidade = this.obterQuantidadeProduto(produto);
       
       return {
-<<<<<<< HEAD:Frontend/src/app/pages/home/home.ts
         id: produto.id,
         name: produto.nome || produto.name || 'Produto sem nome',
         category: produto.categoria || produto.categoria || 'Sem categoria',
         quantity: quantidade,
         maxStock: produto.estoque_maximo || produto.minStock || produto.estoque_maximo || 50
-=======
-        name: produto.nome || 'Produto sem nome',
-        category: produto.categoria || 'Sem categoria',
-        quantity: quantidade,
-        maxStock: produto.estoque_maximo || 50
->>>>>>> origin/main:frontend/src/app/pages/home/home.ts
       };
     });
 
     this.lowStockCount = this.lowStockProducts.length;
-    
-    console.log('Low stock products final:', this.lowStockProducts);
-    console.log('Low stock count:', this.lowStockCount);
-    console.log('=== FIM ATUALIZAÇÃO PRODUTOS BAIXA ===');
 
     if (this.lowStockCount > 0) {
       this.lowStockAlert = `Atenção! Você tem ${this.lowStockCount} produto(s) com estoque baixo.`;
@@ -384,34 +425,31 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   private obterQuantidadeProduto(produto: any): number {
-    // Tenta diferentes nomes de propriedades possíveis para quantidade
     const quantidade = produto.quantidade ?? produto.estoque ?? produto.quant ?? produto.stock ?? 0;
-    
-    // Converte para número e trata valores inválidos
     const qtdNumero = Number(quantidade);
     return isNaN(qtdNumero) ? 0 : qtdNumero;
   }
 
   private initializeMetrics(): void {
+    // Inicializar com valores padrão
     this.totalProducts = 0;
     this.stockValue = 'R$ 0,00';
-    
     this.metricCards = [
       {
         title: 'Total de Produtos',
-        value: this.totalProducts,
+        value: 0,
         variation: '-',
         trend: 'neutral'
       },
       {
         title: 'Valor do Estoque',
-        value: this.stockValue,
+        value: 'R$ 0,00',
         variation: '-',
         trend: 'neutral'
       },
       {
         title: 'Itens em Baixa',
-        value: this.lowStockCount,
+        value: 0,
         variation: '-',
         trend: 'neutral'
       },
@@ -422,17 +460,24 @@ export class HomeComponent implements OnInit, AfterViewInit {
         trend: 'neutral'
       }
     ];
+    console.log('✅ Métricas inicializadas:', this.metricCards);
   }
 
   private atualizarMetricas(): void {
-    this.totalProducts = this.produtos.length;
+    console.log('🔄 Atualizando métricas...', {
+      produtosLength: this.produtos?.length || 0
+    });
+    
+    this.totalProducts = this.produtos?.length || 0;
   
     let valorTotal = 0;
-    this.produtos.forEach(produto => {
-      const quantidade = this.obterQuantidadeProduto(produto);
-      const preco = produto.preco || 0; // usa apenas o campo 'preco'
-      valorTotal += preco * quantidade;
-    }); // ← REMOVIDO o "};" extra que estava aqui
+    if (this.produtos && this.produtos.length > 0) {
+      this.produtos.forEach(produto => {
+        const quantidade = this.obterQuantidadeProduto(produto);
+        const preco = produto.preco || 0;
+        valorTotal += preco * quantidade;
+      });
+    }
       
     this.stockValue = new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -443,13 +488,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
       {
         title: 'Total de Produtos',
         value: this.totalProducts,
-        variation: '+12% este mês',
+        variation: this.totalProducts > 0 ? '+12% este mês' : '-',
         trend: this.totalProducts > 0 ? 'positive' : 'neutral'
       },
       {
         title: 'Valor do Estoque',
         value: this.stockValue,
-        variation: '+8.2%',
+        variation: valorTotal > 0 ? '+8.2%' : '-',
         trend: valorTotal > 0 ? 'positive' : 'neutral'
       },
       {
@@ -460,20 +505,21 @@ export class HomeComponent implements OnInit, AfterViewInit {
       },
       {
         title: 'Saídas do Mês',
-        value: 20,
-        variation: '+5%',
-        trend: 'positive'
+        value: 0,
+        variation: '-',
+        trend: 'neutral'
       }
     ];
+    
+    console.log('✅ Métricas atualizadas:', {
+      totalProducts: this.totalProducts,
+      stockValue: this.stockValue,
+      lowStockCount: this.lowStockCount
+    });
   }
 
   private initializeCategories(): void {
-    this.categories = [
-      { name: 'Alimentos', percentage: '45%' },
-      { name: 'Eletrônicos', percentage: '20%' },
-      { name: 'Cosméticos', percentage: '2%' },
-      { name: 'Papelaria', percentage: '32%' }
-    ];
+    this.categories = [];
   }
 
   private initializeLowStockProducts(): void {
@@ -487,15 +533,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
       this.usuarioNome = usuario.nome;
       this.usuarioEmail = usuario.email || '';
       this.usuarioIniciais = this.gerarIniciais(this.usuarioNome);
-    } else {
-      // Se não tem usuário logado, volta para login
-<<<<<<< HEAD
-      // this.router.navigate(['/login']);
-
-      this.router.navigate(['/login']);
-=======
->>>>>>> main
-      // this.router.navigate(['/login']);
     }
   }
 
@@ -512,76 +549,311 @@ export class HomeComponent implements OnInit, AfterViewInit {
     this.router.navigate(['/login']);
   }
 
-  private carregarProdutos(): void {
+  private async carregarProdutos(): Promise<void> {
     console.log('🔄 Iniciando carregamento de produtos da API...');
     
-    this.produtoService.listarProdutos().subscribe({
-      next: (produtos) => {
-        console.log('✅ Produtos carregados da API:', produtos);
-        console.log('🔍 Tipo dos dados:', typeof produtos);
-        console.log('🔍 Número de produtos:', produtos.length);
-        
-        // Convertendo para ProdutoComId para incluir o ID
-        this.produtos = produtos as ProdutoComId[];
+    try {
+      const res = await fetch(`${environment.apiUrl}/produto`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' }
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('❌ Erro ao carregar produtos:', res.status, errorText);
+        this.produtos = [];
+        this.atualizarDadosGrafico();
         this.atualizarMetricas();
         this.atualizarProdutosEmBaixa();
-      },
-      error: (error) => {
-        console.error('❌ Erro ao carregar produtos da API:', error);
-        console.log('🔄 Usando dados mock para teste...');
-        
-        // Dados mock COM ID - usando a interface ProdutoComId
-        this.produtos = [
-          {
-            id: 1,
-            nome: 'Notebook Dell',
-            categoria: 'Eletrônicos',
-            quantidade: 3,
-            estoque_maximo: 50,
-            preco: undefined,
-            name: '',
-            minStock: 0,
-            estoque: 0,
-            id_produto: 0,
-            id_fornecedor: 0
-          },
-          {
-            id: 2,
-            nome: 'Mouse Gamer',
-            categoria: 'Informática',
-            estoque: 2,
-            estoque_maximo: 30,
-            preco: 150,
-            name: '',
-            minStock: 0,
-            quantidade: 0,
-            id_produto: 0,
-            id_fornecedor: 0
-          },
-          {
-            id: 3,
-            nome: 'Caderno Universitário',
-            categoria: 'Papelaria',
-            quantidade: 7,
-            estoque_maximo: 20,
-            preco: undefined,
-            name: '',
-            minStock: 0,
-            estoque: 0,
-            id_produto: 0,
-            id_fornecedor: 0
-          }
-        ];
-        
-        this.atualizarMetricas();
-        this.atualizarProdutosEmBaixa();
+        this.atualizarTopProdutos();
+        this.atualizarMovimentacoes();
+        setTimeout(() => {
+          this.drawPieChart();
+          this.drawBarChart();
+          this.drawLineChart();
+        }, 300);
+        return;
       }
-    });
+      
+      const produtos = await res.json();
+      console.log('✅ Produtos carregados da API:', produtos);
+      
+      // Convertendo para ProdutoComId para incluir o ID e normalizar campos
+      this.produtos = (produtos || []).map((p: any) => ({
+        ...p,
+        id: p.id || p.id_produto,
+        nome: p.nome || p.name || '',
+        name: p.name || p.nome || '',
+        preco: p.preco || p.preco_unitario || 0,
+        quantidade: p.quantidade ?? p.estoque ?? p.quantidade_atual ?? 0,
+        categoria: p.categoria || 'Sem categoria'
+      })) as ProdutoComId[];
+      
+      // ATUALIZAR GRÁFICO COM DADOS REAIS
+      this.atualizarDadosGrafico();
+      
+      this.atualizarMetricas();
+      this.atualizarProdutosEmBaixa();
+      this.atualizarTopProdutos();
+      this.atualizarMovimentacoes();
+      
+      // Forçar detecção de mudanças
+      this.cdr.detectChanges();
+      
+      console.log('📊 Estado após carregar produtos:', {
+        totalProducts: this.totalProducts,
+        stockValue: this.stockValue,
+        lowStockCount: this.lowStockCount,
+        topProducts: this.topProducts.length,
+        movimentacoes: this.movimentacoes.length,
+        produtos: this.produtos.length
+      });
+      
+      // Redesenhar os gráficos após os dados serem atualizados
+      setTimeout(() => {
+        console.log('📊 Redesenhando gráficos...', {
+          produtos: this.produtos.length,
+          chartData: this.chartData.pie.length
+        });
+        this.drawPieChart();
+        this.drawBarChart();
+        this.drawLineChart();
+        this.cdr.detectChanges();
+      }, 500);
+    } catch (error) {
+      console.error('❌ Erro ao carregar produtos da API:', error);
+      
+      this.produtos = [];
+      
+      // ATUALIZAR GRÁFICO COM ESTADO VAZIO
+      this.atualizarDadosGrafico();
+      
+      this.atualizarMetricas();
+      this.atualizarProdutosEmBaixa();
+      this.atualizarTopProdutos();
+      this.atualizarMovimentacoes();
+      
+      // Redesenhar os gráficos
+      setTimeout(() => {
+        this.drawPieChart();
+        this.drawBarChart();
+        this.drawLineChart();
+      }, 500);
+    }
   }
 
   // Método para forçar atualização (útil para testes)
   public atualizarDados(): void {
     console.log('🔄 Forçando atualização dos dados...');
     this.carregarProdutos();
+  }
+
+  // Gráfico de Barras
+  drawBarChart(): void {
+    if (!this.barChart?.nativeElement) {
+      console.warn('⚠️ barChart não está disponível ainda');
+      return;
+    }
+    
+    const canvas = this.barChart.nativeElement;
+    const ctx = canvas.getContext('2d')!;
+    
+    if (!ctx) {
+      console.error('❌ Não foi possível obter contexto do canvas');
+      return;
+    }
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    if (!this.chartData.pie || this.chartData.pie.length === 0) {
+      ctx.fillStyle = '#666';
+      ctx.font = '16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Sem dados para exibir', canvas.width / 2, canvas.height / 2);
+      return;
+    }
+
+    const padding = 40;
+    const chartWidth = canvas.width - (padding * 2);
+    const chartHeight = canvas.height - (padding * 2);
+    const barSpacing = 10;
+    const maxValue = Math.max(...this.chartData.pie.map(item => item.value));
+    const barWidth = (chartWidth - (barSpacing * (this.chartData.pie.length - 1))) / this.chartData.pie.length;
+
+    this.chartData.pie.forEach((item, index) => {
+      const barHeight = (item.value / maxValue) * chartHeight;
+      const x = padding + (index * (barWidth + barSpacing));
+      const y = canvas.height - padding - barHeight;
+
+      ctx.fillStyle = item.color;
+      ctx.fillRect(x, y, barWidth, barHeight);
+
+      // Label da categoria
+      ctx.fillStyle = '#333';
+      ctx.font = '12px Arial';
+      ctx.textAlign = 'center';
+      ctx.save();
+      ctx.translate(x + barWidth / 2, canvas.height - padding + 15);
+      ctx.rotate(-Math.PI / 4);
+      ctx.fillText(item.label.substring(0, 10), 0, 0);
+      ctx.restore();
+
+      // Valor no topo da barra
+      ctx.fillStyle = '#333';
+      ctx.font = 'bold 11px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(item.value.toString(), x + barWidth / 2, y - 5);
+    });
+  }
+
+  // Gráfico de Linha (Tendência)
+  drawLineChart(): void {
+    if (!this.lineChart?.nativeElement) {
+      console.warn('⚠️ lineChart não está disponível ainda');
+      return;
+    }
+    
+    const canvas = this.lineChart.nativeElement;
+    const ctx = canvas.getContext('2d')!;
+    
+    if (!ctx) {
+      console.error('❌ Não foi possível obter contexto do canvas');
+      return;
+    }
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Gerar dados simulados para os últimos 7 dias
+    const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const totalProdutos = this.produtos.length;
+    
+    // Simular variação de estoque (baseado no total atual)
+    const dados = dias.map((_, i) => {
+      const variacao = Math.random() * 0.2 - 0.1; // -10% a +10%
+      return Math.max(0, Math.round(totalProdutos * (1 + variacao)));
+    });
+
+    if (dados.every(d => d === 0)) {
+      ctx.fillStyle = '#666';
+      ctx.font = '16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Sem dados para exibir', canvas.width / 2, canvas.height / 2);
+      return;
+    }
+
+    const padding = 40;
+    const chartWidth = canvas.width - (padding * 2);
+    const chartHeight = canvas.height - (padding * 2);
+    const maxValue = Math.max(...dados, 1);
+    const stepX = chartWidth / (dias.length - 1);
+    const stepY = chartHeight / maxValue;
+
+    // Desenhar grade
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 5; i++) {
+      const y = padding + (i * chartHeight / 5);
+      ctx.beginPath();
+      ctx.moveTo(padding, y);
+      ctx.lineTo(canvas.width - padding, y);
+      ctx.stroke();
+    }
+
+    // Desenhar linha
+    ctx.strokeStyle = '#3498db';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    dados.forEach((valor, index) => {
+      const x = padding + (index * stepX);
+      const y = canvas.height - padding - (valor * stepY);
+      if (index === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+    ctx.stroke();
+
+    // Desenhar pontos
+    ctx.fillStyle = '#3498db';
+    dados.forEach((valor, index) => {
+      const x = padding + (index * stepX);
+      const y = canvas.height - padding - (valor * stepY);
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // Valor acima do ponto
+      ctx.fillStyle = '#333';
+      ctx.font = '10px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(valor.toString(), x, y - 10);
+      ctx.fillStyle = '#3498db';
+    });
+
+    // Labels dos dias
+    ctx.fillStyle = '#666';
+    ctx.font = '11px Arial';
+    ctx.textAlign = 'center';
+    dias.forEach((dia, index) => {
+      const x = padding + (index * stepX);
+      ctx.fillText(dia, x, canvas.height - padding + 20);
+    });
+  }
+
+  // Atualizar Top Produtos
+  private atualizarTopProdutos(): void {
+    if (!this.produtos || this.produtos.length === 0) {
+      this.topProducts = [];
+      return;
+    }
+
+    const produtosComValor = this.produtos.map(produto => {
+      const quantidade = this.obterQuantidadeProduto(produto);
+      const preco = produto.preco || 0;
+      return {
+        ...produto,
+        quantidade,
+        valorTotal: preco * quantidade,
+        valorTotalFormatado: new Intl.NumberFormat('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        }).format(preco * quantidade)
+      };
+    });
+
+    this.topProducts = produtosComValor
+      .sort((a, b) => b.valorTotal - a.valorTotal)
+      .slice(0, 5);
+  }
+
+  // Atualizar Movimentações (simulado por enquanto)
+  private atualizarMovimentacoes(): void {
+    // Simular movimentações baseadas nos produtos
+    this.movimentacoes = [];
+    
+    if (!this.produtos || this.produtos.length === 0) {
+      return;
+    }
+
+    // Pegar alguns produtos aleatórios para simular movimentações
+    const produtosParaMovimentacao = this.produtos.slice(0, Math.min(5, this.produtos.length));
+    
+    produtosParaMovimentacao.forEach((produto, index) => {
+      const diasAtras = 5 - index;
+      const data = new Date();
+      data.setDate(data.getDate() - diasAtras);
+      
+      this.movimentacoes.push({
+        produto: produto.nome || produto.name || 'Produto sem nome',
+        quantidade: Math.floor(Math.random() * 10) + 1,
+        tipo: Math.random() > 0.5 ? 'entrada' : 'saida',
+        data: data
+      });
+    });
+
+    // Ordenar por data (mais recente primeiro)
+    this.movimentacoes.sort((a, b) => b.data.getTime() - a.data.getTime());
   }
 }

@@ -2,7 +2,7 @@
 // Execute: node criar-usuario-teste.js
 
 import { PrismaClient } from '@prisma/client';
-import crypto from 'crypto';
+import bcrypt from 'bcrypt';
 
 // Cria o Prisma Client apontando para o schema correto
 const prisma = new PrismaClient();
@@ -33,21 +33,28 @@ async function criarUsuarioTeste() {
       console.log('✅ Tipo de usuário "user" criado (ID: ' + tipoUser.id_tipo_usuario + ')');
     }
 
-    // 2. Criar hash simples da senha (para testes, senha: "123456")
-    // Em produção, use bcrypt ou similar
+    // 2. Senha de teste
     const senha = '123456';
-    const senhaHash = crypto.createHash('sha256').update(senha).digest('hex');
 
     // 3. Verificar se o email já existe
-    const emailExistente = await prisma.usuario.findUnique({
-      where: { email: 'teste@progest.com' }
+    const email = 'teste@progest.com';
+    const usuarioExistente = await prisma.usuario.findUnique({
+      where: { email }
     });
 
-    if (emailExistente) {
-      console.log('⚠️  Usuário com email teste@progest.com já existe!');
+    // Gerar hash com bcrypt
+    const hash = await bcrypt.hash(senha, 10);
+
+    if (usuarioExistente) {
+      // Atualiza a senha para o hash bcrypt para garantir compatibilidade
+      await prisma.usuario.update({
+        where: { email },
+        data: { senha_hash: hash }
+      });
+      console.log('⚠️  Usuário existente atualizado com nova senha hash (bcrypt).');
       console.log('📝 Dados do usuário existente:');
-      console.log('   Email: teste@progest.com');
-      console.log('   Senha: 123456');
+      console.log('   Email: ' + email);
+      console.log('   Senha: ' + senha);
       return;
     }
 
@@ -55,18 +62,18 @@ async function criarUsuarioTeste() {
     const usuario = await prisma.usuario.create({
       data: {
         nome: 'Usuário Teste',
-        email: 'teste@progest.com',
-        senha_hash: senhaHash,
+        email: email,
+        senha_hash: hash,
         id_tipo_usuario: tipoUser.id_tipo_usuario, // Tipo "user" (comum)
         ativo: true,
-        CPF: null
+        cpf: null
       }
     });
 
     console.log('\n✅ Usuário de teste criado com sucesso!\n');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('📧 Email: teste@progest.com');
-    console.log('🔑 Senha: 123456');
+    console.log('📧 Email: ' + email);
+    console.log('🔑 Senha: ' + senha);
     console.log('👤 Nome: Usuário Teste');
     console.log('🆔 ID: ' + usuario.id_usuario);
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');

@@ -11,7 +11,7 @@
         <div class="logo-container">
             <div class="logo">
                 <!-- Substitua pelo caminho correto da sua imagem -->
-                <img src="assets/imagens/logonova.png" alt="Logo StockSmart" class="logoTopo">
+                <img src="assets/imagens/logoprogestao.png"alt="Logo StockSmart" class="logoTopo">
                 <span>ProGest</span>
                 <div id="tagline">Gestão Inteligente</div>
             </div>
@@ -82,6 +82,79 @@
             </div>
         </header>
 
+        <!-- Formulário de cadastro/edição -->
+        <div class="overlay-cadastro" *ngIf="showCardCadastro" (click)="fecharCardCadastro()">
+            <div class="cadastro-card" (click)="$event.stopPropagation()">
+                <div class="cadastro-header">
+                    <h3>{{ produtoEditando ? 'Editar Produto' : 'Novo Produto' }}</h3>
+                    <button type="button" class="btn-fechar-modal" (click)="fecharCardCadastro()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form (submit)="$event.preventDefault(); salvarProduto();" class="form-cadastro">
+                    <div class="campo-duplo">
+                        <div class="campo">
+                            <label><i class="fas fa-tag"></i> Nome do Produto *</label>
+                            <input type="text" [(ngModel)]="novoProduto.nome" name="nome" required class="input" placeholder="Ex: Notebook Dell" />
+                        </div>
+                        <div class="campo">
+                            <label><i class="fas fa-barcode"></i> Código Público (SKU)</label>
+                            <input type="text" [(ngModel)]="novoProduto.codigo_publico" name="codigo_publico" class="input" placeholder="Ex: PROD-001" />
+                        </div>
+                    </div>
+                    
+                    <div class="campo-duplo">
+                        <div class="campo">
+                            <label><i class="fas fa-dollar-sign"></i> Preço Unitário</label>
+                            <input type="number" step="0.01" min="0" [(ngModel)]="novoProduto.preco_unitario" name="preco_unitario" class="input" placeholder="0.00" />
+                        </div>
+                        <div class="campo">
+                            <label><i class="fas fa-ruler"></i> Unidade de Medida</label>
+                            <select [(ngModel)]="novoProduto.unidade_medida" name="unidade_medida" class="input">
+                                <option value="">Selecione...</option>
+                                <option value="UN">Unidade (UN)</option>
+                                <option value="KG">Quilograma (KG)</option>
+                                <option value="G">Grama (G)</option>
+                                <option value="L">Litro (L)</option>
+                                <option value="ML">Mililitro (ML)</option>
+                                <option value="M">Metro (M)</option>
+                                <option value="CM">Centímetro (CM)</option>
+                                <option value="CX">Caixa (CX)</option>
+                                <option value="PC">Peça (PC)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="campo">
+                        <label><i class="fas fa-folder"></i> Categoria</label>
+                        <input type="text" [(ngModel)]="novoProduto.categoria" name="categoria" class="input" placeholder="Ex: Eletrônicos, Informática..." list="categorias-list" />
+                        <datalist id="categorias-list">
+                            <option *ngFor="let cat of categoriasUnicas" [value]="cat"></option>
+                        </datalist>
+                    </div>
+                    
+                    <div class="campo">
+                        <label><i class="fas fa-align-left"></i> Descrição</label>
+                        <textarea [(ngModel)]="novoProduto.descricao" name="descricao" rows="4" class="input" placeholder="Descrição detalhada do produto..."></textarea>
+                    </div>
+                    
+                    <div class="campo">
+                        <label><i class="fas fa-truck"></i> ID Fornecedor (Opcional)</label>
+                        <input type="number" [(ngModel)]="novoProduto.id_fornecedor" name="id_fornecedor" class="input" placeholder="ID do fornecedor" />
+                    </div>
+                    
+                    <div class="acoes-form">
+                        <button type="button" class="btn-cancel" (click)="fecharCardCadastro()">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn-salvar">
+                            <i class="fas fa-save"></i> {{ produtoEditando ? 'Salvar Alterações' : 'Adicionar Produto' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <section>
             <div class="search-bar">
                 <input type="text" placeholder="Pesquisar por nome, sku ou categoria...">
@@ -103,376 +176,216 @@
             </div>
         </section> 
 
-        <!-- Lista de Produtos em Grade -->
+                <!-- Lista de Produtos em Grade -->
+        <!-- CORREÇÃO NA VISUALIZAÇÃO GRADE -->
         <section *ngIf="visualizacao === 'grade'" class="produtos-grade">
-            <div *ngFor="let produto of produtos" class="produto-card">
-                <div class="produto-header">
-                    <h3>{{ produto.nome }}</h3>
-                    <span class="produto-categoria">{{ produto.categoria }}</span>
-                </div>
-                
-                <div class="produto-info">
-                    <div class="info-item">
-                        <span class="label">SKU:</span>
-                        <span class="value">{{ produto.sku }}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Preço:</span>
-                        <span class="value preco">R$ {{ produto.preco.toFixed(2) }}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Estoque:</span>
-                        <span class="value quantidade" [class.estoque-baixo]="produto.quantidade < 5">
-                            {{ produto.quantidade }} unidades
-                        </span>
-                    </div>
-                </div>
-
-                <div class="produto-actions">
-                    <button class="btn-editar" (click)="editarProduto(produto)">
-                        <i class="fas fa-edit"></i> Editar
-                    </button>
-                    <button class="btn-excluir" (click)="excluirProduto(produto.id)">
-                        <i class="fas fa-trash"></i> Excluir
-                    </button>
-<<<<<<< HEAD
-                </div>
-            </div>
-            <div *ngIf="produtos.length === 0" class="sem-produtos">
-                <i class="fas fa-box-open"></i>
-                <p>Nenhum produto cadastrado</p>
-                <!--<button class="btn-adicionar-tabela" (click)="abrirCardCadastro()">
-                    <i class="fas fa-plus"></i> Adicionar Primeiro Produto
-                </button> -->
-            </div>
-        </section>
-
-        <!-- Lista de Produtos em Tabela -->
-        <section *ngIf="visualizacao === 'tabela'" class="tabela-produtos">
-            <div class="tabela-container">
-                <table class="tabela">
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>SKU</th>
-                            <th>Categoria</th>
-                            <th>Preço</th>
-                            <th>Estoque</th>
-                            <th>Valor Total</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let produto of produtos" 
-                            [class.estoque-baixo]="produto.quantidade < 5">
-                            <td class="nome-produto">
-                                <strong>{{ produto.nome }}</strong>
-                                <small *ngIf="produto.descricao">{{ produto.descricao }}</small>
-                            </td>
-                            <td class="sku">{{ produto.sku }}</td>
-                            <td class="categoria">
-                                <span class="categoria-badge">{{ produto.categoria }}</span>
-                            </td>
-                            <td class="preco">R$ {{ produto.preco.toFixed(2) }}</td>
-                            <td class="estoque">
-                                <span [class.estoque-critico]="produto.quantidade < 5">
-                                    {{ produto.quantidade }} unidades
-                                </span>
-                                <div *ngIf="produto.quantidade < 5" class="estoque-alerta">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    Estoque baixo
-                                </div>
-                            </td>
-                            <td class="valor-total">
-                                R$ {{ (produto.preco * produto.quantidade).toFixed(2) }}
-                            </td>
-                            <td class="acoes">
-                                <button class="btn-acao btn-editar-tabela" 
-                                        (click)="editarProduto(produto)"
-                                        title="Editar produto">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn-acao btn-excluir-tabela" 
-                                        (click)="excluirProduto(produto.id)"
-                                        title="Excluir produto">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <!-- Mensagem quando não há produtos -->
-                <div *ngIf="produtos.length === 0" class="sem-produtos">
-                    <i class="fas fa-box-open"></i>
-                    <p>Nenhum produto cadastrado</p>
-                    <!--<button class="btn-adicionar-tabela" (click)="abrirCardCadastro()">
-                        <i class="fas fa-plus"></i> Adicionar Primeiro Produto
-                    </button> -->
-                </div>
-            </div>
-        </section>
-
-=======
-                </div>
-            </div>
-            <div *ngIf="produtos.length === 0" class="sem-produtos">
-                <i class="fas fa-box-open"></i>
-                <p>Nenhum produto cadastrado</p>
-                <!--<button class="btn-adicionar-tabela" (click)="abrirCardCadastro()">
-                    <i class="fas fa-plus"></i> Adicionar Primeiro Produto
-                </button> -->
-            </div>
-        </section>
-
-        <!-- Lista de Produtos em Tabela -->
-        <section *ngIf="visualizacao === 'tabela'" class="tabela-produtos">
-            <div class="tabela-container">
-              <table class="tabela">
-                <thead>
-                  <tr>
-                    <th class="coluna-filtravel">
-                      <div class="header-com-filtro">
-                        <span class="titulo-coluna">Nome</span>
-                        <button class="btn-filtro" (click)="toggleFiltro('nome')">
-                          <i class="fas fa-filter"></i>
-                        </button>
-                        <div class="dropdown-filtro" *ngIf="filtroAberto === 'nome'">
-                          <input type="text" 
-                                 [(ngModel)]="filtros.nome" 
-                                 placeholder="Buscar por nome..."
-                                 class="input-filtro">
-                          <button class="btn-limpar" (click)="filtros.nome = ''">Limpar</button>
-                        </div>
-                      </div>
-                    </th>
-                   
-                    <th class="coluna-filtravel">
-                      <div class="header-com-filtro">
-                        <span>SKU</span>
-                        <button class="btn-filtro" (click)="toggleFiltro('sku')">
-                          <i class="fas fa-filter"></i>
-                        </button>
-                        <div class="dropdown-filtro" *ngIf="filtroAberto === 'sku'">
-                          <input type="text" 
-                                 [(ngModel)]="filtros.sku" 
-                                 placeholder="Buscar por SKU..."
-                                 class="input-filtro">
-                          <button class="btn-limpar" (click)="filtros.sku = ''">Limpar</button>
-                        </div>
-                      </div>
-                    </th>
-                    
-                    <th class="coluna-filtravel">
-                      <div class="header-com-filtro">
-                        <span>Categoria</span>
-                        <button class="btn-filtro" (click)="toggleFiltro('categoria')">
-                          <i class="fas fa-filter"></i>
-                        </button>
-                        <div class="dropdown-filtro" *ngIf="filtroAberto === 'categoria'">
-                          <select [(ngModel)]="filtros.categoria" class="select-filtro">
-                            <option value="">Todas categorias</option>
-                            <option value="Periféricos">Periféricos</option>
-                            <option value="Eletrônicos">Eletrônicos</option>
-                            <option value="Informática">Informática</option>
-                            <option value="Acessórios">Acessórios</option>
-                          </select>
-                          <button class="btn-limpar" (click)="filtros.categoria = ''">Limpar</button>
-                        </div>
-                      </div>
-                    </th>
-                    
-                    <th class="coluna-filtravel">
-                      <div class="header-com-filtro">
-                        <span>Preço</span>
-                        <button class="btn-filtro" (click)="toggleFiltro('preco')">
-                          <i class="fas fa-filter"></i>
-                        </button>
-                        <div class="dropdown-filtro" *ngIf="filtroAberto === 'preco'">
-                          <div class="faixa-preco-filtro">
-                            <label>Preço mínimo:</label>
-                            <input type="number" 
-                                   [(ngModel)]="filtros.precoMin" 
-                                   placeholder="0,00"
-                                   class="input-filtro-pequeno"
-                                   min="0">
-                            <label>Preço máximo:</label>
-                            <input type="number" 
-                                   [(ngModel)]="filtros.precoMax" 
-                                   placeholder="10000,00"
-                                   class="input-filtro-pequeno"
-                                   min="0">
-                          </div>
-                          <button class="btn-limpar" (click)="limparFiltroPreco()">Limpar</button>
-                        </div>
-                      </div>
-                    </th>
-                    
-                    <th class="coluna-filtravel">
-                      <div class="header-com-filtro">
-                        <span>Estoque</span>
-                        <button class="btn-filtro" (click)="toggleFiltro('estoque')">
-                          <i class="fas fa-filter"></i>
-                        </button>
-                        <div class="dropdown-filtro" *ngIf="filtroAberto === 'estoque'">
-                          <label>Estoque mínimo:</label>
-                          <input type="number" 
-                                 [(ngModel)]="filtros.estoqueMin" 
-                                 placeholder="0"
-                                 class="input-filtro"
-                                 min="0">
-                          <button class="btn-limpar" (click)="filtros.estoqueMin = 0">Limpar</button>
-                        </div>
-                      </div>
-                    </th>
-                    
-                    <th>Valor Total</th>
-                    <th>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr class="linha-vertical" *ngFor="let produto of produtosFiltrados" 
-                      [class.estoque-baixo]="produto.quantidade < 5">
-                    <td class="nome-produto">
-                      <strong>{{ produto.nome }}</strong>
-                      <small *ngIf="produto.descricao">{{ produto.descricao }}</small>
-                    </td>
-                    <td class="sku">{{ produto.sku }}</td>
-                    <td class="categoria">
-                      <span class="categoria-badge">{{ produto.categoria }}</span>
-                    </td>
-                    <td class="preco">R$ {{ produto.preco.toFixed(2) }}</td>
-                    <td class="estoque">
-                      <span [class.estoque-critico]="produto.quantidade < 5">
-                        {{ produto.quantidade }} unidades
-                      </span>
-                      <div *ngIf="produto.quantidade < 5" class="estoque-alerta">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        Estoque baixo
-                      </div>
-                    </td>
-                    <td class="valor-total">
-                      R$ {{ (produto.preco * produto.quantidade).toFixed(2) }}
-                    </td>
-                    <td class="acoes">
-                      <button class="btn-acao btn-editar-tabela" 
-                              (click)="editarProduto(produto)"
-                              title="Editar produto">
-                        <i class="fas fa-edit"></i>
-                      </button>
-                      <button class="btn-acao btn-excluir-tabela" 
-                              (click)="excluirProduto(produto.id)"
-                              title="Excluir produto">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              
-              <div *ngIf="produtosFiltrados.length === 0" class="sem-produtos">
-                <i class="fas fa-box-open"></i>
-                <p>Nenhum produto encontrado</p>
+          <div *ngFor="let produto of produtos" class="produto-card">
+              <div class="produto-header">
+                  <h3>{{ produto.nome || 'Produto sem nome' }}</h3>
+                  <span class="produto-categoria">{{ produto.categoria || 'Sem categoria' }}</span>
               </div>
-            </div>
-          </section>
+              
+              <div class="produto-info">
+                  <div class="info-item">
+                      <span class="label">SKU:</span>
+                      <span class="value">{{ produto.sku || 'N/A' }}</span>
+                  </div>
+                  <div class="info-item">
+                      <span class="label">Preço:</span>
+                      <span class="value preco">R$ {{ (produto.preco || 0) | number:'1.2-2' }}</span>
+                  </div>
+                  <div class="info-item">
+                      <span class="label">Estoque:</span>
+                      <span class="value quantidade" [class.estoque-baixo]="(produto.estoque || 0) < 5">
+                          {{ produto.quantidade || 0 }} unidades
+                      </span>
+                  </div>
+              </div>
 
->>>>>>> main
-        <!-- Card de Cadastro -->
-        <section>
-            <div *ngIf="showCardCadastro" class="card-cadastro-overlay">
-                <div class="card-cadastro">
-                    <div class="card-header">
-                        <h3>{{ produtoEditando ? 'Editar Produto' : 'Cadastrar Novo Produto' }}</h3>
-                        <button class="btn-fechar" (click)="fecharCardCadastro()">
-                            <i class="fas fa-times"></i>
-                        </button>
+              <div class="produto-actions">
+                  <button class="btn-editar" (click)="editarProduto(produto)">
+                      <i class="fas fa-edit"></i> Editar
+                  </button>
+                  <button class="btn-excluir" (click)="excluirProduto(produto.id_produto || produto.id)">
+                      <i class="fas fa-trash"></i> Excluir
+                  </button>
+              </div>
+          </div>
+          <div *ngIf="produtos.length === 0" class="sem-produtos">
+              <i class="fas fa-box-open"></i>
+              <p>Nenhum produto cadastrado</p>
+          </div>
+        </section>
+                <!-- Lista de Produtos em Tabela -->
+        <!-- CORREÇÃO NA VISUALIZAÇÃO TABELA -->
+        <section *ngIf="visualizacao === 'tabela'" class="tabela-produtos">
+          <div class="tabela-container">
+            <table class="tabela">
+              <thead>
+                <tr>
+                  <th class="coluna-filtravel">
+                    <div class="header-com-filtro">
+                      <span class="titulo-coluna">Nome</span>
+                      <button class="btn-filtro" 
+                              [class.active]="filtroAberto === 'nome'"
+                              [class.has-filter]="filtros.nome && filtros.nome.trim() !== ''"
+                              (click)="toggleFiltro('nome')">
+                        <i class="fas fa-filter"></i>
+                      </button>
+                      <div class="dropdown-filtro" *ngIf="filtroAberto === 'nome'">
+                        <input type="text" 
+                              [(ngModel)]="filtros.nome" 
+                              (ngModelChange)="aplicarFiltros()"
+                              placeholder="Buscar por nome..."
+                              class="input-filtro">
+                        <button class="btn-limpar" (click)="filtros.nome = ''; aplicarFiltros()">Limpar</button>
+                      </div>
                     </div>
-                    
-                    <form class="form-cadastro" (ngSubmit)="salvarProduto()">
-                        <div class="campo">
-                            <label for="nomeProduto">Nome do Produto :</label>
-                            <input 
-                                id="nomeProduto" 
-                                type="text" 
-                                placeholder="Digite o nome" 
-                                [(ngModel)]="novoProduto.nome" 
-                                name="nome" 
-                                required>
+                  </th>
+                
+                  <th class="coluna-filtravel">
+                    <div class="header-com-filtro">
+                      <span>SKU</span>
+                      <button class="btn-filtro" 
+                              [class.active]="filtroAberto === 'sku'"
+                              [class.has-filter]="filtros.sku && filtros.sku.trim() !== ''"
+                              (click)="toggleFiltro('sku')">
+                        <i class="fas fa-filter"></i>
+                      </button>
+                      <div class="dropdown-filtro" *ngIf="filtroAberto === 'sku'">
+                        <input type="text" 
+                              [(ngModel)]="filtros.sku" 
+                              (ngModelChange)="aplicarFiltros()"
+                              placeholder="Buscar por SKU..."
+                              class="input-filtro">
+                        <button class="btn-limpar" (click)="filtros.sku = ''; aplicarFiltros()">Limpar</button>
+                      </div>
+                    </div>
+                  </th>
+                  
+                  <th class="coluna-filtravel">
+                    <div class="header-com-filtro">
+                      <span>Categoria</span>
+                      <button class="btn-filtro" 
+                              [class.active]="filtroAberto === 'categoria'"
+                              [class.has-filter]="filtros.categoria && filtros.categoria.trim() !== ''"
+                              (click)="toggleFiltro('categoria')">
+                        <i class="fas fa-filter"></i>
+                      </button>
+                      <div class="dropdown-filtro" *ngIf="filtroAberto === 'categoria'">
+                        <select [(ngModel)]="filtros.categoria" (ngModelChange)="aplicarFiltros()" class="select-filtro">
+                          <option value="">Todas categorias</option>
+                          <option *ngFor="let categoria of categoriasUnicas" [value]="categoria">
+                            {{ categoria }}
+                          </option>
+                        </select>
+                        <button class="btn-limpar" (click)="filtros.categoria = ''; aplicarFiltros()">Limpar</button>
+                      </div>
+                    </div>
+                  </th>
+                  
+                  <th class="coluna-filtravel">
+                    <div class="header-com-filtro">
+                      <span>Preço</span>
+                      <button class="btn-filtro" 
+                              [class.active]="filtroAberto === 'preco'"
+                              [class.has-filter]="filtros.precoMin || filtros.precoMax"
+                              (click)="toggleFiltro('preco')">
+                        <i class="fas fa-filter"></i>
+                      </button>
+                      <div class="dropdown-filtro" *ngIf="filtroAberto === 'preco'">
+                        <div class="faixa-preco-filtro">
+                          <label>Preço mínimo:</label>
+                          <input type="number" 
+                                [(ngModel)]="filtros.precoMin" 
+                                (ngModelChange)="aplicarFiltros()"
+                                placeholder="0,00"
+                                class="input-filtro-pequeno"
+                                min="0">
+                          <label>Preço máximo:</label>
+                          <input type="number" 
+                                [(ngModel)]="filtros.precoMax" 
+                                (ngModelChange)="aplicarFiltros()"
+                                placeholder="10000,00"
+                                class="input-filtro-pequeno"
+                                min="0">
                         </div>
-                        
-                        <div class="campo">
-                            <label for="skuProduto">SKU :</label>
-                            <input 
-                                id="skuProduto" 
-                                type="text" 
-                                placeholder="Código do produto" 
-                                [(ngModel)]="novoProduto.sku" 
-                                name="sku" 
-                                required>
-                        </div>
-
-                        <div class="campo">
-                            <label for="categoriaProduto">Categoria :</label>
-                            <select 
-                                id="categoriaProduto" 
-                                [(ngModel)]="novoProduto.categoria" 
-                                name="categoria" 
-                                required>
-                                <option value="">Selecione uma categoria</option>
-                                <option value="Eletrônicos">Eletrônicos</option>
-                                <option value="Informática">Informática</option>
-                                <option value="Periféricos">Periféricos</option>
-                                <option value="Acessórios">Acessórios</option>
-                                <option value="Outros">Outros</option>
-                            </select>
-                        </div>
-                        
-                        <div class="campo-duplo">
-                            <div class="campo">
-                                <label>Preço :</label>
-                                <input 
-                                    type="number" 
-                                    placeholder="R$ 0,00" 
-                                    [(ngModel)]="novoProduto.preco" 
-                                    name="preco"
-                                    step="0.01"
-                                    min="0"
-                                    required>
-                            </div>
-                            <div class="campo">
-                                <label>Quantidade :</label>
-                                <input 
-                                    type="number" 
-                                    placeholder="0" 
-                                    name="quantidade" 
-                                    [(ngModel)]="novoProduto.quantidade" 
-                                    min="0"
-                                    required>
-                            </div>
-                        </div>
-
-                        <div class="campo">
-                            <label for="descricaoProduto">Descrição :</label>
-                            <textarea 
-                                id="descricaoProduto" 
-                                placeholder="Descrição do produto..."
-                                [(ngModel)]="novoProduto.descricao" 
-                                name="descricao"
-                                rows="3"></textarea>
-                        </div>
-                        
-                        <div class="acoes">
-                            <button type="button" class="btn-cancelar" (click)="fecharCardCadastro()">
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn-salvar">
-                                {{ produtoEditando ? 'Atualizar' : 'Salvar' }} Produto
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                        <button class="btn-limpar" (click)="limparFiltroPreco()">Limpar</button>
+                      </div>
+                    </div>
+                  </th>
+                  
+                  <th class="coluna-filtravel">
+                    <div class="header-com-filtro">
+                      <span>Estoque</span>
+                      <button class="btn-filtro" 
+                              [class.active]="filtroAberto === 'estoque'"
+                              [class.has-filter]="filtros.estoqueMin && filtros.estoqueMin > 0"
+                              (click)="toggleFiltro('estoque')">
+                        <i class="fas fa-filter"></i>
+                      </button>
+                      <div class="dropdown-filtro" *ngIf="filtroAberto === 'estoque'">
+                        <label>Estoque mínimo:</label>
+                        <input type="number" 
+                              [(ngModel)]="filtros.estoqueMin" 
+                              (ngModelChange)="aplicarFiltros()"
+                              placeholder="0"
+                              class="input-filtro"
+                              min="0">
+                        <button class="btn-limpar" (click)="filtros.estoqueMin = 0; aplicarFiltros()">Limpar</button>
+                      </div>
+                    </div>
+                  </th>
+                  
+                  <th>Valor Total</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="linha-vertical" *ngFor="let produto of produtosFiltrados" 
+                    [class.estoque-baixo]="(produto.quantidade || 0) < 5">
+                  <td class="nome-produto">
+                    <strong>{{ produto.nome || 'Produto sem nome' }}</strong>
+                    <small *ngIf="produto.descricao">{{ produto.descricao }}</small>
+                  </td>
+                  <td class="sku">{{ produto.sku || 'N/A' }}</td>
+                  <td class="categoria">
+                    <span class="categoria-badge">{{ produto.categoria || 'Sem categoria' }}</span>
+                  </td>
+                  <td class="preco">R$ {{ (produto.preco || 0) | number:'1.2-2' }}</td>
+                  <td class="estoque">
+                    <span [class.estoque-critico]="(produto.quantidade || 0) < 5">
+                      {{ produto.quantidade || 0 }} unidades
+                    </span>
+                    <div *ngIf="(produto.quantidade || 0) < 5" class="estoque-alerta">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      Estoque baixo
+                    </div>
+                  </td>
+                  <td class="valor-total">
+                    R$ {{ ((produto.preco || 0) * (produto.quantidade || 0)) | number:'1.2-2' }}
+                  </td>
+                  <td class="acoes">
+                    <button class="btn-acao btn-editar-tabela" 
+                            (click)="editarProduto(produto)"
+                            title="Editar produto">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-acao btn-excluir-tabela" 
+                            (click)="excluirProduto(produto.id_produto || produto.id)"
+                            title="Excluir produto">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <div *ngIf="produtosFiltrados.length === 0" class="sem-produtos">
+              <i class="fas fa-box-open"></i>
+              <p>Nenhum produto encontrado</p>
             </div>
+          </div>
         </section>
     </main>
 </body>
