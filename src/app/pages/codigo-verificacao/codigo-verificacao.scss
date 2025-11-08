@@ -52,7 +52,7 @@
 }
 
 .leftside img {
-  width: 70% !important;
+  width: 60% !important;
   height: auto !important;
   max-height: 70% !important;
   object-fit: contain !important;
@@ -133,7 +133,8 @@ input {
   border-radius: 5px !important;
 }
 
-.buttonContainer, .resend-container {
+.buttonContainer,
+.resend-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -150,31 +151,50 @@ input {
   font-size: 240px;
   border-radius: 5px !important;
   text-align: center !important;
-  
+
 
   /* remove o spinner nos navegadores */
   input[type=number]::-webkit-outer-spin-button,
   input[type=number]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+    -webkit-appearance: none;
+    margin: 0;
 
-  /* esse é para o Fire Fox */
-  input[type=number] {
-    -moz-appearance: textfield;
-    appearance: textfield;
+    /* esse é para o Fire Fox */
+    input[type=number] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
   }
+
 }
 
 .resend-container p {
-  margin-top: 50px !important;
+  margin-top: 25px !important;
 }
-.resend-btn{
-  box-sizing: border-box;
-  border-style: none;
-  background-color: #ff0000;
-  border-radius: 10px;
+
+.resend-btn {
+  padding: 5px !important;
+  background-color: #001a6f;
+  color: white;
+  font-weight: 400;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
+
+.resend-container {
+  text-align: center;
+  margin-top: 20px;
+
+  p {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
 }
+
 
 .login {
   align-items: center !important;
@@ -202,7 +222,8 @@ input {
   font-size: 15px !important;
 }
 
-.links-row span, .links-row a {
+.links-row span,
+.links-row a {
   cursor: pointer !important;
 }
 
@@ -218,6 +239,7 @@ input {
 .links-row a:hover {
   color: red !important;
 }
+
 /* Loading Overlay Styles */
 .loading-overlay {
   position: fixed;
@@ -246,11 +268,14 @@ input {
 }
 
 @keyframes gentlePulse {
-  0%, 100% { 
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
-  50% { 
+
+  50% {
     transform: scale(1.05);
     opacity: 0.9;
   }
@@ -261,6 +286,7 @@ input {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -281,7 +307,8 @@ input {
 .progress-track {
   position: absolute;
   height: 100%;
-  width: 40%; /* Largura do elemento que se move */
+  width: 40%;
+  /* Largura do elemento que se move */
   background: linear-gradient(90deg, #002793, #3498db);
   border-radius: 2px;
   animation: indeterminate 1.5s infinite ease-in-out;
@@ -291,9 +318,11 @@ input {
   0% {
     left: -40%;
   }
+
   50% {
     left: 100%;
   }
+
   100% {
     left: -40%;
   }
@@ -308,7 +337,7 @@ input {
   overflow: hidden;
   position: relative;
   margin: 0 auto 15px;
-  
+
   &::after {
     content: '';
     position: absolute;
@@ -331,6 +360,7 @@ input {
   color: #002793 !important;
   text-decoration: none !important;
 }
+
 .forgot-password a:hover {
   text-decoration: underline !important;
 }
@@ -343,7 +373,8 @@ input {
   align-items: center !important;
 }
 
-.links-row span, .links-row a {
+.links-row span,
+.links-row a {
   font-size: 15px !important;
   cursor: pointer !important;
 }
@@ -380,9 +411,11 @@ input {
   0% {
     transform: translateX(-100%);
   }
+
   50% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(-100%);
   }
@@ -411,12 +444,13 @@ input {
 
 
 /*------------Responsividade-------------*/
-@media screen and (max-width: 768px){
+@media screen and (max-width: 768px) {
   .form {
     flex-direction: column !important;
   }
 
-  .leftside, .rightside {
+  .leftside,
+  .rightside {
     width: 100% !important;
     height: 50vh !important;
   }
@@ -434,14 +468,43 @@ input {
     gap: 10px !important;
     text-align: center !important;
   }
-  
+
   .login-title {
     margin-right: 0 !important;
     flex-direction: column !important;
   }
-  
+
   .login-title h2 {
     margin-right: 0 !important;
     margin-top: 10px !important;
   }
+}
+
+.indicators {
+  margin-top: 25px !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.indicators ul {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* tira os pontinhos */
+}
+
+.indicators ul li {
+  width: 60px;
+  height: 7px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  transition: 0.4s;
+}
+
+.indicators ul li.active {
+  background-color: #002793;
 }

@@ -6,13 +6,15 @@ import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-esqueceu-senha',
+  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './esqueceu-senha.html',
-  styleUrl: './esqueceu-senha.scss',
+  styleUrls: ['./esqueceu-senha.scss'],
 })
 export class EsqueceuSenhaComponent {
   email: string = '';
   errorMessage: string = '';
+  currentStep = 0; // 👈 Passo atual (1ª tela)
 
   constructor(
     private router: Router,
@@ -24,16 +26,15 @@ export class EsqueceuSenhaComponent {
 
     const form = event.target as HTMLFormElement;
 
-    if (form.checkValidity()) {
-      this.router.navigate(['/codigo-verificacao']);
-      return;
-    }
-
     if (!this.email) {
       this.errorMessage = 'Por favor, preencha o campo de E-mail';
       return;
     }
 
-    form.reportValidity();
+    if (form.checkValidity()) {
+      // Quando for para a próxima página:
+      this.currentStep = 1; // 👈 Atualiza indicador
+      this.router.navigate(['/codigo-verificacao']);
+    }
   }
 }
