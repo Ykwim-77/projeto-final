@@ -6,7 +6,8 @@ import { Router } from '@angular/router';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { DecimalPipe } from '@angular/common';
-import { ProdutoService, Produto } from '../../services/produto.service';
+import { Produto } from '../../services/produto.service';
+import { environment } from '../../environments/environment';
 
 interface MenuItem {
   name: string;
@@ -38,6 +39,29 @@ interface LowStockProduct {
   imports: [CommonModule, FormsModule, RouterLink, DecimalPipe]
 })
 export class ProdutosComponent implements OnInit {
+categoriasUnicas: string[] = [];
+limparFiltroPreco() {
+  this.filtros.precoMin = null;
+  this.filtros.precoMax = null;
+  this.aplicarFiltros();
+}
+toggleFiltro(campo: string) {
+  this.filtroAberto = this.filtroAberto === campo ? null : campo;
+  this.aplicarFiltros();
+}
+
+aplicarFiltros() {
+  this.produtosFiltrados = this.produtos.filter(p => {
+    const produto: any = p;
+    const nomeMatch = !this.filtros.nome || (p.nome || '').toLowerCase().includes(this.filtros.nome.toLowerCase());
+    const skuMatch = !this.filtros.sku || ((p.sku || produto.codigo_publico || '') + '').toLowerCase().includes(this.filtros.sku.toLowerCase());
+    const categoriaMatch = !this.filtros.categoria || (p.categoria || '') === this.filtros.categoria;
+    const precoMinMatch = !this.filtros.precoMin || (p.preco || 0) >= Number(this.filtros.precoMin);
+    const precoMaxMatch = !this.filtros.precoMax || (p.preco || 0) <= Number(this.filtros.precoMax);
+    const estoqueMinMatch = !this.filtros.estoqueMin || (p.quantidade || 0) >= Number(this.filtros.estoqueMin);
+    return nomeMatch && skuMatch && categoriaMatch && precoMinMatch && precoMaxMatch && estoqueMinMatch;
+  });
+}
   // Controle de exibição
   showCardCadastro: boolean = false;
   produtoEditando: Produto | null = null;
@@ -46,11 +70,12 @@ export class ProdutosComponent implements OnInit {
   // Produto em cadastro/edição
   novoProduto = {
     nome: '',
-    sku: '',
+    codigo_publico: '',
     categoria: '',
-    quantidade: 0,
-    preco: 0,
-    descricao: ''
+    preco_unitario: 0,
+    unidade_medida: '',
+    descricao: '',
+    id_fornecedor: null as number | null
   };
 
   // Lista de produtos
@@ -75,11 +100,20 @@ export class ProdutosComponent implements OnInit {
   usuarioNome: string = '';
   usuarioEmail: string = '';
   usuarioIniciais: string = '';
+produtosFiltrados: Produto[] = [];
+filtros: any = {
+  nome: '',
+  sku: '',
+  categoria: '',
+  precoMin: null,
+  precoMax: null,
+  estoqueMin: 0
+};
+filtroAberto: string | null = null;
 
   constructor(
     private router: Router,
-    private authService: AuthService,
-    private produtoService: ProdutoService
+    private authService: AuthService
   ) {}
 
   // Inicialização
@@ -100,11 +134,12 @@ export class ProdutosComponent implements OnInit {
     this.produtoEditando = null;
     this.novoProduto = {
       nome: '',
-      sku: '',
+      codigo_publico: '',
       categoria: '',
-      quantidade: 0,
-      preco: 0,
-      descricao: ''
+      preco_unitario: 0,
+      unidade_medida: '',
+      descricao: '',
+      id_fornecedor: null
     };
     this.showCardCadastro = true;
   }
@@ -113,71 +148,109 @@ export class ProdutosComponent implements OnInit {
   editarProduto(produto: Produto) {
     this.produtoEditando = produto;
     this.novoProduto = {
-      nome: produto.name || '',
-      sku: produto.sku,
+      nome: produto.nome || produto.name || '',
+      codigo_publico: produto.sku || (produto as any).codigo_publico || '',
       categoria: produto.categoria || '',
-      quantidade: produto.estoque || 0,
-      preco: produto.preco || 0,
-      descricao: produto.descricao || ''
+      preco_unitario: produto.preco || (produto as any).preco_unitario || 0,
+      unidade_medida: (produto as any).unidade_medida || '',
+      descricao: produto.descricao || '',
+      id_fornecedor: (produto as any).id_fornecedor || null
     };
     this.showCardCadastro = true;
   }
 
   // Salvar produto (criar ou atualizar)
-  salvarProduto() {
-    if (this.produtoEditando) {
-      // Atualizar produto existente
-      const index = this.produtos.findIndex(p => p.id === this.produtoEditando!.id);
-      if (index !== -1) {
-        this.produtos[index] = {
-          ...this.produtoEditando,
-          name: this.novoProduto.nome,
-          sku: this.novoProduto.sku,
-          categoria: this.novoProduto.categoria,
-          minStock: this.produtoEditando.minStock || 0,
-          estoque: Number(this.novoProduto.quantidade),
-          estoque_maximo: this.produtoEditando.estoque_maximo || 0,
-          preco: Number(this.novoProduto.preco),
-          descricao: this.novoProduto.descricao,
-          id_produto: this.produtoEditando.id_produto || 0,
-          id_fornecedor: this.produtoEditando.id_fornecedor || 0
+  async salvarProduto() {
+    // Detecta ID do produto que será atualizado (suporta id_produto ou id)
+    const idToUpdate = this.produtoEditando ? (this.produtoEditando.id_produto || (this.produtoEditando as any).id) : null;
+    
+    try {
+      if (idToUpdate) {
+        // Atualizar produto existente
+        const payload = {
+          nome: this.novoProduto.nome.trim(),
+          descricao: this.novoProduto.descricao?.trim() || null,
+          categoria: this.novoProduto.categoria?.trim() || null,
+          codigo_publico: this.novoProduto.codigo_publico?.trim() || null,
+          preco_unitario: Number(this.novoProduto.preco_unitario) || null,
+          unidade_medida: this.novoProduto.unidade_medida?.trim() || null,
+          id_fornecedor: this.novoProduto.id_fornecedor || null
         };
+        
+        const res = await fetch(`${environment.apiUrl}/produto/${idToUpdate}`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error('Erro ao atualizar produto:', res.status, errorText);
+          return;
+        }
+        
+        const data = await res.json();
+        console.log('✅ Produto atualizado:', data);
+        this.fecharCardCadastro();
+        await this.carregarProdutos();
+      } else {
+        // Criar novo produto
+        const payload = {
+          nome: this.novoProduto.nome.trim(),
+          descricao: this.novoProduto.descricao?.trim() || null,
+          categoria: this.novoProduto.categoria?.trim() || null,
+          codigo_publico: this.novoProduto.codigo_publico?.trim() || null,
+          preco_unitario: Number(this.novoProduto.preco_unitario) || null,
+          unidade_medida: this.novoProduto.unidade_medida?.trim() || null,
+          id_fornecedor: this.novoProduto.id_fornecedor || null
+        };
+        
+        const res = await fetch(`${environment.apiUrl}/produto`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error('Erro ao criar produto:', res.status, errorText);
+          return;
+        }
+        
+        const data = await res.json();
+        console.log('✅ Produto criado:', data);
+        this.fecharCardCadastro();
+        await this.carregarProdutos();
       }
-    } else {
-      // Criar novo produto
-      const novoId = this.produtos.length > 0 
-        ? Math.max(...this.produtos.map(p => p.id || 0)) + 1 
-        : 1;
-      
-      // Criar objeto com TODAS as propriedades da interface Produto
-      const produto: Produto = {
-        id: novoId,
-        name: this.novoProduto.nome.trim(),
-        sku: this.novoProduto.sku.trim(),
-        categoria: this.novoProduto.categoria,
-        minStock: 0,
-        estoque: Number(this.novoProduto.quantidade),
-        estoque_maximo: 0,
-        preco: Number(this.novoProduto.preco),
-        descricao: this.novoProduto.descricao?.trim(),
-        id_produto: 0,
-        id_fornecedor: 0,
-        quantidade: 0,
-        nome: ''
-      };
-      
-      this.produtos.push(produto);
+    } catch (err) {
+      console.error('Erro ao salvar produto:', err);
     }
-
-    this.fecharCardCadastro();
-    this.atualizarMetricas();
   }
 
   // Excluir produto
-  excluirProduto(id: number) {
-    if (confirm('Tem certeza que deseja excluir este produto?')) {
-      this.produtos = this.produtos.filter(produto => produto.id !== id);
-      this.atualizarMetricas();
+  async excluirProduto(id: number) {
+    if (!confirm('Tem certeza que deseja excluir este produto?')) {
+      return;
+    }
+    
+    try {
+      const res = await fetch(`${environment.apiUrl}/produto/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Erro ao deletar produto:', res.status, errorText);
+        return;
+      }
+      
+      console.log('✅ Produto deletado:', id);
+      await this.carregarProdutos();
+    } catch (err) {
+      console.error('Erro ao deletar produto:', err);
     }
   }
 
@@ -187,11 +260,12 @@ export class ProdutosComponent implements OnInit {
     this.produtoEditando = null;
     this.novoProduto = {
       nome: '',
-      sku: '',
+      codigo_publico: '',
       categoria: '',
-      quantidade: 0,
-      preco: 0,
-      descricao: ''
+      preco_unitario: 0,
+      unidade_medida: '',
+      descricao: '',
+      id_fornecedor: null
     };
   }
 
@@ -302,27 +376,61 @@ export class ProdutosComponent implements OnInit {
     }
   }
 
-  private carregarProdutos(): void {
+  private async carregarProdutos(): Promise<void> {
     console.log('🔄 Iniciando carregamento de produtos da API...');
     
-    this.produtoService.listarProdutos().subscribe({
-      next: (produtos) => {
-        console.log('✅ Produtos carregados da API:', produtos);
-        this.produtos = produtos;
-        this.atualizarMetricas();
-        this.initializeAlerts();
-        this.initializeCategories();
-        this.initializeLowStockProducts();
-      },
-      error: (error) => {
-        console.error('❌ Erro ao carregar produtos da API:', error);
+    try {
+      const res = await fetch(`${environment.apiUrl}/produto`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' }
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('❌ Erro ao carregar produtos:', res.status, errorText);
         this.produtos = [];
         this.atualizarMetricas();
         this.initializeAlerts();
         this.initializeCategories();
         this.initializeLowStockProducts();
+        return;
       }
-    });
+      
+      const produtos = await res.json();
+      console.log('✅ Produtos carregados da API:', produtos);
+      
+      // Ajusta nomes conflitantes retornados pela API
+      this.produtos = (produtos || []).map((p: any) => ({
+        ...p,
+        nome: p.nome || p.name,
+        name: p.name || p.nome,
+        id: p.id || p.id_produto,
+        preco: p.preco || p.preco_unitario || 0,
+        quantidade: p.quantidade ?? p.estoque ?? p.quantidade_atual ?? 0,
+        sku: p.sku || p.codigo_publico || ''
+      }));
+      
+      // Extrair categorias únicas
+      this.categoriasUnicas = [...new Set(this.produtos.map(p => p.categoria).filter(c => c))];
+      
+      // Aplicar filtros após carregar produtos
+      this.aplicarFiltros();
+      
+      this.atualizarMetricas();
+      this.initializeAlerts();
+      this.initializeCategories();
+      this.initializeLowStockProducts();
+    } catch (error) {
+      console.error('❌ Erro ao carregar produtos da API:', error);
+      this.produtos = [];
+      this.produtosFiltrados = [];
+      this.categoriasUnicas = [];
+      this.atualizarMetricas();
+      this.initializeAlerts();
+      this.initializeCategories();
+      this.initializeLowStockProducts();
+    }
   }
 
   private gerarIniciais(nome: string): string {

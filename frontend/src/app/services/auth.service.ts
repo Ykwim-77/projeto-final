@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, catchError, of, map } from 'rxjs';
+import { Observable, tap, catchError, of, map, throwError } from 'rxjs';
 import { environment } from '../environments/environment';
 
 export interface LoginRequest {
@@ -34,37 +34,37 @@ export class AuthService {
   private readonly TOKEN_KEY = 'progest_token';
   private readonly USER_KEY = 'progest_user';
 
-  constructor(private http: HttpClient) {}
 
-  /**
-   * 🔐 Realiza login do usuário
-   * 
-   * FLUXO:
-   * 1. Envia credenciais para o backend
-   * 2. Backend valida e cria JWT token
-   * 3. Backend salva token em cookie httpOnly (seguro)
-   * 4. Cookie é enviado automaticamente em requisições futuras
-   * 
-   * withCredentials: true permite que cookies sejam enviados/recebidos
-   */
-  login(email: string, senha: string): Observable<any> {
+   constructor(private http: HttpClient) {}
+
+  login(email: string, password: string): Observable<any> {
+    console.log('📤 Enviando login para:', `${this.apiUrl}/login`);
     return this.http.post<any>(
       `${this.apiUrl}/login`, 
-      { email, senha },
-      { withCredentials: true } // 👈 Permite envio/recebimento de cookies
+      { 
+        email: email.trim().toLowerCase(), 
+        senha: password
+      },
+      { withCredentials: true }
     ).pipe(
       tap(response => {
-        // Backend salva token em cookie, não precisamos salvar manualmente
-        // Mas podemos salvar dados do usuário se necessário
+        console.log('📥 Resposta completa:', response);
         if (response.usuario) {
-          // Opcional: salvar dados do usuário localmente para acesso rápido
-          localStorage.setItem(this.USER_KEY, JSON.stringify(response.usuario));
+          localStorage.setItem('progest_user', JSON.stringify(response.usuario));
+          console.log('✅ Usuário salvo no localStorage');
         }
-        console.log('✅ Login realizado com sucesso');
       }),
-      catchError((error) => {
-        console.error('❌ Erro no login:', error);
-        throw error; // Propaga o erro para o componente tratar
+      catchError((error: any) => {
+        let mensagem = 'Erro desconhecido';
+        // Mensagem amigável para backend resposta padronizada
+        if (error?.error && typeof error.error === 'object' && error.error.mensagem) {
+          mensagem = error.error.mensagem;
+        } else if (error?.error && typeof error.error === 'string') {
+          mensagem = error.error;
+        } else if (error?.message) {
+          mensagem = error.message;
+        }
+        return throwError(() => ({ mensagem }));
       })
     );
   }

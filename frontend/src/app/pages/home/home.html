@@ -93,7 +93,7 @@
             <!-- Card 1: Total de Produtos -->
             <div class="card">
                 <div class="card-title">{{ metricCards[0]?.title || 'Total de Produtos' }}</div>
-                <div class="card-value">{{ totalProducts }}</div>
+                <div class="card-value">{{ totalProducts || 0 }}</div>
                 <div class="card-variation" [class]="'card-variation ' + (metricCards[0]?.trend || 'neutral')">
                     {{ metricCards[0]?.variation || '-' }}
                 </div>
@@ -103,7 +103,7 @@
             <!-- Card 2: Valor do Estoque -->
             <div class="card">
                 <div class="card-title">{{ metricCards[1]?.title || 'Valor do Estoque' }}</div>
-                <div class="card-value">{{ stockValue }}</div>
+                <div class="card-value">{{ stockValue || 'R$ 0,00' }}</div>
                 <div class="card-variation" [class]="'card-variation ' + (metricCards[1]?.trend || 'neutral')">
                     {{ metricCards[1]?.variation || '-' }}
                 </div>
@@ -113,7 +113,7 @@
             <!-- Card 3: Itens em Baixa -->
             <div class="card">
                 <div class="card-title">{{ metricCards[2]?.title || 'Itens em Baixa' }}</div>
-                <div class="card-value">{{ lowStockCount }}</div>
+                <div class="card-value">{{ lowStockCount || 0 }}</div>
                 <div class="card-variation" [class]="'card-variation ' + (metricCards[2]?.trend || 'neutral')">
                     {{ metricCards[2]?.variation || '-' }}
                 </div>
@@ -131,22 +131,28 @@
             </div>
         </section>   
 
+        <!-- Gráficos Principais -->
         <section class="graficos-container">
             <div class="grafico-card">
-                <div class="card-title">Gráfico de Estoque Por Categoria</div>
+                <div class="card-title">Distribuição por Categoria (Pizza)</div>
                 <canvas #pieChart width="400" height="300"></canvas>
             </div>
             
             <div class="grafico-card">
+                <div class="card-title">Estoque por Categoria (Barras)</div>
+                <canvas #barChart width="400" height="300"></canvas>
+            </div>
+        </section>
+
+        <!-- Segunda Linha de Gráficos -->
+        <section class="graficos-container">
+            <div class="grafico-card">
+                <div class="card-title">Tendência de Estoque (Últimos 7 dias)</div>
+                <canvas #lineChart width="400" height="300"></canvas>
+            </div>
+            
+            <div class="grafico-card">
                 <div class="card-title">Produtos em Baixa</div>
-                
-                <!-- Debug info (pode remover depois que funcionar) -->
-                <!--<div class="debug-info" style="font-size: 12px; color: #666; margin-bottom: 10px;">
-                    Total produtos: {{ produtos.length || 0 }} | 
-                    Em baixa: {{ lowStockCount }}
-                </div>-->
-<br>    
-                <!-- Lista de produtos em baixa -->
                 <div class="low-stock-list" *ngIf="lowStockProducts.length > 0">
                     <div class="low-stock-item" *ngFor="let produto of lowStockProducts; let i = index">
                         <div class="item-index">{{ i + 1 }}</div>
@@ -164,14 +170,12 @@
                     </div>
                 </div>
 
-                <!-- Estado quando não há produtos em baixa -->
                 <div class="no-low-stock" *ngIf="lowStockProducts.length === 0 && produtos && produtos.length > 0">
                     <i class="fas fa-check-circle"></i>
                     <p>Nenhum produto com estoque baixo</p>
                     <small>Todos os produtos estão acima do limite mínimo</small>
                 </div>
 
-                <!-- Estado quando não há produtos cadastrados -->
                 <div class="no-products" *ngIf="!produtos || produtos.length === 0">
                     <i class="fas fa-box-open"></i>
                     <p>Nenhum produto cadastrado</p>
@@ -179,8 +183,49 @@
                 </div>
             </div>
         </section>
-        <section class="cardMovimentacoes">
-            <div class="card-title">Últimas Movimentações</div>
+
+        <!-- Top Produtos e Movimentações -->
+        <section class="graficos-container">
+            <div class="grafico-card">
+                <div class="card-title">Top 5 Produtos por Valor</div>
+                <div class="top-products-list" *ngIf="topProducts.length > 0">
+                    <div class="top-product-item" *ngFor="let produto of topProducts; let i = index">
+                        <div class="rank-badge" [class]="'rank-' + (i + 1)">{{ i + 1 }}</div>
+                        <div class="product-details">
+                            <span class="product-name-top">{{ produto.nome || produto.name }}</span>
+                            <span class="product-value">{{ produto.valorTotalFormatado }}</span>
+                            <span class="product-stock">Estoque: {{ produto.quantidade }} unidades</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="no-products" *ngIf="topProducts.length === 0">
+                    <i class="fas fa-box-open"></i>
+                    <p>Nenhum produto cadastrado</p>
+                </div>
+            </div>
+
+            <div class="cardMovimentacoes">
+                <div class="card-title">Últimas Movimentações</div>
+                <div class="movimentacoes-list" *ngIf="movimentacoes.length > 0">
+                    <div class="movimentacao-item" *ngFor="let mov of movimentacoes">
+                        <div class="mov-icon" [class]="'mov-' + mov.tipo">
+                            <i [class]="mov.tipo === 'entrada' ? 'fas fa-arrow-down' : 'fas fa-arrow-up'"></i>
+                        </div>
+                        <div class="mov-details">
+                            <span class="mov-produto">{{ mov.produto }}</span>
+                            <span class="mov-info">{{ mov.quantidade }} unidades - {{ mov.data | date:'dd/MM/yyyy HH:mm' }}</span>
+                        </div>
+                        <div class="mov-tipo-badge" [class]="'badge-' + mov.tipo">
+                            {{ mov.tipo === 'entrada' ? 'Entrada' : 'Saída' }}
+                        </div>
+                    </div>
+                </div>
+                <div class="no-movimentacoes" *ngIf="movimentacoes.length === 0">
+                    <i class="fas fa-exchange-alt"></i>
+                    <p>Nenhuma movimentação registrada</p>
+                    <small>As movimentações aparecerão aqui quando houver alterações no estoque</small>
+                </div>
+            </div>
         </section>
      </main>
 </body>

@@ -132,27 +132,28 @@ async function atualizarProduto(req, res){
         //     return res.status(400).json({Falta_infos:"passa todas as informações, incopetente"});
         // }
 
-        const produto = await prisma.produto.findUnique({
-            where:{
-                id_produto: idNumber
-            }
-        })
+        const produtoExistente = await prisma.produto.findUnique({
+            where: { id_produto: idNumber }
+        });
 
-        res.status(200).json({mensagem:`O produto ${produto.nome} foi atualizado`})
-        await prisma.produto.update({
-            where:{
-                id_produto:idNumber
-            },
-            data:{
-                nome:nome,
-                descricao:descricao,
-                categoria:categoria,
-                codigo_publico:codigo_publico,
-                preco_unitario:preco_unitario,
-                unidade_medida:unidade_medida,
-                id_fornecedor:id_fornecedor
+        if (!produtoExistente) {
+            return res.status(404).json({ mensagem: 'Produto não encontrado' });
+        }
+
+        const produtoAtualizado = await prisma.produto.update({
+            where: { id_produto: idNumber },
+            data: {
+                nome: nome,
+                descricao: descricao,
+                categoria: categoria,
+                codigo_publico: codigo_publico,
+                preco_unitario: preco_unitario,
+                unidade_medida: unidade_medida,
+                id_fornecedor: id_fornecedor
             }
-        })
+        });
+
+        return res.status(200).json({ mensagem: `O produto ${produtoAtualizado.nome} foi atualizado`, produto: produtoAtualizado });
         
 
     } catch(error){

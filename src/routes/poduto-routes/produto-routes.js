@@ -9,27 +9,27 @@ roteador_produto.get("/", authMiddleware, (req, res) => {
     controller.pegarTodosProdutos(req, res);
 });
 
-roteador_produto.get("/:id", (req, res) => {
+roteador_produto.get("/:id", authMiddleware, (req, res) => {
     controller.pegar1Produto(req, res);
 });
 
-roteador_produto.post("/", (req, res) => {
+roteador_produto.post("/", authMiddleware, (req, res) => {
     controller.criarProduto(req, res);
 });
 
-roteador_produto.post("/reservar/:id", (req, res) => {
+roteador_produto.post("/reservar/:id", authMiddleware, (req, res) => {
     controller.reservarProduto(req, res);
 });
 
-roteador_produto.post("/entregar/:id", (req, res) => {
+roteador_produto.post("/entregar/:id", authMiddleware, (req, res) => {
     controller.entregarProduto(req, res);
 });
 
-roteador_produto.put("/:id", (req, res) => {
+roteador_produto.put("/:id", authMiddleware, (req, res) => {
     controller.atualizarProduto(req, res);
 });
 
-roteador_produto.delete("/:id", (req, res) => {
+roteador_produto.delete("/:id", authMiddleware, (req, res) => {
     controller.deletarProduto(req, res);
 });
 
