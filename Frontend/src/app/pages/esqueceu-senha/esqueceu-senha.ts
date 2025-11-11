@@ -33,7 +33,6 @@ export class EsqueceuSenhaComponent {
     this.isLoading = true;
     this.errorMessage = '';
 
-    // Chamar o serviço de autenticação
     this.authService.esqueceuSenha(this.email).subscribe({
       next: (response: any) => {
         console.log('✅ E-mail de recuperação enviado');

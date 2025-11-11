@@ -1,3 +1,5 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');
+
 /* ===== CORREÇÃO DEFINITIVA - SUBSTITUIR TODO O ARQUIVO ===== */
 * {
     margin: 0;
@@ -650,7 +652,6 @@ section,
             font-size: 0.9rem;
             transition: all 0.3s ease;
             margin-bottom: 12px;
-            font-family: inherit;
 
             &:focus {
                 outline: none;
@@ -680,7 +681,6 @@ section,
             font-size: 0.85rem;
             transition: all 0.3s ease;
             margin-bottom: 10px;
-            font-family: inherit;
 
             &:focus {
                 outline: none;
@@ -783,7 +783,6 @@ section,
 }
 
 .sku {
-    font-family: monospace;
     font-weight: 600;
     color: #333;
 }
@@ -995,8 +994,6 @@ section,
             border-radius: 8px;
             font-size: 1rem;
             transition: all 0.3s ease;
-            font-family: inherit;
-
             &:focus {
                 outline: none;
                 border-color: #0B1D5A;
@@ -1011,7 +1008,6 @@ section,
         textarea {
             resize: vertical;
             min-height: 100px;
-            font-family: inherit;
         }
 
         select {

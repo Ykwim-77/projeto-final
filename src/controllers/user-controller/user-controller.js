@@ -22,7 +22,7 @@ async function teste(req, res) {
 }
 
 async function Login(req, res) {
-    console.loq('cheguei')
+    console.log('cheguei')
     console.log('Login request body keys:', Object.keys(req.body));
     const { email, senha } = req.body; 
     const emailNormalizado = (email || '').trim().toLowerCase();

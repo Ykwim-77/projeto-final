@@ -12,6 +12,9 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./login.scss']
 })
 export class LoginComponent {
+  fazerLogin() {
+    throw new Error('Method not implemented.');
+  }
   email: string = '';
   password: string = '';
   isLoading: boolean = false;
@@ -66,14 +69,6 @@ export class LoginComponent {
       }
     });
   }
-
-  // Método para testar com dados específicos
-  preencherTeste() {
-    this.email = 'admin@example.com';
-    this.password = '123456';
-    console.log('🧪 Credenciais de teste preenchidas');
-  }
-
   // Limpar erro ao alterar campos
   onInputChange(): void {
     if (this.errorMessage) {
