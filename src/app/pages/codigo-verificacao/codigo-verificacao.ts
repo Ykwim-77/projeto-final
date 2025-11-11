@@ -10,7 +10,7 @@ import { delay } from 'rxjs/operators';
   selector: 'app-codigo-verificacao',
   imports: [CommonModule, FormsModule],
   templateUrl: './codigo-verificacao.html',
-  styleUrl: './codigo-verificacao.scss',
+  styleUrls: ['./codigo-verificacao.scss'],
 })
 export class CodigoVerificacao implements AfterViewInit, OnDestroy {
   @ViewChildren('inputRef') inputs!: QueryList<ElementRef<HTMLInputElement>>;
@@ -21,6 +21,7 @@ export class CodigoVerificacao implements AfterViewInit, OnDestroy {
   tempoRestante: number = 60;
   isLoading: boolean = false;
   private countdownInterval: any;
+  currentStep = 1;
 
   constructor(private router: Router, private authService: AuthService) {
     this.iniciarCountdown();
@@ -68,7 +69,6 @@ export class CodigoVerificacao implements AfterViewInit, OnDestroy {
 
     // Se está no último input e está preenchido, submete automaticamente
     if (index === 5 && value) {
-      this.verificarCodigo();
     }
 
     // Limpa mensagem de erro quando o usuário começa a digitar
@@ -168,58 +168,13 @@ export class CodigoVerificacao implements AfterViewInit, OnDestroy {
 
   onSubmit(event: Event) {
     event.preventDefault();
-    this.verificarCodigo();
-  }
 
-  verificarCodigo() {
-    const codigoFinal = this.codigo.join('');
-    
-    if (codigoFinal.length < 6) {
-      this.errorMessage = 'Preencha todos os dígitos do código.';
-      
-      // Encontra o primeiro input vazio e foca nele
-      const emptyIndex = this.codigo.findIndex(digit => digit === '');
-      if (emptyIndex !== -1) {
-        const emptyInput = this.inputs.toArray()[emptyIndex]?.nativeElement;
-        if (emptyInput) {
-          emptyInput.focus();
-        }
-      }
-      return;
-    }
+    if (!this.todosCamposPreenchidos()) {
+      this.errorMessage = 'Por favor, preencha todos os campos do código';
+      return;    }
 
     this.errorMessage = '';
-    this.isLoading = true;
-    
-    console.log('Código digitado:', codigoFinal);
-    
-    // Método 1: Usando o AuthService (descomente quando estiver pronto)
-    this.authService.verificarCodigo(codigoFinal).subscribe({
-      next: (response: any) => {
-        this.isLoading = false;
-        // Código válido - redireciona para a próxima página
-        this.router.navigate(['/nova-senha'], { queryParams: { token: response.token } });
-      },
-      error: (error: any) => {
-        this.isLoading = false;
-        this.errorMessage = 'Código inválido ou expirado. Tente novamente.';
-        this.limparCodigo();
-      }
-    });
-
-    // Método 2: Para teste rápido (comente o método acima e descomente este)
-    /*
-    this.isLoading = true;
-    setTimeout(() => {
-      this.isLoading = false;
-      if (codigoFinal === '123456') {
-        this.router.navigate(['/nova-senha']);
-      } else {
-        this.errorMessage = 'Código inválido. Use 123456 para teste.';
-        this.limparCodigo();
-      }
-    }, 1500);
-    */
+    this.router.navigate(['/redefinir-senha']);
   }
 
   reenviarCodigo() {
@@ -274,9 +229,9 @@ export class CodigoVerificacao implements AfterViewInit, OnDestroy {
   }
 
   private mostrarMensagemSucesso(mensagem: string) {
-    // Poderia implementar um toast ou alerta bonito aqui
+
     console.log(mensagem);
-    // Exemplo com alert temporário
+
     const alertElement = document.createElement('div');
     alertElement.style.cssText = `
       position: fixed;
@@ -343,8 +298,4 @@ export class CodigoVerificacao implements AfterViewInit, OnDestroy {
     return this.codigo.every(digit => digit !== '');
   }
 
-  // Método para obter o código completo como string
-  getCodigoCompleto(): string {
-    return this.codigo.join('');
-  }
 }

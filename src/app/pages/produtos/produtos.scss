@@ -243,15 +243,15 @@ html{
 }
 
 .botao-opcoes {
-    background-color: #0B1D5A;
+    background-color: hsl(0, 0%, 93%);
     border-radius: 5px;
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 10px 22px;
-    color: white;
+    color: rgb(50, 50, 50);
     cursor: pointer;
-    border: none;
+    border: 1px solid black;
     transition: all 0.3s ease;
     width: 7.5%;
     height: 6%;
@@ -260,20 +260,22 @@ html{
 }
 
 .botao-opcoes:hover {
-    background-color: #0A2D8A;
-    transform: translateY(-1px);
+    transform: translateY(-0.2px);
+}
+.botao-opcoes.active{
+    color:rgba(255, 255, 255, 0.9);
 }
 
 .botao-opcoes-tabela {
-    background-color: #0B1D5A;
+    background-color: hsl(0, 0%, 93%);
     border-radius: 5px;
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 10px 22px;
-    color: white;
+    color: rgb(0, 0, 0);
     cursor: pointer;
-    border: none;
+    border: 1px solid black;
     transition: all 0.3s ease;
     width: 7.5%;
     height: 6%;
@@ -282,9 +284,13 @@ html{
 }
 
 .botao-opcoes-tabela:hover {
-    background-color: #0A2D8A;
     transform: translateY(-1px);
 }
+.botao-opcoes-tabela.active{
+    color:rgba(255, 255, 255, 0.9);
+}
+
+
 
 /* ===== CONTROLES DE VISUALIZAÇÃO ===== */
 .botao-opcoes.active,
@@ -413,10 +419,9 @@ html{
 /* ===== TABELA DE PRODUTOS ===== */
 .tabela-produtos {
     margin-top: 20px;
-    background: white;
+    background: transparent;
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .tabela-container {
@@ -490,7 +495,6 @@ html{
 }
 
 .sku {
-    font-family: monospace;
     font-weight: 600;
     color: #333;
 }

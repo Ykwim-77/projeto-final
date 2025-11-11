@@ -22,6 +22,18 @@ export class LoginComponent {
     private authService: AuthService
   ) {}
 
+  irParaEsqueceuSenha(event: Event) {
+    event.preventDefault(); // evita comportamento padrão do <a>
+
+    this.isLoading = true; // mostra overlay de loading
+
+    // Pequeno delay para o loading aparecer antes da navegação
+    setTimeout(() => {
+      this.router.navigate(['/esqueceu-senha']); // vai para a próxima tela
+    }, 1500);
+  }
+
+
   onSubmit(event: Event): void {
     event.preventDefault();
     
