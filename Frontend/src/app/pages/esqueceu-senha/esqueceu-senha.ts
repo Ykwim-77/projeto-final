@@ -1,17 +1,19 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../../guards/auth.service';
+import { AuthService } from '../../services/auth.service'; // ✅ CORREÇÃO: services em vez de guards
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-esqueceu-senha',
+  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './esqueceu-senha.html',
-  styleUrl: './esqueceu-senha.scss',
+  styleUrls: ['./esqueceu-senha.scss']
 })
 export class EsqueceuSenhaComponent {
   email: string = '';
+  isLoading: boolean = false; // ✅ ADICIONADO
   errorMessage: string = '';
 
   constructor(
@@ -22,18 +24,40 @@ export class EsqueceuSenhaComponent {
   onSubmit(event: Event): void {
     event.preventDefault();
 
-    const form = event.target as HTMLFormElement;
-
-    if (form.checkValidity()) {
-      this.router.navigate(['/codigo-verificacao']);
-      return;
-    }
-
+    // Validação básica
     if (!this.email) {
       this.errorMessage = 'Por favor, preencha o campo de E-mail';
       return;
     }
 
-    form.reportValidity();
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    // Chamar o serviço de autenticação
+    this.authService.esqueceuSenha(this.email).subscribe({
+      next: (response: any) => {
+        console.log('✅ E-mail de recuperação enviado');
+        this.isLoading = false;
+        
+        // Redireciona para a página de código de verificação
+        this.router.navigate(['/codigo-verificacao'], { 
+          queryParams: { email: this.email } 
+        });
+      },
+      error: (error: any) => {
+        console.error('❌ Erro ao enviar e-mail:', error);
+        this.isLoading = false;
+        
+        if (error && error.mensagem) {
+          this.errorMessage = error.mensagem;
+        } else {
+          this.errorMessage = 'Erro ao enviar e-mail de recuperação. Tente novamente.';
+        }
+      }
+    });
+  }
+
+  voltarParaLogin() {
+    this.router.navigate(['/login']);
   }
 }

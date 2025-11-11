@@ -5,7 +5,7 @@ import { CodigoVerificacao } from './pages/codigo-verificacao/codigo-verificacao
 import { RedefinirSenha } from './pages/redefinir-senha/redefinir-senha';
 import { HomeComponent } from './pages/home/home';
 import { ProdutosComponent } from './pages/produtos/produtos';
-import { CadastroComponent } from './pages/cadastro/cadastro';
+//import { CadastroComponent } from './pages/cadastro/cadastro'; // ← CORRIGIDO!
 import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -14,8 +14,8 @@ export const routes: Routes = [
   { path: 'esqueceu-senha', component: EsqueceuSenhaComponent },
   { path: 'codigo-verificacao', component: CodigoVerificacao},
   { path: 'redefinir-senha', component: RedefinirSenha },
-  { path: 'cadastro', component: CadastroComponent },
+ // { path: 'cadastro', component: CadastroComponent }, // ← AGORA VAI FUNCIONAR!
   { path: 'home', component: HomeComponent, canActivate: [AuthGuard] },
   { path: 'produtos', component: ProdutosComponent, canActivate: [AuthGuard] },
-  { path: '*', redirectTo: '/login' }
+  { path: '**', redirectTo: '/login' }
 ];

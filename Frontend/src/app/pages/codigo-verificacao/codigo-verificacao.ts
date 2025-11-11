@@ -1,6 +1,6 @@
 import { Component, ViewChildren, QueryList, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../../guards/auth.service';
+import { AuthService } from '../service/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable, of } from 'rxjs';

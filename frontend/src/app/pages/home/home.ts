@@ -17,17 +17,22 @@ interface ChartSlice {
   color: string;
 }
 
+interface BarChartData {
+  label: string;
+  value: number;
+  color: string;
+}
+
 @Component({
   selector: 'app-home',
   templateUrl: './home.html',
   styleUrls: ['./home.scss'],
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, DecimalPipe, CurrencyPipe]
+  imports: [CommonModule, RouterLink, RouterLinkActive]
 })
 export class HomeComponent implements OnInit, AfterViewInit {
   @ViewChild('pieChart') pieChart!: ElementRef<HTMLCanvasElement>;
   @ViewChild('barChart') barChart!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('lineChart') lineChart!: ElementRef<HTMLCanvasElement>;
 
   // Dados do Menu
   menuItems: any[] = [];
@@ -52,14 +57,15 @@ export class HomeComponent implements OnInit, AfterViewInit {
   // Propriedade para armazenar produtos da API - usando a interface com ID
   produtos: ProdutoComId[] = [];
 
-  // Dados do usuário logado
+  // Usuário
   usuarioNome: string = '';
   usuarioEmail: string = '';
   usuarioIniciais: string = '';
 
   // Dados do gráfico de pizza - AGORA DINÂMICOS
   chartData = {
-    pie: [] as ChartSlice[]
+    pie: [] as ChartSlice[],
+    bar: [] as BarChartData[]
   };
 
   // Paleta de cores para as categorias
@@ -95,7 +101,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
     setTimeout(() => {
       this.drawPieChart();
       this.drawBarChart();
-      this.drawLineChart();
       this.setupEventListeners();
     }, 500);
   }
@@ -110,13 +115,29 @@ export class HomeComponent implements OnInit, AfterViewInit {
       this.chartData.pie = [
         { label: 'Sem produtos', value: 1, color: '#CCCCCC' }
       ];
+      this.chartData.bar = [];
       console.log('⚠️ Sem produtos, usando dados padrão');
       return;
     }
 
-    // Agrupar produtos por categoria
+    // Dados para Gráfico de Pizza (por categoria)
     const categoriasMap = new Map<string, number>();
     
+    // Dados para Gráfico de Barras (top produtos por valor)
+    const produtosComValor = this.produtos.map(produto => {
+      const quantidade = this.obterQuantidadeProduto(produto);
+      const preco = produto.preco || 0;
+      const valorTotal = preco * quantidade;
+      
+      return {
+        produto: produto,
+        nome: produto.nome || 'Produto sem nome',
+        valorTotal: valorTotal,
+        quantidade: quantidade
+      };
+    });
+
+    // Processar dados para pizza (categorias)
     this.produtos.forEach(produto => {
       const categoria = produto.categoria || 'Sem Categoria';
       const quantidade = this.obterQuantidadeProduto(produto);
@@ -128,7 +149,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
       }
     });
 
-    // Converter para array e ordenar por quantidade (decrescente)
+    // Converter para array e ordenar
     const categoriasArray = Array.from(categoriasMap.entries())
       .map(([label, value], index) => ({
         label,
@@ -138,10 +159,23 @@ export class HomeComponent implements OnInit, AfterViewInit {
       .sort((a, b) => b.value - a.value);
 
     this.chartData.pie = categoriasArray;
+
+    // Preparar dados para gráfico de barras (top 5 produtos por valor)
+    const barData = produtosComValor
+      .sort((a, b) => b.valorTotal - a.valorTotal)
+      .slice(0, 5)
+      .map((item, index) => ({
+        label: item.nome,
+        value: item.valorTotal,
+        color: this.colorPalette[index % this.colorPalette.length]
+      }));
+
+    this.chartData.bar = barData;
     
     console.log('✅ Dados do gráfico atualizados:', {
       categorias: categoriasArray.length,
-      dados: categoriasArray
+      dadosPizza: categoriasArray,
+      dadosBarras: barData
     });
   }
 
@@ -214,6 +248,114 @@ export class HomeComponent implements OnInit, AfterViewInit {
     // Desenhar tooltip se hoveredSlice existir
     if (this.hoveredSlice) {
       this.drawTooltip(ctx, this.hoveredSlice);
+    }
+  }
+
+  // Gráfico de Barras - Top Produtos por Valor
+  drawBarChart(): void {
+    if (!this.barChart?.nativeElement) {
+      console.warn('⚠️ barChart não está disponível ainda');
+      return;
+    }
+    
+    const canvas = this.barChart.nativeElement;
+    const ctx = canvas.getContext('2d')!;
+    
+    if (!ctx) {
+      console.error('❌ Não foi possível obter contexto do canvas');
+      return;
+    }
+    
+    // Limpar canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Se não há dados, mostrar mensagem
+    if (this.chartData.bar.length === 0) {
+      ctx.fillStyle = '#666';
+      ctx.font = '16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Sem dados para exibir', canvas.width / 2, canvas.height / 2);
+      return;
+    }
+    
+    console.log('📊 Dados para gráfico de barras:', this.chartData.bar);
+    
+    const padding = 60;
+    const chartWidth = canvas.width - (padding * 2);
+    const chartHeight = canvas.height - (padding * 2);
+    const barSpacing = 20;
+    const maxValue = Math.max(...this.chartData.bar.map(item => item.value));
+    const barWidth = (chartWidth - (barSpacing * (this.chartData.bar.length - 1))) / this.chartData.bar.length;
+    
+    // Desenhar eixos
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    // Eixo Y
+    ctx.moveTo(padding, padding);
+    ctx.lineTo(padding, canvas.height - padding);
+    // Eixo X
+    ctx.moveTo(padding, canvas.height - padding);
+    ctx.lineTo(canvas.width - padding, canvas.height - padding);
+    ctx.stroke();
+    
+    // Desenhar barras
+    this.chartData.bar.forEach((item, index) => {
+      const barHeight = (item.value / maxValue) * chartHeight;
+      const x = padding + (index * (barWidth + barSpacing));
+      const y = canvas.height - padding - barHeight;
+      
+      // Desenhar barra
+      ctx.fillStyle = item.color;
+      ctx.fillRect(x, y, barWidth, barHeight);
+      
+      // Adicionar borda à barra
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, y, barWidth, barHeight);
+      
+      // Valor no topo da barra
+      ctx.fillStyle = '#333';
+      ctx.font = 'bold 12px Arial';
+      ctx.textAlign = 'center';
+      const valorFormatado = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      }).format(item.value);
+      ctx.fillText(valorFormatado, x + barWidth / 2, y - 10);
+      
+      // Nome do produto (rotacionado se necessário)
+      ctx.fillStyle = '#666';
+      ctx.font = '11px Arial';
+      ctx.textAlign = 'center';
+      
+      // Quebrar label se for muito longo
+      const label = item.label.length > 15 ? item.label.substring(0, 15) + '...' : item.label;
+      ctx.fillText(label, x + barWidth / 2, canvas.height - padding + 20);
+    });
+    
+    // Grade de fundo
+    ctx.strokeStyle = '#f0f0f0';
+    ctx.lineWidth = 1;
+    const gridLines = 5;
+    for (let i = 0; i <= gridLines; i++) {
+      const y = canvas.height - padding - (i * chartHeight / gridLines);
+      ctx.beginPath();
+      ctx.moveTo(padding, y);
+      ctx.lineTo(canvas.width - padding, y);
+      ctx.stroke();
+      
+      // Valores do eixo Y
+      ctx.fillStyle = '#666';
+      ctx.font = '10px Arial';
+      ctx.textAlign = 'right';
+      const value = (i * maxValue / gridLines);
+      const valueFormatted = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 0
+      }).format(value);
+      ctx.fillText(valueFormatted, padding - 5, y + 3);
     }
   }
 
@@ -527,11 +669,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   private carregarDadosUsuario(): void {
-    const usuario = this.authService.getUsuarioLogado();
-    
-    if (usuario) {
-      this.usuarioNome = usuario.nome;
-      this.usuarioEmail = usuario.email || '';
+    const usuario = this.authService.getUsuarioLogado() as unknown as { nome?: string; email?: string } | null;
+
+    if (usuario && typeof usuario === 'object') {
+      this.usuarioNome = usuario?.nome ?? '';
+      this.usuarioEmail = usuario?.email ?? '';
       this.usuarioIniciais = this.gerarIniciais(this.usuarioNome);
     }
   }
@@ -571,7 +713,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
         setTimeout(() => {
           this.drawPieChart();
           this.drawBarChart();
-          this.drawLineChart();
         }, 300);
         return;
       }
@@ -614,11 +755,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
       setTimeout(() => {
         console.log('📊 Redesenhando gráficos...', {
           produtos: this.produtos.length,
-          chartData: this.chartData.pie.length
+          chartDataPie: this.chartData.pie.length,
+          chartDataBar: this.chartData.bar.length
         });
         this.drawPieChart();
         this.drawBarChart();
-        this.drawLineChart();
         this.cdr.detectChanges();
       }, 500);
     } catch (error) {
@@ -638,7 +779,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
       setTimeout(() => {
         this.drawPieChart();
         this.drawBarChart();
-        this.drawLineChart();
       }, 500);
     }
   }
@@ -647,159 +787,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
   public atualizarDados(): void {
     console.log('🔄 Forçando atualização dos dados...');
     this.carregarProdutos();
-  }
-
-  // Gráfico de Barras
-  drawBarChart(): void {
-    if (!this.barChart?.nativeElement) {
-      console.warn('⚠️ barChart não está disponível ainda');
-      return;
-    }
-    
-    const canvas = this.barChart.nativeElement;
-    const ctx = canvas.getContext('2d')!;
-    
-    if (!ctx) {
-      console.error('❌ Não foi possível obter contexto do canvas');
-      return;
-    }
-    
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    if (!this.chartData.pie || this.chartData.pie.length === 0) {
-      ctx.fillStyle = '#666';
-      ctx.font = '16px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('Sem dados para exibir', canvas.width / 2, canvas.height / 2);
-      return;
-    }
-
-    const padding = 40;
-    const chartWidth = canvas.width - (padding * 2);
-    const chartHeight = canvas.height - (padding * 2);
-    const barSpacing = 10;
-    const maxValue = Math.max(...this.chartData.pie.map(item => item.value));
-    const barWidth = (chartWidth - (barSpacing * (this.chartData.pie.length - 1))) / this.chartData.pie.length;
-
-    this.chartData.pie.forEach((item, index) => {
-      const barHeight = (item.value / maxValue) * chartHeight;
-      const x = padding + (index * (barWidth + barSpacing));
-      const y = canvas.height - padding - barHeight;
-
-      ctx.fillStyle = item.color;
-      ctx.fillRect(x, y, barWidth, barHeight);
-
-      // Label da categoria
-      ctx.fillStyle = '#333';
-      ctx.font = '12px Arial';
-      ctx.textAlign = 'center';
-      ctx.save();
-      ctx.translate(x + barWidth / 2, canvas.height - padding + 15);
-      ctx.rotate(-Math.PI / 4);
-      ctx.fillText(item.label.substring(0, 10), 0, 0);
-      ctx.restore();
-
-      // Valor no topo da barra
-      ctx.fillStyle = '#333';
-      ctx.font = 'bold 11px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(item.value.toString(), x + barWidth / 2, y - 5);
-    });
-  }
-
-  // Gráfico de Linha (Tendência)
-  drawLineChart(): void {
-    if (!this.lineChart?.nativeElement) {
-      console.warn('⚠️ lineChart não está disponível ainda');
-      return;
-    }
-    
-    const canvas = this.lineChart.nativeElement;
-    const ctx = canvas.getContext('2d')!;
-    
-    if (!ctx) {
-      console.error('❌ Não foi possível obter contexto do canvas');
-      return;
-    }
-    
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Gerar dados simulados para os últimos 7 dias
-    const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-    const totalProdutos = this.produtos.length;
-    
-    // Simular variação de estoque (baseado no total atual)
-    const dados = dias.map((_, i) => {
-      const variacao = Math.random() * 0.2 - 0.1; // -10% a +10%
-      return Math.max(0, Math.round(totalProdutos * (1 + variacao)));
-    });
-
-    if (dados.every(d => d === 0)) {
-      ctx.fillStyle = '#666';
-      ctx.font = '16px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('Sem dados para exibir', canvas.width / 2, canvas.height / 2);
-      return;
-    }
-
-    const padding = 40;
-    const chartWidth = canvas.width - (padding * 2);
-    const chartHeight = canvas.height - (padding * 2);
-    const maxValue = Math.max(...dados, 1);
-    const stepX = chartWidth / (dias.length - 1);
-    const stepY = chartHeight / maxValue;
-
-    // Desenhar grade
-    ctx.strokeStyle = '#e0e0e0';
-    ctx.lineWidth = 1;
-    for (let i = 0; i <= 5; i++) {
-      const y = padding + (i * chartHeight / 5);
-      ctx.beginPath();
-      ctx.moveTo(padding, y);
-      ctx.lineTo(canvas.width - padding, y);
-      ctx.stroke();
-    }
-
-    // Desenhar linha
-    ctx.strokeStyle = '#3498db';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    dados.forEach((valor, index) => {
-      const x = padding + (index * stepX);
-      const y = canvas.height - padding - (valor * stepY);
-      if (index === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
-    });
-    ctx.stroke();
-
-    // Desenhar pontos
-    ctx.fillStyle = '#3498db';
-    dados.forEach((valor, index) => {
-      const x = padding + (index * stepX);
-      const y = canvas.height - padding - (valor * stepY);
-      ctx.beginPath();
-      ctx.arc(x, y, 5, 0, 2 * Math.PI);
-      ctx.fill();
-      
-      // Valor acima do ponto
-      ctx.fillStyle = '#333';
-      ctx.font = '10px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(valor.toString(), x, y - 10);
-      ctx.fillStyle = '#3498db';
-    });
-
-    // Labels dos dias
-    ctx.fillStyle = '#666';
-    ctx.font = '11px Arial';
-    ctx.textAlign = 'center';
-    dias.forEach((dia, index) => {
-      const x = padding + (index * stepX);
-      ctx.fillText(dia, x, canvas.height - padding + 20);
-    });
   }
 
   // Atualizar Top Produtos

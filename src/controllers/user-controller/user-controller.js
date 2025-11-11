@@ -17,9 +17,12 @@ app.use(cors({
 
 const prisma = new PrismaClient()
 
-
+async function teste(req, res) {
+    
+}
 
 async function Login(req, res) {
+    console.loq('cheguei')
     console.log('Login request body keys:', Object.keys(req.body));
     const { email, senha } = req.body; 
     const emailNormalizado = (email || '').trim().toLowerCase();
@@ -44,34 +47,9 @@ async function Login(req, res) {
             return res.status(401).json({ mensagem: 'Credenciais inválidas' });
         }
 
-        // Verificação de senha com bcrypt, com fallback para hashes antigos (SHA256)
-        let autenticado = false;
-        try {
-            autenticado = await bcrypt.compare(senha, usuario.senha_hash);
-        } catch (err) {
-            autenticado = false;
-        }
-
-        if (!autenticado) {
-            // Fallback SHA256 para usuários antigos
-            const shaHash = crypto.createHash('sha256').update(senha).digest('hex');
-            if (shaHash === usuario.senha_hash) {
-                // Migra para bcrypt
-                const novoHash = await bcrypt.hash(senha, 10);
-                await prisma.usuario.update({ where: { id_usuario: usuario.id_usuario }, data: { senha_hash: novoHash } });
-                autenticado = true;
-            }
-        }
-
-        // Fallback: se por algum motivo o banco tem a senha em texto (legacy), comparar diretamente
-        if (!autenticado && senha === usuario.senha_hash) {
-            // Migrar para bcrypt
-            const novoHash = await bcrypt.hash(senha, 10);
-            await prisma.usuario.update({ where: { id_usuario: usuario.id_usuario }, data: { senha_hash: novoHash } });
-            autenticado = true;
-        }
-
-        if (!autenticado) {
+        // Adiciona validação da senha (bcrypt)
+        const senhaCorreta = await bcrypt.compare(senha, usuario.senha_hash);
+        if (!senhaCorreta) {
             return res.status(401).json({ mensagem: 'Credenciais inválidas' });
         }
 
@@ -94,11 +72,15 @@ async function Login(req, res) {
             maxAge: 3600000
         });
         return res.status(200).json({ 
-            message: 'Login realizado com sucesso',
             usuario: {
-                id: usuario.id_usuario,
-                email: usuario.email
-            }
+                id_usuario: usuario.id_usuario,
+                nome: usuario.nome,
+                email: usuario.email,
+                id_tipo_usuario: usuario.id_tipo_usuario,
+                ativo: usuario.ativo, // ou true/false conforme seu banco
+                CPF: usuario.cpf // ou undefined se não houver
+            },
+            token: token
         });
     } catch (error) {
         console.error('Erro no login:', error);

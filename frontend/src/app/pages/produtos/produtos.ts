@@ -367,9 +367,9 @@ filtroAberto: string | null = null;
   }
 
   private carregarDadosUsuario(): void {
-    const usuario = this.authService.getUsuarioLogado();
-    
-    if (usuario) {
+    const usuario = this.authService.getUsuarioLogado() as unknown as { nome?: string; email?: string } | null;
+
+    if (usuario !== null && typeof usuario === 'object') {
       this.usuarioNome = usuario.nome || 'Usuário';
       this.usuarioEmail = usuario.email || '';
       this.usuarioIniciais = this.gerarIniciais(this.usuarioNome);

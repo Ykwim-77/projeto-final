@@ -27,7 +27,7 @@ export class LoginComponent {
     
     console.log('🔄 Iniciando login...', {
       email: this.email,
-      password: this.password ? '***' : 'vazio'
+      password: this.password ? '*' : 'vazio'
     });
 
     // Validação básica
@@ -39,6 +39,7 @@ export class LoginComponent {
     this.isLoading = true;
     this.errorMessage = '';
 
+    // Corrige o nome esperado pelo backend para o campo de senha ("senha" em vez de "password")
     this.authService.login(this.email, this.password).subscribe({
       next: (response: any) => {
         console.log('✅ Login bem-sucedido - Navegando para home');
@@ -46,15 +47,20 @@ export class LoginComponent {
         this.router.navigate(['/home']);
       },
       error: (error: any) => {
-        console.error('❌ Erro no login (LoginComponent):', {
-          fullErrorObject: error,
-        });
+        // Mostra o erro detalhado no console
+        console.error('❌ Erro no login (LoginComponent):', error, JSON.stringify(error));
         this.isLoading = false;
-        // Exibe mensagem de erro padronizada do backend (espera que seja { mensagem: ... })
-        if (error && error.mensagem) {
+        // Tenta exibir a mensagem de erro mais útil possível para o usuário
+        if (error?.mensagem) {
           this.errorMessage = error.mensagem;
+        } else if (error?.error?.mensagem) {
+          this.errorMessage = error.error.mensagem;
+        } else if (typeof error === 'string') {
+          this.errorMessage = error;
+        } else if (error?.error) {
+          this.errorMessage = JSON.stringify(error.error);
         } else {
-          this.errorMessage = 'Erro de conexão com o servidor. Verifique sua conexão ou tente novamente.';
+          this.errorMessage = 'Erro desconhecido no login. Veja detalhes no console do navegador.';
         }
         console.log('📢 Mensagem de erro para usuário:', this.errorMessage);
       }

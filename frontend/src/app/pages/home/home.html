@@ -1,15 +1,4 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Rubik:ital,wght@0,300..900;1,300..900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
-</head>
+
 <body>
     <!-- Menu Lateral -->
     <nav class="sidebar">
@@ -23,7 +12,7 @@
         <hr>
         <div class="menu-container">
             <!-- Use routerLink para navegação no Angular -->
-            <a routerLink="/home" class="menu-item" routerLinkActive="active">
+            <a class="menu-item active">
                 <i class="fas fa-chart-line"></i>
                 <span class="menu-text">Dashboard</span>
             </a>
@@ -60,13 +49,14 @@
         <hr>    
         <div class="user-section">
             <div class="user-info">
+
                 <div class="user-avatar">{{ usuarioIniciais || 'U' }}</div>
                 <div class="user-details">
-                    <div class="user-name">{{ usuarioNome}}</div>
+                    <div class="user-name">{{ usuarioNome || 'Usuário' }}</div>
                     <div class="user-email">{{ usuarioEmail || 'email@exemplo.com' }}</div>
                 </div>
             </div>
-            <button class="logout-btn" (click)="logout()">
+            <button class="logout-btn">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Sair</span>
             </button>
@@ -130,26 +120,23 @@
                 <div class="imgCard4"><svg id="imagem" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#F3F3F3"><path d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-114 59.5-210.5T301-838q1 19 4 38.5t10 45.5q-72 44-113.5 116.5T160-480q0 134 93 227t227 93q134 0 227-93t93-227q0-85-41.5-158T644-755q7-26 10-45.5t5-37.5q102 51 161.5 147T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-160q-100 0-170-70t-70-170q0-58 25.5-109t72.5-85q5 15 11 34.5t16 48.5q-22 23-33.5 51T320-480q0 66 47 113t113 47q66 0 113-47t47-113q0-32-11.5-60T595-591q8-24 14.5-44.5T621-674q47 34 73 85t26 109q0 100-70 170t-170 70Zm-40-380q-37-112-48.5-157.5T380-860q0-42 29-71t71-29q42 0 71 29t29 71q0 37-11.5 82.5T520-620h-80Zm40 220q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Z"/></svg> </div>
             </div>
         </section>   
-
         <!-- Gráficos Principais -->
         <section class="graficos-container">
+            <!-- Gráfico de Pizza -->
             <div class="grafico-card">
-                <div class="card-title">Distribuição por Categoria (Pizza)</div>
+                <div class="card-title">Distribuição por Categoria</div>
                 <canvas #pieChart width="400" height="300"></canvas>
             </div>
-            
+        
+            <!-- Gráfico de Barras -->
             <div class="grafico-card">
-                <div class="card-title">Estoque por Categoria (Barras)</div>
+                <div class="card-title">Top Produtos por Valor</div>
                 <canvas #barChart width="400" height="300"></canvas>
             </div>
         </section>
 
         <!-- Segunda Linha de Gráficos -->
         <section class="graficos-container">
-            <div class="grafico-card">
-                <div class="card-title">Tendência de Estoque (Últimos 7 dias)</div>
-                <canvas #lineChart width="400" height="300"></canvas>
-            </div>
             
             <div class="grafico-card">
                 <div class="card-title">Produtos em Baixa</div>
@@ -184,26 +171,8 @@
             </div>
         </section>
 
-        <!-- Top Produtos e Movimentações -->
+        <!-- Movimentações -->
         <section class="graficos-container">
-            <div class="grafico-card">
-                <div class="card-title">Top 5 Produtos por Valor</div>
-                <div class="top-products-list" *ngIf="topProducts.length > 0">
-                    <div class="top-product-item" *ngFor="let produto of topProducts; let i = index">
-                        <div class="rank-badge" [class]="'rank-' + (i + 1)">{{ i + 1 }}</div>
-                        <div class="product-details">
-                            <span class="product-name-top">{{ produto.nome || produto.name }}</span>
-                            <span class="product-value">{{ produto.valorTotalFormatado }}</span>
-                            <span class="product-stock">Estoque: {{ produto.quantidade }} unidades</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="no-products" *ngIf="topProducts.length === 0">
-                    <i class="fas fa-box-open"></i>
-                    <p>Nenhum produto cadastrado</p>
-                </div>
-            </div>
-
             <div class="cardMovimentacoes">
                 <div class="card-title">Últimas Movimentações</div>
                 <div class="movimentacoes-list" *ngIf="movimentacoes.length > 0">
@@ -227,6 +196,8 @@
                 </div>
             </div>
         </section>
+        <!--isso é só pra teste e visualização melhor, depois removo -->
+        <br>
+        <br>
      </main>
 </body>
-</html>
