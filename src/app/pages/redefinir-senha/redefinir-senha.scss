@@ -1,5 +1,4 @@
-// src/app/pages/login/login.scss
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');
+
 
 /* RESET RADICAL - Garante que nada interfira */
 :host {
@@ -29,7 +28,6 @@
   height: 100vh !important;
   display: flex !important;
   flex-direction: row !important;
-  font-family: sans-serif !important;
   background: url('/assets/imagens/bg.jpg') center/cover no-repeat !important;
   margin: 0 !important;
   padding: 0 !important;
@@ -343,7 +341,6 @@ i {
   font-size: 14px;
   font-weight: 500;
   margin: 0;
-  font-family: sans-serif;
 }
 
 /* Efeito no conteúdo principal durante loading */
