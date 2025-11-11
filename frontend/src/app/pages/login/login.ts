@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service'; // ✅ CORREÇÃO: usar o serviço correto
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -42,7 +42,6 @@ export class LoginComponent {
     this.isLoading = true;
     this.errorMessage = '';
 
-    // Corrige o nome esperado pelo backend para o campo de senha ("senha" em vez de "password")
     this.authService.login(this.email, this.password).subscribe({
       next: (response: any) => {
         console.log('✅ Login bem-sucedido - Navegando para home');
@@ -50,10 +49,9 @@ export class LoginComponent {
         this.router.navigate(['/home']);
       },
       error: (error: any) => {
-        // Mostra o erro detalhado no console
         console.error('❌ Erro no login (LoginComponent):', error, JSON.stringify(error));
         this.isLoading = false;
-        // Tenta exibir a mensagem de erro mais útil possível para o usuário
+        
         if (error?.mensagem) {
           this.errorMessage = error.mensagem;
         } else if (error?.error?.mensagem) {
@@ -69,10 +67,21 @@ export class LoginComponent {
       }
     });
   }
+
   // Limpar erro ao alterar campos
   onInputChange(): void {
     if (this.errorMessage) {
       this.errorMessage = '';
     }
+  }
+
+  // ✅ MÉTODO ADICIONADO: Navegação programática como fallback
+  navigateToEsqueceuSenha(): void {
+    console.log('🔗 Navegando para esqueceu-senha...');
+    this.router.navigate(['/esqueceu-senha']).then(success => {
+      console.log('✅ Navegação bem-sucedida:', success);
+    }).catch(error => {
+      console.error('❌ Erro na navegação:', error);
+    });
   }
 }

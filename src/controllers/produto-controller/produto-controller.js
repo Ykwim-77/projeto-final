@@ -18,8 +18,25 @@ async function pegar1Produto(req, res){
 
 async function pegarTodosProdutos(req, res){
     try {
-        const produtos = await prisma.produto.findMany();
-       return res.status(200).json(produtos);
+        // Inclua o estoque de cada produto
+        const produtos = await prisma.produto.findMany({
+            include: {
+                estoque: true
+            }
+        });
+        // Mapeie para trazer no root do produto a quantidade_atual (do primeiro estoque relacionado)
+        const produtosComQuantidade = produtos.map(p => {
+            let quantidade = 0;
+            if (Array.isArray(p.estoque) && p.estoque.length > 0) {
+                // Soma caso tenha mais de uma sala com o mesmo produto
+                quantidade = p.estoque.reduce((total, e) => total + (e.quantidade_atual || 0), 0);
+            }
+            return {
+                ...p,
+                quantidade
+            };
+        });
+        return res.status(200).json(produtosComQuantidade);
     } catch (error) {
         res.status(500).json({error: error.message});
     }   

@@ -159,6 +159,7 @@ i {
 .links-row a:hover {
   color: red !important;
 }
+
 /* Loading Overlay Styles */
 .loading-overlay {
   position: fixed;
@@ -222,7 +223,7 @@ i {
 .progress-track {
   position: absolute;
   height: 100%;
-  width: 40%; /* Largura do elemento que se move */
+  width: 40%;
   background: linear-gradient(90deg, #002793, #3498db);
   border-radius: 2px;
   animation: indeterminate 1.5s infinite ease-in-out;
@@ -240,40 +241,32 @@ i {
   }
 }
 
-/* Alternativa: Barra que preenche e reinicia */
-.progress-bar-fill-restart {
-  width: 200px;
-  height: 4px;
-  background: #e0e0e0;
-  border-radius: 2px;
-  overflow: hidden;
-  position: relative;
-  margin: 0 auto 15px;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    background: linear-gradient(90deg, #002793, #3498db);
-    border-radius: 2px;
-    animation: fillRestart 2s infinite ease-in-out;
-  }
-}
-
+/* ✅ CORREÇÃO: Link Esqueceu Senha com alta prioridade */
 .forgot-password {
   width: 300px !important;
   text-align: left !important;
   margin-top: 10px !important;
+  position: relative !important;
+  z-index: 1000 !important; /* Alta prioridade */
 }
 
 .forgot-password a {
   font-size: 14px !important;
   color: #002793 !important;
   text-decoration: none !important;
+  cursor: pointer !important;
+  position: relative !important;
+  z-index: 1001 !important; /* Prioridade ainda maior */
 }
+
 .forgot-password a:hover {
   text-decoration: underline !important;
+}
+
+/* ✅ ADICIONADO: Estilo para garantir que o link seja clicável */
+.forgot-password a.router-link-active {
+  pointer-events: auto !important;
+  cursor: pointer !important;
 }
 
 .links-row {
@@ -331,18 +324,24 @@ i {
   font-family: sans-serif;
 }
 
-/* Efeito no conteúdo principal durante loading */
+/* ✅ CORREÇÃO: Removido pointer-events: none */
 .form.blur {
   filter: blur(3px);
-  pointer-events: none;
-  user-select: none;
+  /* REMOVIDO: pointer-events: none; */
+  /* REMOVIDO: user-select: none; */
 }
 
 /* Botão desabilitado durante loading */
 .login:disabled {
-  background: #cccccc;
-  cursor: not-allowed;
+  background: #cccccc !important;
+  cursor: not-allowed !important;
   transform: none !important;
+}
+
+/* ✅ ADICIONADO: Estilo para links clicáveis */
+a {
+  cursor: pointer !important;
+  pointer-events: auto !important;
 }
 
 @media screen and (max-width: 768px){

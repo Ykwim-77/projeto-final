@@ -727,7 +727,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
         nome: p.nome || p.name || '',
         name: p.name || p.nome || '',
         preco: p.preco || p.preco_unitario || 0,
-        quantidade: p.quantidade ?? p.estoque ?? p.quantidade_atual ?? 0,
+        quantidade: (typeof p.quantidade === 'number' ? p.quantidade : (p.quantidade ?? p.estoque ?? p.quantidade_atual ?? 0)),
         categoria: p.categoria || 'Sem categoria'
       })) as ProdutoComId[];
       
