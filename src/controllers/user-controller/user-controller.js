@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import cors from "cors";
 import express from "express";
 import bcrypt from "bcrypt";
+import crypto from 'crypto';
 import {PegarApenasUm, Deletar} from "../../function.js";
 
 const app = express();
@@ -19,52 +20,79 @@ const prisma = new PrismaClient()
 
 
 async function Login(req, res) {
-    console.log(req.body);
+    console.log('Login request body keys:', Object.keys(req.body));
     const { email, senha } = req.body; 
+    const emailNormalizado = (email || '').trim().toLowerCase();
+    console.log('Login attempt for email:', emailNormalizado);
     // Validação básica
-    if (!email || !senha) {
-        return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+    if (!emailNormalizado || !senha) {
+        return res.status(400).json({ mensagem: 'Email e senha são obrigatórios' });
     }
-
+    console.log(emailNormalizado,senha)
     try {
         const usuario = await prisma.usuario.findUnique({
             where: {
-                email: email,
-                // Se você quer comparar senha em texto com hash, use bcrypt
-                // O código atual compara texto com hash, o que não funciona
+                email: emailNormalizado
             }
         });
+        if (usuario) {
+            console.log('Usuario encontrado:', { id: usuario.id_usuario, email: usuario.email, hashLength: usuario.senha_hash?.length });
+        } else {
+            console.log('Usuario nao encontrado para email:', emailNormalizado);
+        }
         if (!usuario) {
-            return res.status(401).json({ error: 'Credenciais inválidas' });
+            return res.status(401).json({ mensagem: 'Credenciais inválidas' });
         }
 
-        // ✅ ADICIONE: Verificação de senha com bcrypt
-        // const senhaValida = await bcrypt.compare(senha, usuario.senha_hash);
-        // if (!senhaValida) {
-        //     return res.status(401).json({ error: 'Credenciais inválidas' });
-        // }
+        // Verificação de senha com bcrypt, com fallback para hashes antigos (SHA256)
+        let autenticado = false;
+        try {
+            autenticado = await bcrypt.compare(senha, usuario.senha_hash);
+        } catch (err) {
+            autenticado = false;
+        }
 
-        // console.log(senhaValida);
+        if (!autenticado) {
+            // Fallback SHA256 para usuários antigos
+            const shaHash = crypto.createHash('sha256').update(senha).digest('hex');
+            if (shaHash === usuario.senha_hash) {
+                // Migra para bcrypt
+                const novoHash = await bcrypt.hash(senha, 10);
+                await prisma.usuario.update({ where: { id_usuario: usuario.id_usuario }, data: { senha_hash: novoHash } });
+                autenticado = true;
+            }
+        }
+
+        // Fallback: se por algum motivo o banco tem a senha em texto (legacy), comparar diretamente
+        if (!autenticado && senha === usuario.senha_hash) {
+            // Migrar para bcrypt
+            const novoHash = await bcrypt.hash(senha, 10);
+            await prisma.usuario.update({ where: { id_usuario: usuario.id_usuario }, data: { senha_hash: novoHash } });
+            autenticado = true;
+        }
+
+        if (!autenticado) {
+            return res.status(401).json({ mensagem: 'Credenciais inválidas' });
+        }
 
         // Gera o token
         const token = jwt.sign(
             { 
-                senha: usuario.senha_hash,
-                email: usuario.email
+                id: usuario.id_usuario,
+                email: usuario.email,
+                nome: usuario.nome
             }, 
             process.env.JWT_SECRET || 'segredo',
             { expiresIn: '1h' }
         );
-
-
+        console.log(token)
         // Define o cookie
         res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: "strict",
+            sameSite: "lax",
             maxAge: 3600000
         });
-
         return res.status(200).json({ 
             message: 'Login realizado com sucesso',
             usuario: {
@@ -72,10 +100,9 @@ async function Login(req, res) {
                 email: usuario.email
             }
         });
-
     } catch (error) {
         console.error('Erro no login:', error);
-        return res.status(500).json({ error: 'Erro interno do servidor' });
+        return res.status(500).json({ mensagem: 'Erro interno do servidor' });
     }
 }
 
@@ -102,28 +129,29 @@ async function pegarTodosUsuarios(req, res){ // acabar o pegartodos os usuarios
 
 
 
-async function criarUsuario(req, res){ //acabar ao criar
-    try{
-        const {nome, email, senha_hash, id_tipo_usuario, ativo, cpf} = req.body
-
+async function criarUsuario(req, res) {
+    try {
+        const { nome, email, senha_hash, senha, id_tipo_usuario, ativo, cpf } = req.body;
+        // Aceita tanto 'senha' quanto 'senha_hash' vindo do frontend
+        const senhaClara = senha || senha_hash; // Prioriza campo 'senha' se vier
+        if (!senhaClara) {
+            return res.status(400).json({ mensagem: 'Senha é obrigatória.' });
+        }
+        const hash = await bcrypt.hash(senhaClara, 10);
         await prisma.usuario.create({
-            data:{
+            data: {
                 nome: nome,
-                email:email,
-                senha_hash: senha_hash,
+                email: email,
+                senha_hash: hash,
                 id_tipo_usuario: id_tipo_usuario,
                 ativo: ativo,
                 cpf: cpf
             }
         });
-
-        return res.status(201).json({mensagem:"usuario foi criado com sucesso"});
-    }catch(error){
-        return res.status(500).json({criar_usuario:"ve oq q aconteceu para criar o usuario ai paizão"});
+        return res.status(201).json({ mensagem: 'usuario foi criado com sucesso' });
+    } catch (error) {
+        return res.status(500).json({ criar_usuario: 've oq q aconteceu para criar o usuario ai paizão' });
     }
-
-
-
 }
 async function atualizarUsuario(req, res){
     try{

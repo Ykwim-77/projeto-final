@@ -5,7 +5,11 @@
 </head><!-- src/app/pages/login/login.html -->
 <div class="loading-overlay" *ngIf="isLoading">
     <div class="loading-content">
+<<<<<<< HEAD
       <img src="assets/imagens/logoprogestao.jpg" alt="Logo ProGest" class="loading-logo">
+=======
+      <img src="../../../assets/imagens/logoprogestao.png" alt="Logo ProGest" class="loading-logo">
+>>>>>>> main
       <div class="progress-bar-indeterminate">
         <div class="progress-track"></div>
       </div>
@@ -15,13 +19,17 @@
   
   <div class="form" [class.blur]="isLoading">
       <div class="leftside">
-          <img src="assets/imagens/img-left2.png" alt="Tela de login">
+          <img src="../../../assets/imagens/img-left2.png" alt="Tela de login">
           <!-- Se quiser o h1, descomente: -->
           <!-- <h1>Bem vindo De Volta</h1> -->
       </div>
       <div class="rightside">
           <div class="login-title">
+<<<<<<< HEAD
               <img src="assets/imagens/logoprogestao.png" alt="Logo" class="login-logo">
+=======
+              <img src="../../../assets/imagens/logoprogestao.png" alt="Logo" class="login-logo">
+>>>>>>> main
               <h2><strong>Pro</strong>Gest</h2>
           </div>
           <form class="input-container" (ngSubmit)="onSubmit($event)">
@@ -48,7 +56,11 @@
                       />
                   </div>
                   <div class="forgot-password">
+<<<<<<< HEAD
                       <a routerLink="/esqueceu-senha">Esqueceu a senha?</a>
+=======
+                      <a href="#">Esqueceu a senha?</a>
+>>>>>>> main
                   </div>
   
                   <div *ngIf="errorMessage" class="error-message">

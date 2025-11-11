@@ -3,48 +3,39 @@ import  controller  from '../../controllers/user-controller/user-controller.js';
 import authMiddleware from '../../midllewares/authController.js';
 
 const roteador_usuario = express.Router();
- 
 
-roteador_usuario.get("/", authMiddleware, (req, res) =>{
-    controller.pegarTodosUsuarios(req, res);
-})
 
-roteador_usuario.get("/:id", (req, res) => {
-    controller.pegar1Usuario(req, res);
-});
 
+
+// Rotas públicas
 roteador_usuario.post("/", (req, res) => {
     controller.criarUsuario(req, res);
 });
-
-roteador_usuario.post("/desativar/:id", (req, res) => {
-    controller.desativarUsuario(req, res);
-});
-
-roteador_usuario.put("/:id", (req, res) => {
-    controller.atualizarUsuario(req, res);
-});
-
-roteador_usuario.delete("/:id", (req, res) => {
-    controller.deletarUsuario(req, res);
-});
 roteador_usuario.post("/login", (req, res) => {
     controller.Login(req, res);
+});
+
+
+// Rotas protegidas
+roteador_usuario.get("/", authMiddleware, (req, res) =>{
+    controller.pegarTodosUsuarios(req, res);
 })
+roteador_usuario.get("/:id", authMiddleware, (req, res) => {
+    controller.pegar1Usuario(req, res);
+});
+roteador_usuario.post("/desativar/:id", authMiddleware, (req, res) => {
+    controller.desativarUsuario(req, res);
+});
+roteador_usuario.put("/:id", authMiddleware, (req, res) => {
+    controller.atualizarUsuario(req, res);
+});
+roteador_usuario.delete("/:id", authMiddleware, (req, res) => {
+    controller.deletarUsuario(req, res);
+});
 
-//midlleware
-//vai verificar se o usuário está autorizado a fazer alguma coisa na rota que o midlleware estiver
-
-//controller
-//procurar o usuário
-//criar o token
-//armazenar o token nos cookies do navegador
-//
 
 
-
-
-export default roteador_usuario
+export default roteador_usuario;
 
 
 //tipos de usuarios
