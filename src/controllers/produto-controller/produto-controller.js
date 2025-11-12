@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 async function pegar1Produto(req, res){
     try {
-        const ApenasUm = await PegarApenasUm('produto', 'id_produto', req.params.id)
+        const ApenasUm = await PegarApenasUm('patrimonio', 'id_produto', req.params.id)
         return res.status(200).json(ApenasUm);
     } catch (error) {
         res.status(500).json({
@@ -18,7 +18,7 @@ async function pegar1Produto(req, res){
 
 async function pegarTodosProdutos(req, res){
     try {
-        const produtos = await prisma.produto.findMany();
+        const produtos = await prisma.patrimonio.findMany();
        return res.status(200).json(produtos);
     } catch (error) {
         res.status(500).json({error: error.message});
@@ -28,8 +28,12 @@ async function pegarTodosProdutos(req, res){
 async function criarProduto(req, res){ 
     const {nome, descricao, categoria, codigo_publico, preco_unitario, unidade_medida, } = req.body;
 
+    if(!nome || !descricao || !categoria || !codigo_publico || !preco_unitario || !unidade_medida){
+        return res.status(400).json({mensagem:"passa todas as informações, incopetente"});
+    }
+
     try {
-        const produto = await prisma.produto.create({
+        const patrimonio = await prisma.patrimonio.create({
             data:{
                 nome:nome,
                 descricao:descricao,
@@ -39,7 +43,7 @@ async function criarProduto(req, res){
                 unidade_medida:unidade_medida
             }
         })
-         return res.status(201).json({mensagem:`o produto ${produto.nome} foi criado com sucesso`});
+         return res.status(201).json({mensagem:`o patrimonio ${patrimonio.nome} foi criado com sucesso`});
     } catch(error){
         return res.status(500).json("fodeu com tudo pia, cancela o gole", error)
     }
@@ -52,16 +56,16 @@ async function reservarProduto(req, res){
         return res.status(400).json({ mensagem: "o id precisa ser um número inteiro" });
     }
     try{
-        const produto = await prisma.produto.findUnique({
+        const patrimonio = await prisma.patrimonio.findUnique({
             where:{
                 id_produto:idnumber
             }
         })
 
-        if(produto.status == false){
-            return res.status(400).json({indisponivel:"produto ja está reservado"})
+        if(patrimonio.status == false){
+            return res.status(400).json({indisponivel:"patrimonio ja está reservado"})
         }
-        await prisma.produto.update({
+        await prisma.patrimonio.update({
             where:{
                 id_produto: idnumber
             },
@@ -73,13 +77,13 @@ async function reservarProduto(req, res){
         res.status(500).json({erro:"deu pau na reserva, da um jeito ai patrão: ", error})
     }
 
-    const produto = await prisma.produto.findUnique({
+    const patrimonio = await prisma.patrimonio.findUnique({
         where:{
             id_produto: idnumber
         }
     })
 
-    return res.status(201).json({reservado:`O produto ${produto.nome} foi reservado!!`})
+    return res.status(201).json({reservado:`O patrimonio ${patrimonio.nome} foi reservado!!`})
 }
 
 async function entregarProduto(req, res){
@@ -90,17 +94,17 @@ async function entregarProduto(req, res){
         return res.status(400).json({nao_numero:"faz favor de passar o id certo ai"});
     }
     try{
-        const produto = await prisma.produto.findUnique({
+        const patrimonio = await prisma.patrimonio.findUnique({
             where:{
                 id_produto: idnumber
             }
         })
-        if(produto.status == true){
-            return res.status(400).json({ja_entregue:"o produto ja foi entregue ;)"})
+        if(patrimonio.status == true){
+            return res.status(400).json({ja_entregue:"o patrimonio ja foi entregue ;)"})
         }
 
 
-        await prisma.produto.update({
+        await prisma.patrimonio.update({
             where:{
                 id_produto:idnumber
             },
@@ -108,9 +112,9 @@ async function entregarProduto(req, res){
                 status: true
             }
         });
-        return res.status(201).json({mensagem:"Produto foi entregue com sucesso!!"});
+        return res.status(201).json({mensagem:"patrimonio foi entregue com sucesso!!"});
     }catch(error){
-        return res.status(500).json({erro_entrega_produto:"ve oq q ta acontecendo com a entrega de produto", error})
+        return res.status(500).json({erro_entrega_produto:"ve oq q ta acontecendo com a entrega de patrimonio", error})
     };
 
 }
@@ -132,15 +136,15 @@ async function atualizarProduto(req, res){
         //     return res.status(400).json({Falta_infos:"passa todas as informações, incopetente"});
         // }
 
-        const produtoExistente = await prisma.produto.findUnique({
+        const produtoExistente = await prisma.patrimonio.findUnique({
             where: { id_produto: idNumber }
         });
 
         if (!produtoExistente) {
-            return res.status(404).json({ mensagem: 'Produto não encontrado' });
+            return res.status(404).json({ mensagem: 'patrimonio não encontrado' });
         }
 
-        const produtoAtualizado = await prisma.produto.update({
+        const produtoAtualizado = await prisma.patrimonio.update({
             where: { id_produto: idNumber },
             data: {
                 nome: nome,
@@ -153,11 +157,11 @@ async function atualizarProduto(req, res){
             }
         });
 
-        return res.status(200).json({ mensagem: `O produto ${produtoAtualizado.nome} foi atualizado`, produto: produtoAtualizado });
+        return res.status(200).json({ mensagem: `O patrimonio ${produtoAtualizado.nome} foi atualizado`, patrimonio: produtoAtualizado });
         
 
     } catch(error){
-        return res.status(500).json({vixx:"deu pau na rota atualizar produto, da uma olhada ai!"})
+        return res.status(500).json({vixx:"deu pau na rota atualizar patrimonio, da uma olhada ai!"})
     }
 
 
@@ -165,9 +169,9 @@ async function atualizarProduto(req, res){
 }
 async function deletarProduto(req, res){
     try{
-        const produto = await Deletar('produto', 'id_produto', req.params.id);
-        console.log(produto);
-        return res.status(200).json(produto);
+        const patrimonio = await Deletar('patrimonio', 'id_produto', req.params.id);
+        console.log(patrimonio);
+        return res.status(200).json(patrimonio);
     }catch (error) {
         // Verifica o tipo de erro para retornar o status code apropriado
         if (error.message === "ID deve ser um número válido") {

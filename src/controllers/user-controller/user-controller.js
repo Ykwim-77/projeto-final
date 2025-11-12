@@ -47,11 +47,6 @@ async function Login(req, res) {
             return res.status(401).json({ mensagem: 'Credenciais inválidas' });
         }
 
-        // Adiciona validação da senha (bcrypt)
-        const senhaCorreta = await bcrypt.compare(senha, usuario.senha_hash);
-        if (!senhaCorreta) {
-            return res.status(401).json({ mensagem: 'Credenciais inválidas' });
-        }
 
         // Gera o token
         const token = jwt.sign(
