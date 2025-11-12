@@ -1,6 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import { PegarApenasUm, Deletar } from "../../function.js";
-import { create } from "domain";
 
 
 const prisma = new PrismaClient();
@@ -127,23 +126,27 @@ async function reservarSala(req,res) {
     }
    const { data_reserva, hora_inicio, hora_fim, nome_reservante } = req.body;
 
-   if (isNaN(id)) {
+    const sala = await prisma.sala.findUnique({
 
-       return res.status(400).json({ mensagem: "o id precisa ser um número inteiro" });
-   }
+        where: { id_sala: idNumber }  
+        
+    });
+    if (!sala) {
 
+        return res.status(404).json({ mensagem: "Sala não encontrada." });
+    }
+    if (sala.status === false) {
+
+        return res.status(400).json({ mensagem: "Sala já está reservada." });
+    }
    try {
     
-       const reserva = await prisma.reserva.create({
+       const reserva = await prisma.sala.update({
+
+           where: { id_sala: idNumber },
 
            data: {
-
-               sala: { connect: { id: id } },
-               usuario: { connect: { id: req.user.id } },
-               data_reserva,
-               hora_inicio,
-               hora_fim,
-               nome_reservante
+                status: false
            }
 
        });
@@ -163,22 +166,28 @@ async function reservarSala(req,res) {
 
 async function liberarSala(req,res) {
 
-    const id = parseInt(req.params.id);
+    const idNumber = parseInt(req.params.id);
 
-    if (isNaN(id)) {
+    if (isNaN(idNumber)) {
 
-        return res.status(400).json({ mensagem: "o id precisa ser um número inteiro" });
+        return res.status(400).json({ mensagem: "id precisa ser um numero inteiro" });
+
+    }                                               //  prisma.[tabela].        update delete create findMany findUnique
+
+    const sala = await PegarApenasUm('sala', 'id_sala', idNumber)
+    
+    if(sala.status === true){
+        return res.status(401).json({"mensagem":"ja esta liberada"})
     }
 
     try {
 
-        await prisma.reserva.deleteMany({
-
-            where: { salaId: id }
-
+        await prisma.sala.update({
+            where: { id_sala: idNumber },
+            data: { status: true }
         });
 
-        res.sendStatus(204);
+        res.status(200).json({ mensagem: "Sala liberada com sucesso." });
 
     } catch (error) {
 
@@ -186,6 +195,8 @@ async function liberarSala(req,res) {
         
         res.status(500).json({ mensagem: "Erro ao liberar sala." });
     }
+
+
 }
 
 export default { pegarTodasSalas, pegarTodasSalas, pegar1Sala, criarSala, atualizarSala, deletarSala, reservarSala, liberarSala};
