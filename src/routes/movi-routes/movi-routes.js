@@ -1,35 +1,26 @@
-import express from "express";
-import moviController from "../../controllers/movi-controller/movi-controller.js";
+import controller from '../../controllers/movi-controller/movi-controller.js';
+import express from 'express';
+
 const roteador_movi = express.Router();
 
-
-
 roteador_movi.get("/", (req, res) => {
-   moviController.pegarTodosMovis(req, res);
+    controller.pegarTodosMovis(req, res);
 });
 
-rotaedor_movi.get("/:id", (req, res) => {
-   moviController.pegar1Movi(req, res);
+roteador_movi.get("/:id", (req, res) => {
+    controller.pegar1movi(req, res);
 });
 
 roteador_movi.post("/", (req, res) => {
-    moviController.criarmovi(req, res);
+    controller.criarmovi(req, res);
 });
 
 roteador_movi.put("/:id", (req, res) => {
-    moviController.atualizarmovi(req, res);
+    controller.atualizarmovi(req, res);
 });
 
 roteador_movi.delete("/:id", (req, res) => {
-    moviController.deletarmovi(req, res);
+    controller.deletarmovi(req, res);
 });
 
-roteador_movi.post("/alugar/:id", (req, res) => {
-    moviController.alugarmovi(req, res);
-});
-
-roteador_movi.post("/devolver/:id", (req, res) => { 
-    moviController.devolvermovi(req, res);
-});
-
-export default roteador_movi
+export default roteador_movi;
