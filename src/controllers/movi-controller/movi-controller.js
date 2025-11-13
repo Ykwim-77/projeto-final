@@ -6,7 +6,9 @@ const prisma = new PrismaClient();
 async function pegarTodosMovis(req,res) {
     try {
 
-        const movis = await prisma.movi.findMany();
+        const movis = await prisma.movimentacao.findMany();
+
+        console.log(movis.length)
         if (movis.length === 0) {
             return res.status(404).json({ mensagem: "Nenhum movi encontrado." });
         }
@@ -22,7 +24,7 @@ async function pegarTodosMovis(req,res) {
 
 async function pegar1movi(req, res) {
     try {
-        const movi = await PegarApenasUm('movimentacao', 'id', req.params.id);
+        const movi = await PegarApenasUm('movimentacao', 'id_movimentacao', req.params.id);
         if (!movi) {
             return res.status(404).json({ mensagem: "Movi não encontrado." });
         }
@@ -43,14 +45,7 @@ async function criarmovi(req, res) {
         return res.status(400).json({ mensagem: "A data de saída deve ser posterior à data de entrada." });
     }
 
-    try {
-        const salaExistente = await prisma.sala.findUnique({
-            where: { id: id_sala }
-        });
-
-        if (!salaExistente) {
-            return res.status(404).json({ mensagem: "Sala não encontrada." });
-        }
+    try { 
     const movi = await prisma.movimentacao.create({
             data: {
                 entrada: new Date(entrada),
