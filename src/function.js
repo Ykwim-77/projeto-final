@@ -1,43 +1,54 @@
 import { PrismaClient } from "@prisma/client";
-import { response } from "express";
 
 const prisma = new PrismaClient();
 
-async function PegarApenasUm(tabela, id_campo, id){
+async function PegarApenasUm(tabela, id_campo, id) {
     const idNumber = parseInt(id);
     if (isNaN(idNumber)) {
-        return res.status(400).json({ mensagem: "o id precisa ser um número inteiro" });
+        throw new Error('ID_INVÁLIDO');
     }
-    console.log(tabela, id_campo, id)
-    try{
-        const ApenasUm = await prisma[tabela].findUnique({
-            where:{
+    try {
+        const registro = await prisma[tabela].findUnique({
+            where: {
                 [id_campo]: idNumber
             }
-        })
-
-        if(ApenasUm === null){
-            return res.status(404).json({mensagem: "Nao encontrado"})
-        }
-        return ApenasUm
-    }catch(error){
-        return res.satus(500)   
+        });
+        return registro; // pode ser null
+    } catch (error) {
+        throw error;
     }
-
 }
 
 
 
 
-async function pegarTudo(params) {
-    
+async function pegarTudo(tabela, filtro = {}) {
+    try {
+        const resultados = await prisma[tabela].findMany({ where: filtro });
+        return resultados;
+    } catch (error) {
+        throw error;
+    }
 }
 
 async function Deletar(tabela, id_campo, id) {
-
+    const idNumber = parseInt(id);
+    if (isNaN(idNumber)) {
+        throw new Error('ID_INVÁLIDO');
+    }
+    try {
+        const deleted = await prisma[tabela].delete({
+            where: {
+                [id_campo]: idNumber
+            }
+        });
+        return deleted;
+    } catch (error) {
+        throw error;
+    }
 }
 
 
 
 
-export  {PegarApenasUm, Deletar}
+export { PegarApenasUm, Deletar, pegarTudo };

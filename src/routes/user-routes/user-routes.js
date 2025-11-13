@@ -15,6 +15,11 @@ roteador_usuario.post("/login", (req, res) => {
     controller.Login(req, res);
 });
 
+// Logout público: limpa cookie de sessão
+roteador_usuario.post("/logout", (req, res) => {
+    controller.Logout(req, res);
+});
+
 roteador_usuario.get("/logado", authMiddleware, (req, res) => {
     controller.pegarUsuarioLogado(req, res);
 });

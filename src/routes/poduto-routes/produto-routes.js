@@ -6,7 +6,8 @@ import authGerente from "../../midllewares/authGerente.js";
 const roteador_produto = express.Router();
 
 
-roteador_produto.get("/", authMiddleware, authGerente, (req, res) => {
+// Lista produtos: apenas requer usuário autenticado (removido requisito de gerente)
+roteador_produto.get("/", authMiddleware, (req, res) => {
     controller.pegarTodosProdutos(req, res);
 });
 

@@ -192,9 +192,7 @@ async function deletarProduto(req, res){
             }
         })
         
-        return {
-            mensagem: `${deletado.nome} da tabela ${tabela} foi Deletado com sucesso`
-        }
+        return res.status(200).json({ mensagem: `${deletado.nome} foi deletado com sucesso` });
     
     }catch (error) {
         return res.status(500).json({ error: error.message });

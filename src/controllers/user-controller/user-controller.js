@@ -175,14 +175,37 @@ async function desativarUsuario(req, res){
 }
 async function pegarUsuarioLogado(req, res){
     console.log("pegando usuario logado");
-    console.log(req.body);
-    const email_body = req.body.email;
-    const usuario = await prisma.usuario.findUnique({
-        where:{
-            email: email_body
+    try {
+        // authMiddleware decodifica o token para `req.usuario`
+        const decoded = req.usuario;
+        if (!decoded || !decoded.email) {
+            // fallback para body.email se token não estiver presente
+            const email_body = req.body?.email;
+            if (!email_body) return res.status(400).json({ mensagem: 'Email não fornecido' });
+            const usuario = await prisma.usuario.findUnique({ where: { email: email_body } });
+            return res.status(200).json(usuario);
         }
-    })
-    return res.status(200).json(usuario);
+        const usuario = await prisma.usuario.findUnique({ where: { email: decoded.email } });
+        return res.status(200).json(usuario);
+    } catch (error) {
+        console.error('Erro ao buscar usuário logado:', error);
+        return res.status(500).json({ mensagem: 'Erro interno ao buscar usuário logado' });
+    }
 }
 
-export default {pegar1Usuario, pegarTodosUsuarios, criarUsuario, atualizarUsuario, deletarUsuario, Login, pegarUsuarioLogado} 
+async function Logout(req, res){
+    try{
+        // Limpa o cookie de autenticação httpOnly
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax'
+        });
+        return res.status(200).json({ mensagem: 'Logout realizado' });
+    }catch(error){
+        console.error('Erro no logout:', error);
+        return res.status(500).json({ mensagem: 'Erro ao realizar logout' });
+    }
+}
+
+export default {pegar1Usuario, pegarTodosUsuarios, criarUsuario, atualizarUsuario, deletarUsuario, Login, pegarUsuarioLogado, Logout} 
