@@ -22,8 +22,6 @@ async function teste(req, res) {
 }
 
 async function Login(req, res) {
-    console.log('cheguei')
-    console.log('Login request body keys:', Object.keys(req.body));
     const { email, senha } = req.body; 
     const emailNormalizado = (email || '').trim().toLowerCase();
     console.log('Login attempt for email:', emailNormalizado);
@@ -31,7 +29,6 @@ async function Login(req, res) {
     if (!emailNormalizado || !senha) {
         return res.status(400).json({ mensagem: 'Email e senha são obrigatórios' });
     }
-    console.log(emailNormalizado,senha)
     try {
         const usuario = await prisma.usuario.findUnique({
             where: {
@@ -176,6 +173,16 @@ async function desativarUsuario(req, res){
         return res.status(500).json({desativar_usuario:"ve oq q aconteceu para desativar o usuario ai paizão", error})
     }
 }
+async function pegarUsuarioLogado(req, res){
+    console.log("pegando usuario logado");
+    console.log(req.body);
+    const email_body = req.body.email;
+    const usuario = await prisma.usuario.findUnique({
+        where:{
+            email: email_body
+        }
+    })
+    return res.status(200).json(usuario);
+}
 
-
-export default {pegar1Usuario, pegarTodosUsuarios, criarUsuario, atualizarUsuario, deletarUsuario, Login} 
+export default {pegar1Usuario, pegarTodosUsuarios, criarUsuario, atualizarUsuario, deletarUsuario, Login, pegarUsuarioLogado} 

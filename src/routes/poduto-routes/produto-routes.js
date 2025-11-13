@@ -1,11 +1,12 @@
 import controller from "../../controllers/produto-controller/produto-controller.js";
 import express, { Router } from "express";
 import authMiddleware from "../../midllewares/authController.js";
+import authGerente from "../../midllewares/authGerente.js";
 
 const roteador_produto = express.Router();
 
 
-roteador_produto.get("/", (req, res) => {
+roteador_produto.get("/", authMiddleware, authGerente, (req, res) => {
     controller.pegarTodosProdutos(req, res);
 });
 
@@ -26,6 +27,7 @@ roteador_produto.post("/entregar/:id", authMiddleware, (req, res) => {
 });
 
 roteador_produto.put("/:id", authMiddleware, (req, res) => {
+    console.log("cheguei")
     controller.atualizarProduto(req, res);
 });
 
