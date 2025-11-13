@@ -5,6 +5,7 @@ import roteador_usuario from './routes/user-routes/user-routes.js';
 import roteador_produto from './routes/poduto-routes/produto-routes.js';
 import roteador_sala from './routes/sala-routes/sala-routes.js';
 import cookieParser from 'cookie-parser';
+import roteador_movi from './routes/movi-routes/movi-routes.js'
 
 
 const app = express();
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use('/usuario', roteador_usuario);
 app.use('/produto',roteador_produto);
 app.use('/sala', roteador_sala);
+app.use('/movimentacao', roteador_movi)
 
 
 const corsOptions = {

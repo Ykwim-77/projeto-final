@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 async function pegar1Produto(req, res){
     try {
-        const ApenasUm = await PegarApenasUm('patrimonio', 'id_produto', req.params.id)
+        const ApenasUm = await PegarApenasUm('patrimonio', 'id_patrimonio', req.params.id)
         return res.status(200).json(ApenasUm);
     } catch (error) {
         res.status(500).json({
@@ -58,7 +58,7 @@ async function reservarProduto(req, res){
     try{
         const patrimonio = await prisma.patrimonio.findUnique({
             where:{
-                id_produto:idnumber
+                id_patrimonio:idnumber
             }
         })
 
@@ -67,7 +67,7 @@ async function reservarProduto(req, res){
         }
         await prisma.patrimonio.update({
             where:{
-                id_produto: idnumber
+                id_patrimonio: idnumber
             },
             data:{
                 status: false,
@@ -79,7 +79,7 @@ async function reservarProduto(req, res){
 
     const patrimonio = await prisma.patrimonio.findUnique({
         where:{
-            id_produto: idnumber
+            id_patrimonio: idnumber
         }
     })
 
@@ -96,7 +96,7 @@ async function entregarProduto(req, res){
     try{
         const patrimonio = await prisma.patrimonio.findUnique({
             where:{
-                id_produto: idnumber
+                id_patrimonio: idnumber
             }
         })
         if(patrimonio.status == true){
@@ -106,7 +106,7 @@ async function entregarProduto(req, res){
 
         await prisma.patrimonio.update({
             where:{
-                id_produto:idnumber
+                id_patrimonio:idnumber
             },
             data:{
                 status: true
@@ -126,18 +126,18 @@ async function atualizarProduto(req, res){
         return res.status(400).json({mensagem:"passa um ID Number por favor"})
     }
     try{ // em casos de possiveis erros, sempre é bom usar um try com o cath
-        const { nome, descricao, categoria, codigo_publico, preco_unitario, unidade_medida, id_fornecedor} = req.body
+        const { nome, descricao, categoria, codigo_publico, preco_unitario, unidade_medida, id_fornecedor, estoque, min_estoque} = req.body
 
 
         //****>>>caso queira colocar uma verificação se está tudo de acordo<<<****
-
+        
 
         // if(!nome || !descricao || !categoria || !codigo_publico || !preco_unitario || !unidade_medida || !id_fornecedor){
         //     return res.status(400).json({Falta_infos:"passa todas as informações, incopetente"});
         // }
 
         const produtoExistente = await prisma.patrimonio.findUnique({
-            where: { id_produto: idNumber }
+            where: { id_patrimonio: idNumber }
         });
 
         if (!produtoExistente) {
@@ -145,7 +145,7 @@ async function atualizarProduto(req, res){
         }
 
         const produtoAtualizado = await prisma.patrimonio.update({
-            where: { id_produto: idNumber },
+            where: { id_patrimonio: idNumber },
             data: {
                 nome: nome,
                 descricao: descricao,
@@ -153,7 +153,9 @@ async function atualizarProduto(req, res){
                 codigo_publico: codigo_publico,
                 preco_unitario: preco_unitario,
                 unidade_medida: unidade_medida,
-                id_fornecedor: id_fornecedor
+                id_fornecedor: id_fornecedor,
+                estoque: estoque,
+                min_estoque: min_estoque
             }
         });
 
@@ -168,24 +170,32 @@ async function atualizarProduto(req, res){
     
 }
 async function deletarProduto(req, res){
+    const id = req.params.id;
     try{
-        const patrimonio = await Deletar('patrimonio', 'id_produto', req.params.id);
-        console.log(patrimonio);
-        return res.status(200).json(patrimonio);
-    }catch (error) {
-        // Verifica o tipo de erro para retornar o status code apropriado
-        if (error.message === "ID deve ser um número válido") {
-            return res.status(400).json({ mensagem: error.message });
-
-        } else if (error.message === "Registro não encontrado") {
-            return res.status(404).json({ mensagem: error.message });
-
-        } else {
-            return res.status(500).json({ 
-                mensagem: "Erro interno no servidor", 
-                error: error.message 
-            });
+        const idNumber = parseInt(id);
+        if(isNaN(idNumber)){ // verifica se o id é do tipo number
+             throw new Error("ID deve ser um número válido");
         }
+    
+        const deletado = await prisma.patrimonio.findUnique({
+            where:{
+                id_patrimonio: idNumber
+            }
+        })
+        if(!deletado){
+            throw new Error("Registro não encontrado");
+        }
+        console.log(deletado)
+        await prisma.patrimonio.delete({
+            where:{
+                id_patrimonio: idNumber
+            }
+        })
+        
+        return res.status(200).json({ mensagem: `${deletado.nome} foi deletado com sucesso` });
+    
+    }catch (error) {
+        return res.status(500).json({ error: error.message });
     }
 
 }
