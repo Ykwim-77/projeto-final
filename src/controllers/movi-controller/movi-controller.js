@@ -3,91 +3,183 @@ import { PegarApenasUm, Deletar } from "../../function.js";
 
 const prisma = new PrismaClient();
 
-async function pegarTodosMovis(req,res) {
+/**
+ * Lista todos os empréstimos (movimentações com tipo_movimentacao = 'emprestimo')
+ */
+async function pegarTodosMovis(req, res) {
     try {
+        const emprestimos = await prisma.movimentacao.findMany({
+            where: {
+                tipo_movimentacao: 'emprestimo'
+            },
+            include: {
+                patrimonio: true,
+                usuario: true
+            }
+        });
 
-        const movis = await prisma.movimentacao.findMany();
-
-        console.log(movis.length)
-        if (movis.length === 0) {
-            return res.status(404).json({ mensagem: "Nenhum movi encontrado." });
+        if (emprestimos.length === 0) {
+            return res.status(200).json([]);
         }
-        return res.status(200).json(movis);
+        
+        // Filtrar apenas movimentacoes com patrimonio e usuario válidos
+        const filtrados = emprestimos.filter(e => e.patrimonio !== null && e.usuario !== null);
+        return res.status(200).json(filtrados);
 
-    }
-    catch (error) {
+    } catch (error) {
         console.error(error);
-        return res.status(500).json({ mensagem: "Erro ao buscar movis." });
+        return res.status(500).json({ mensagem: "Erro ao buscar empréstimos." });
     }
-
 }
 
+/**
+ * Busca um empréstimo específico por ID
+ */
 async function pegar1movi(req, res) {
     try {
-        const movi = await PegarApenasUm('movimentacao', 'id_movimentacao', req.params.id);
-        if (!movi) {
-            return res.status(404).json({ mensagem: "Movi não encontrado." });
-        }
-        return res.status(200).json(movi);
-    } catch (error) {
-        return res.status(500).json({ mensagem: "Erro ao buscar movi.", dados: error.message });
-    }
-}
-
-async function criarmovi(req, res) {
-    const { entrada, saida, id_sala } = req.body;
-
-    if (!entrada || !saida || !id_sala) {
-        return res.status(400).json({ mensagem: "Entrada, saída e ID da sala são obrigatórios." });
-    }
-
-    if (new Date(saida) <= new Date(entrada)) {
-        return res.status(400).json({ mensagem: "A data de saída deve ser posterior à data de entrada." });
-    }
-
-    try { 
-    const movi = await prisma.movimentacao.create({
-            data: {
-                entrada: new Date(entrada),
-                saida: new Date(saida),
-                id_sala: id_sala
+        const emprestimo = await prisma.movimentacao.findUnique({
+            where: { 
+                id_movimentacao: parseInt(req.params.id)
+            },
+            include: {
+                patrimonio: true,
+                usuario: true
             }
         });
-        return res.status(201).json(movi);
+
+        if (!emprestimo || emprestimo.tipo_movimentacao !== 'emprestimo') {
+            return res.status(404).json({ mensagem: "Empréstimo não encontrado." });
+        }
+        return res.status(200).json(emprestimo);
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ mensagem: "Erro ao criar movi." });
+        return res.status(500).json({ mensagem: "Erro ao buscar empréstimo.", dados: error.message });
     }
 }
 
-async function atualizarmovi(req, res) {
-    const { entrada, saida, id_sala } = req.body;
-    const id = req.params.id;
+/**
+ * Cria um novo empréstimo
+ */
+async function criarmovi(req, res) {
+    const { id_patrimonio, id_usuario, origem, observacao, status } = req.body;
+
+    // Validar campos obrigatórios
+    if (!id_patrimonio || !id_usuario) {
+        return res.status(400).json({ mensagem: "ID do patrimônio e do usuário são obrigatórios." });
+    }
 
     try {
-        const movi = await prisma.movimentacao.update({
-            where: { id: id }, 
+        // Verificar se o patrimônio existe
+        const patrimonio = await prisma.patrimonio.findUnique({
+            where: { id_patrimonio: parseInt(id_patrimonio) }
+        });
+
+        if (!patrimonio) {
+            return res.status(404).json({ mensagem: "Patrimônio não encontrado." });
+        }
+
+        // Verificar se o usuário existe
+        const usuario = await prisma.usuario.findUnique({
+            where: { id_usuario: parseInt(id_usuario) }
+        });
+
+        if (!usuario) {
+            return res.status(404).json({ mensagem: "Usuário não encontrado." });
+        }
+
+        // Criar empréstimo
+        const emprestimo = await prisma.movimentacao.create({
             data: {
-                ...(entrada && { entrada: new Date(entrada) }),
-                ...(saida && { saida: new Date(saida) }),
-                ...(id_sala && { id_sala: id_sala })
+                id_patrimonio: parseInt(id_patrimonio),
+                id_usuario: parseInt(id_usuario),
+                tipo_movimentacao: 'emprestimo',
+                origem: origem || patrimonio.nome,
+                data_movimento: new Date(),
+                status: status || 'ativo',
+                observacao: observacao || null
+            },
+            include: {
+                patrimonio: true,
+                usuario: true
             }
         });
-        return res.status(200).json(movi);
+
+        return res.status(201).json(emprestimo);
     } catch (error) {
-        if (error.code === 'P2025') {
-            return res.status(404).json({ mensagem: "Movi não encontrado." });
-        }
         console.error(error);
-        return res.status(500).json({ mensagem: "Erro ao atualizar movi." });
+        return res.status(500).json({ mensagem: "Erro ao criar empréstimo.", dados: error.message });
     }
 }
 
-async function deletarmovi(req, res) {
-    const id = req.params.id;   
+/**
+ * Atualiza um empréstimo existente
+ */
+async function atualizarmovi(req, res) {
+    const { status, observacao } = req.body;
+    const id = parseInt(req.params.id);
 
-    Deletar('movimentacao', 'id', id, res);
+    try {
+        // Verificar se o empréstimo existe
+        const emprestimo = await prisma.movimentacao.findUnique({
+            where: { id_movimentacao: id }
+        });
+
+        if (!emprestimo || emprestimo.tipo_movimentacao !== 'emprestimo') {
+            return res.status(404).json({ mensagem: "Empréstimo não encontrado." });
+        }
+
+        // Atualizar empréstimo
+        const emprestimoAtualizado = await prisma.movimentacao.update({
+            where: { id_movimentacao: id },
+            data: {
+                ...(status && { status }),
+                ...(observacao !== undefined && { observacao })
+            },
+            include: {
+                patrimonio: true,
+                usuario: true
+            }
+        });
+
+        return res.status(200).json(emprestimoAtualizado);
+    } catch (error) {
+        if (error.code === 'P2025') {
+            return res.status(404).json({ mensagem: "Empréstimo não encontrado." });
+        }
+        console.error(error);
+        return res.status(500).json({ mensagem: "Erro ao atualizar empréstimo.", dados: error.message });
+    }
 }
 
+/**
+ * Deleta um empréstimo
+ */
+async function deletarmovi(req, res) {
+    const id = parseInt(req.params.id);
+
+    try {
+        // Verificar se o empréstimo existe
+        const emprestimo = await prisma.movimentacao.findUnique({
+            where: { id_movimentacao: id }
+        });
+
+        if (!emprestimo || emprestimo.tipo_movimentacao !== 'emprestimo') {
+            return res.status(404).json({ mensagem: "Empréstimo não encontrado." });
+        }
+
+        // Deletar empréstimo
+        await prisma.movimentacao.delete({
+            where: { id_movimentacao: id }
+        });
+
+        return res.status(200).json({ mensagem: "Empréstimo deletado com sucesso." });
+    } catch (error) {
+        if (error.code === 'P2025') {
+            return res.status(404).json({ mensagem: "Empréstimo não encontrado." });
+        }
+        console.error(error);
+        return res.status(500).json({ mensagem: "Erro ao deletar empréstimo.", dados: error.message });
+    }
+}
 
 export default { pegarTodosMovis, pegar1movi, criarmovi, atualizarmovi, deletarmovi };
