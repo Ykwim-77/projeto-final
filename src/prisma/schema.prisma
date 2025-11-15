@@ -8,55 +8,56 @@ datasource db {
 }
 
 model usuario {
-  id_usuario       Int       @id @default(autoincrement())
-  nome             String
-  email            String    @unique
-  senha            String
-  tipo_usuario     String
-  ativo            Boolean
-  criado_em        DateTime  @default(now())
-  cpf              String?
+  id_usuario   Int      @id @default(autoincrement())
+  nome         String
+  email        String   @unique
+  senha        String
+  tipo_usuario String
+  ativo        Boolean
+  criado_em    DateTime @default(now())
+  cpf          String?
 
-  compras          compra[]      @relation("UsuarioCompras")
-  movimentacoes    movimentacao[]
-  relatorios       relatorio[]
-  garantias        garantia[]    @relation("UsuarioGarantias")
+  compras       compra[]
+  movimentacoes movimentacao[]
+  relatorios    relatorio[]
+  garantias     garantia[]
+  emprestimos   emprestimo[]
 }
 
 model patrimonio {
-  id_patrimonio       Int       @id @default(autoincrement())
-  nome             String
-  descricao        String?
-  categoria        String?
-  codigo_publico   String?
-  preco_unitario   Float?
-  unidade_medida   String?
-  id_fornecedor    Int?
-  status           Boolean @default(true)
-  min_estoque      Int
-  estoque          Int @default(1)
+  id_patrimonio  Int     @id @default(autoincrement())
+  nome           String
+  descricao      String?
+  categoria      String?
+  codigo_publico String?
+  preco_unitario Float?
+  unidade_medida String?
+  id_fornecedor  Int?
+  status         Boolean @default(true)
+  min_estoque    Int
+  estoque        Int     @default(1)
 
-  compras          compra[]      @relation("patrimonioCompras")
-  movimentacoes    movimentacao[]
-  garantias        garantia[]    @relation("patrimonioGarantias")
-  fornecedor       fornecedor?   @relation(fields: [id_fornecedor], references: [id_fornecedor], onDelete: Cascade)
+  compras       compra[]
+  movimentacoes movimentacao[]
+  garantias     garantia[]
+  emprestimos   emprestimo[]
+  fornecedor    fornecedor?    @relation(fields: [id_fornecedor], references: [id_fornecedor], onDelete: Cascade)
 }
 
-
 model financeiro {
-  id_financeiro    Int       @id @default(autoincrement())
-  tipo             String
-  descricao        String
-  valor            Float
-  data_movimento   DateTime
-  status           String?
+  id_financeiro  Int      @id @default(autoincrement())
+  tipo           String
+  descricao      String
+  valor          Float
+  data_movimento DateTime
+  status         String?
 
-  compras          compra[]
+  compras compra[]
 }
 
 model compra {
   id_compra        Int       @id @default(autoincrement())
-  id_patrimonio       Int
+  id_patrimonio    Int
   id_fornecedor    Int
   id_financeiro    Int
   id_usuario       Int
@@ -66,68 +67,82 @@ model compra {
   origem           String?
   observacoes      String?
 
-  patrimonio          patrimonio     @relation("patrimonioCompras", fields: [id_patrimonio], references: [id_patrimonio], onDelete: Cascade)
-  fornecedor       fornecedor  @relation(fields: [id_fornecedor], references: [id_fornecedor], onDelete: Cascade)
-  financeiro       financeiro  @relation(fields: [id_financeiro], references: [id_financeiro], onDelete: Cascade)
-  usuario          usuario     @relation("UsuarioCompras", fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+  patrimonio patrimonio @relation(fields: [id_patrimonio], references: [id_patrimonio], onDelete: Cascade)
+  fornecedor fornecedor @relation(fields: [id_fornecedor], references: [id_fornecedor], onDelete: Cascade)
+  financeiro financeiro @relation(fields: [id_financeiro], references: [id_financeiro], onDelete: Cascade)
+  usuario    usuario    @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
 }
 
 model sala {
-  id_sala          Int       @id @default(autoincrement())
-  nome_sala        String
-  descricao        String?
-  capacidade       Int
-  localizacao      String?
+  id_sala     Int     @id @default(autoincrement())
+  nome_sala   String
+  descricao   String?
+  capacidade  Int
+  localizacao String?
 }
 
 model movimentacao {
-  id_movimentacao  Int       @id @default(autoincrement())
-  id_patrimonio       Int
-  id_usuario       Int
+  id_movimentacao   Int      @id @default(autoincrement())
+  id_patrimonio     Int
+  id_usuario        Int
   tipo_movimentacao String
-  origem           String?
-  data_movimento   DateTime
-  status           String?
-  observacao       String?
-  patrimonio          patrimonio   @relation(fields: [id_patrimonio], references: [id_patrimonio], onDelete: Cascade)
-  usuario          usuario   @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+  origem            String?
+  data_movimento    DateTime
+  status            String?
+  observacao        String?
+
+  patrimonio patrimonio @relation(fields: [id_patrimonio], references: [id_patrimonio], onDelete: Cascade)
+  usuario    usuario    @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
 }
 
-
-
 model fornecedor {
-  id_fornecedor    Int       @id @default(autoincrement())
-  nome             String
-  cnpj             String
-  telefone         String?
-  email            String?
-  endereco         String?
+  id_fornecedor Int     @id @default(autoincrement())
+  nome          String
+  cnpj          String
+  telefone      String?
+  email         String?
+  endereco      String?
 
-  compras          compra[]
-  patrimonios         patrimonio[]
+  compras     compra[]
+  patrimonios patrimonio[]
 }
 
 model relatorio {
-  id_relatorio     Int       @id @default(autoincrement())
-  id_usuario       Int
-  tipo_relatorio   String
-  caminho_arquivo  String
-  gerado_por       String
-  gerado_em        DateTime
-  status           String?
+  id_relatorio    Int      @id @default(autoincrement())
+  id_usuario      Int
+  tipo_relatorio  String
+  caminho_arquivo String
+  gerado_por      String
+  gerado_em       DateTime
+  status          String?
 
-  usuario          usuario   @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+  usuario usuario @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
 }
 
 model garantia {
-  id_garantia  Int      @id @default(autoincrement())
-  id_patrimonio   Int
-  id_usuario   Int
-  data_inicio  DateTime
-  data_fim     DateTime
-  descricao    String?
-  status       String   @default("Ativa")
+  id_garantia   Int      @id @default(autoincrement())
+  id_patrimonio Int
+  id_usuario    Int
+  data_inicio   DateTime
+  data_fim      DateTime
+  descricao     String?
+  status        String   @default("Ativa")
 
-  patrimonio      patrimonio  @relation("patrimonioGarantias", fields: [id_patrimonio], references: [id_patrimonio], onDelete: Cascade)
-  usuario      usuario  @relation("UsuarioGarantias", fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+  patrimonio patrimonio @relation(fields: [id_patrimonio], references: [id_patrimonio], onDelete: Cascade)
+  usuario    usuario    @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+}
+
+model emprestimo {
+  id_emprestimo    Int       @id @default(autoincrement())
+  data_pedido      DateTime
+  data_recebimento DateTime?
+  valor_total      Float
+  status           String
+  observacoes      String?
+  id_usuario       Int
+  id_patrimonio    Int?
+  quantidade       Int      @default(1)
+
+  usuario    usuario     @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+  patrimonio patrimonio? @relation(fields: [id_patrimonio], references: [id_patrimonio], onDelete: Cascade)
 }

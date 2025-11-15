@@ -26,10 +26,10 @@ async function pegarTodosProdutos(req, res){
 }
 
 async function criarProduto(req, res){ 
-    const {nome, descricao, categoria, codigo_publico, preco_unitario, unidade_medida, } = req.body;
+    const {nome, descricao, categoria, codigo_publico, preco_unitario, unidade_medida } = req.body;
 
     if(!nome || !descricao || !categoria || !codigo_publico || !preco_unitario || !unidade_medida){
-        return res.status(400).json({mensagem:"passa todas as informações, incopetente"});
+        return res.status(400).json({mensagem:"Preencha todos os campos obrigatórios: nome, descricao, categoria, codigo_publico, preco_unitario, unidade_medida"});
     }
 
     try {
@@ -39,13 +39,17 @@ async function criarProduto(req, res){
                 descricao:descricao,
                 categoria:categoria,
                 codigo_publico:codigo_publico,
-                preco_unitario: preco_unitario,
-                unidade_medida:unidade_medida
+                preco_unitario: parseFloat(preco_unitario),
+                unidade_medida:unidade_medida,
+                estoque: 0,
+                min_estoque: 0,
+                status: true
             }
         })
-         return res.status(201).json({mensagem:`o patrimonio ${patrimonio.nome} foi criado com sucesso`});
+         return res.status(201).json(patrimonio);
     } catch(error){
-        return res.status(500).json("fodeu com tudo pia, cancela o gole", error)
+        console.error(error);
+        return res.status(500).json({mensagem:"Erro ao criar produto", dados: error.message})
     }
 }
 
