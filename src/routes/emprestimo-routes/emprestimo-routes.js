@@ -26,6 +26,13 @@ roteador_emprestimo.post("/", authMiddleware, (req, res) => {
 });
 
 /**
+ * PUT /emprestimo/:id/devolver - Devolve um empréstimo
+ */
+roteador_emprestimo.put("/:id/devolver", (req, res) => {
+    controller.atualizarEmprestimo(req, res);
+});
+
+/**
  * PUT /emprestimo/:id - Atualiza um empréstimo
  */
 roteador_emprestimo.put("/:id", authMiddleware, (req, res) => {
