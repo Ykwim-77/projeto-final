@@ -36,7 +36,7 @@ async function Login(req, res) {
             }
         });
         if (usuario) {
-            console.log('Usuario encontrado:', { id: usuario.id_usuario, email: usuario.email, hashLength: usuario.senha_hash?.length });
+            console.log('Usuario encontrado:', { id: usuario.id_usuario, email: usuario.email, hashLength: usuario.senha?.length });
         } else {
             console.log('Usuario nao encontrado para email:', emailNormalizado);
         }
@@ -63,14 +63,14 @@ async function Login(req, res) {
             sameSite: "lax",
             maxAge: 3600000
         });
-        return res.status(200).json({ 
+        return res.status(200).json({
             usuario: {
                 id_usuario: usuario.id_usuario,
                 nome: usuario.nome,
                 email: usuario.email,
-                id_tipo_usuario: usuario.id_tipo_usuario,
-                ativo: usuario.ativo, // ou true/false conforme seu banco
-                CPF: usuario.cpf // ou undefined se não houver
+                tipo_usuario: usuario.tipo_usuario, // Campo correto do schema
+                ativo: usuario.ativo,
+                cpf: usuario.cpf
             },
             token: token
         });
@@ -105,48 +105,81 @@ async function pegarTodosUsuarios(req, res){ // acabar o pegartodos os usuarios
 
 async function criarUsuario(req, res) {
     try {
-        const { nome, email, senha_hash, senha, id_tipo_usuario, ativo, cpf } = req.body;
+        const { nome, email, senha_hash, senha, tipo_usuario, ativo, cpf, departamento } = req.body;
         // Aceita tanto 'senha' quanto 'senha_hash' vindo do frontend
         const senhaClara = senha || senha_hash; // Prioriza campo 'senha' se vier
         if (!senhaClara) {
             return res.status(400).json({ mensagem: 'Senha é obrigatória.' });
         }
+
+        // Mapeia tipo_usuario (string) para id_tipo_usuario (number)
+        const tipoMap = {
+            'A': 1, // Administrador
+            'G': 2, // Gerente
+            'O': 3, // Operador
+            'C': 4  // Cliente
+        };
+        const id_tipo_usuario = tipoMap[tipo_usuario] || 3; // Padrão: Operador
+
         const hash = await bcrypt.hash(senhaClara, 10);
         await prisma.usuario.create({
             data: {
                 nome: nome,
                 email: email,
-                senha_hash: hash,
-                id_tipo_usuario: id_tipo_usuario,
-                ativo: ativo,
+                senha: hash,
+                tipo_usuario: tipo_usuario,
                 cpf: cpf
             }
         });
         return res.status(201).json({ mensagem: 'usuario foi criado com sucesso' });
     } catch (error) {
-        return res.status(500).json({ criar_usuario: 've oq q aconteceu para criar o usuario ai paizão' });
+        console.error('Erro ao criar usuário:', error);
+        return res.status(500).json({ criar_usuario: 'Erro ao criar usuário', error: error.message });
     }
 }
 async function atualizarUsuario(req, res){
     try{
-        const {nome, email, senha_hash, id_tipo_usuario, ativo, cpf} = req.body
+        const {nome, email, senha, senha_hash, tipo_usuario, ativo, cpf} = req.body
+
+        // Aceita tanto 'senha' quanto 'senha_hash' vindo do frontend
+        const senhaClara = senha || senha_hash;
+
+        // Mapeia tipo_usuario (string) para o formato do banco
+        const tipoMap = {
+            'A': 'A', // Administrador
+            'G': 'G', // Gerente
+            'O': 'O', // Operador
+            'C': 'C',  // Cliente
+            'admin': 'A',
+            'gerente': 'G',
+            'operador': 'O',
+            'cliente': 'C'
+        };
+        const tipoBanco = tipoMap[tipo_usuario] || tipo_usuario;
+
+        const updateData = {
+            nome: nome,
+            email: email,
+            tipo_usuario: tipoBanco,
+            ativo: ativo !== undefined ? ativo : true,
+            cpf: cpf
+        };
+
+        // Só atualiza senha se foi fornecida
+        if (senhaClara && senhaClara.trim() !== '') {
+            updateData.senha = await bcrypt.hash(senhaClara, 10);
+        }
 
         await prisma.usuario.update({
             where:{
-                id_usuario: req.params.id
+                id_usuario: parseInt(req.params.id)
             },
-            data:{
-                nome: nome,
-                email: email,
-                senha_hash: senha_hash,
-                id_tipo_usuario: id_tipo_usuario,
-                ativo: ativo,
-                cpf: cpf
-            }
+            data: updateData
         })
         return res.status(200).json({mensagem:"usuario foi atualizado com sucesso"})
     }catch(error){
-        return res.status(500).json({atualizar_usuario:"ve oq q aconteceu para atualizar o usuario ai paizão", error})
+        console.error('Erro ao atualizar usuário:', error);
+        return res.status(500).json({atualizar_usuario:"Erro ao atualizar usuário", error: error.message})
     }
 
 }

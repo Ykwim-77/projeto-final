@@ -39,7 +39,14 @@ async function listarEmprestimos(req, res) {
                     id_emprestimo: e.id_emprestimo,
                     id_patrimonio: e.id_patrimonio || null,
                     patrimonio,
-                    usuario
+                    usuario,
+                    // Campos de compatibilidade para o frontend
+                    produto: patrimonio ? patrimonio.nome : null,
+                    usuario: usuario ? usuario.nome : null,
+                    dataEmprestimo: e.data_pedido ? new Date(e.data_pedido).toLocaleDateString('pt-BR') : null,
+                    dataDevolucao: e.data_recebimento ? new Date(e.data_recebimento).toLocaleDateString('pt-BR') : null,
+                    departamento: usuario ? usuario.tipo_usuario : null,
+                    contato: usuario ? usuario.email : null
                 };
             }));
 
@@ -81,7 +88,18 @@ async function buscarEmprestimo(req, res) {
             }
         }
 
-        return res.status(200).json({ ...emprestimo, usuario, patrimonio });
+        return res.status(200).json({
+            ...emprestimo,
+            usuario,
+            patrimonio,
+            // Campos de compatibilidade para o frontend
+            produto: patrimonio ? patrimonio.nome : null,
+            usuario: usuario ? usuario.nome : null,
+            dataEmprestimo: emprestimo.data_pedido ? new Date(emprestimo.data_pedido).toLocaleDateString('pt-BR') : null,
+            dataDevolucao: emprestimo.data_recebimento ? new Date(emprestimo.data_recebimento).toLocaleDateString('pt-BR') : null,
+            departamento: usuario ? usuario.tipo_usuario : null,
+            contato: usuario ? usuario.email : null
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ mensagem: "Erro ao buscar empréstimo.", dados: error.message });
@@ -146,7 +164,14 @@ async function criarEmprestimo(req, res) {
             return res.status(201).json({
                 ...created,
                 usuario: usr,
-                patrimonio: pat
+                patrimonio: pat,
+                // Campos de compatibilidade para o frontend
+                produto: pat ? pat.nome : null,
+                usuario: usr ? usr.nome : null,
+                dataEmprestimo: created.data_pedido ? new Date(created.data_pedido).toLocaleDateString('pt-BR') : null,
+                dataDevolucao: created.data_recebimento ? new Date(created.data_recebimento).toLocaleDateString('pt-BR') : null,
+                departamento: usr ? usr.tipo_usuario : null,
+                contato: usr ? usr.email : null
             });
         } else {
             const emprestimo = await prisma.emprestimo.create({
@@ -167,7 +192,14 @@ async function criarEmprestimo(req, res) {
             return res.status(201).json({
                 ...emprestimo,
                 usuario: usr,
-                patrimonio: null
+                patrimonio: null,
+                // Campos de compatibilidade para o frontend
+                produto: null,
+                usuario: usr ? usr.nome : null,
+                dataEmprestimo: emprestimo.data_pedido ? new Date(emprestimo.data_pedido).toLocaleDateString('pt-BR') : null,
+                dataDevolucao: emprestimo.data_recebimento ? new Date(emprestimo.data_recebimento).toLocaleDateString('pt-BR') : null,
+                departamento: usr ? usr.tipo_usuario : null,
+                contato: usr ? usr.email : null
             });
         }
     } catch (error) {
@@ -184,6 +216,10 @@ async function atualizarEmprestimo(req, res) {
     const { data_recebimento, valor_total, status, observacoes, id_patrimonio } = req.body;
     const id = parseInt(req.params.id);
     const quantidade = req.body.quantidade !== undefined ? parseInt(req.body.quantidade) : undefined;
+
+    // Se for uma chamada de devolução (/devolver), definir status como 'devolvido'
+    const isDevolucao = req.originalUrl.includes('/devolver');
+    const finalStatus = isDevolucao ? 'devolvido' : status;
 
     try {
         // Verificar se o empréstimo existe
@@ -234,10 +270,10 @@ async function atualizarEmprestimo(req, res) {
         try {
             const updated = await prisma.$transaction(async (tx) => {
                 // Se o status mudou para devolvido, devolve estoque
-                if (status === 'devolvido' && emprestimoAtual.status !== 'devolvido' && emprestimoAtual.id_patrimonio) {
-                    await tx.patrimonio.update({ 
-                        where: { id_patrimonio: emprestimoAtual.id_patrimonio }, 
-                        data: { estoque: { increment: emprestimoAtual.quantidade ?? 0 } } 
+                if (finalStatus === 'devolvido' && emprestimoAtual.status !== 'devolvido' && emprestimoAtual.id_patrimonio) {
+                    await tx.patrimonio.update({
+                        where: { id_patrimonio: emprestimoAtual.id_patrimonio },
+                        data: { estoque: { increment: emprestimoAtual.quantidade ?? 0 } }
                     });
                 }
 
@@ -248,8 +284,9 @@ async function atualizarEmprestimo(req, res) {
                     where: { id_emprestimo: id },
                     data: {
                         ...(data_recebimento && { data_recebimento: new Date(data_recebimento) }),
+                        ...(isDevolucao && { data_recebimento: new Date() }),
                         ...(valor_total !== undefined && { valor_total }),
-                        ...(status && { status }),
+                        ...(finalStatus && { status: finalStatus }),
                         ...(observacoes !== undefined && { observacoes }),
                         ...(id_patrimonio !== undefined && { id_patrimonio: id_patrimonio ? parseInt(id_patrimonio) : null }),
                         ...(quantidade !== undefined && { quantidade })
@@ -275,7 +312,18 @@ async function atualizarEmprestimo(req, res) {
                 }
             }
 
-            return res.status(200).json({ ...updated, usuario, patrimonio });
+            return res.status(200).json({
+                ...updated,
+                usuario,
+                patrimonio,
+                // Campos de compatibilidade para o frontend
+                produto: patrimonio ? patrimonio.nome : null,
+                usuario: usuario ? usuario.nome : null,
+                dataEmprestimo: updated.data_pedido ? new Date(updated.data_pedido).toLocaleDateString('pt-BR') : null,
+                dataDevolucao: updated.data_recebimento ? new Date(updated.data_recebimento).toLocaleDateString('pt-BR') : null,
+                departamento: usuario ? usuario.tipo_usuario : null,
+                contato: usuario ? usuario.email : null
+            });
         } catch (err) {
             console.error('Erro ao atualizar empréstimo com estoque:', err);
             return res.status(400).json({ mensagem: err.message || 'Erro ao atualizar empréstimo' });
