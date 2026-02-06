@@ -13,7 +13,7 @@ model usuario {
   email        String   @unique
   senha        String
   tipo_usuario String
-  ativo        Boolean
+  ativo        Boolean  @default(true)
   criado_em    DateTime @default(now())
   cpf          String?
 

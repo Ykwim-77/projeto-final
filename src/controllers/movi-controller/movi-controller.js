@@ -32,21 +32,28 @@ async function pegarTodosMovis(req, res) {
                 }
             }
 
-            // Mapeamento para compatibilidade com frontend
-            const tipo = m.tipo_movimentacao === 'emprestimo' ? 'saida' : 'entrada';
-            const quantidade = m.quantidade || 1; // Usar quantidade do empréstimo se disponível
+        // Mapeamento para compatibilidade com frontend
+        const tipo = m.tipo_movimentacao === 'emprestimo' ? 'saida' : 'entrada';
+        const quantidade = m.quantidade || 1; // Usar quantidade do empréstimo se disponível
 
-            return {
-                ...m,
-                usuario,
-                patrimonio,
-                // Campos de compatibilidade para o frontend
-                produtoNome: patrimonio ? patrimonio.nome : 'Produto não encontrado',
-                tipo: tipo,
-                quantidade: quantidade,
-                data: m.data_movimento,
-                usuarioNome: usuario ? usuario.nome : 'Usuário não encontrado'
-            };
+        return {
+            ...m,
+            usuario,
+            patrimonio,
+            // Campos de compatibilidade para o frontend
+            produtoNome: patrimonio ? patrimonio.nome : 'Produto não encontrado',
+            tipo: tipo,
+            quantidade: quantidade,
+            data: m.data_movimento,
+            usuarioNome: usuario ? usuario.nome : 'Usuário não encontrado',
+            // Campos adicionais para compatibilidade
+            produto: patrimonio ? patrimonio.nome : 'Produto não encontrado',
+            usuario: usuario ? usuario.nome : 'Usuário não encontrado',
+            dataEmprestimo: m.data_movimento ? new Date(m.data_movimento).toLocaleDateString('pt-BR') : null,
+            dataDevolucao: null, // Movimentações não têm data de devolução
+            departamento: usuario ? usuario.tipo_usuario : null,
+            contato: usuario ? usuario.email : null
+        };
         }));
 
         return res.status(200).json(resultado);
